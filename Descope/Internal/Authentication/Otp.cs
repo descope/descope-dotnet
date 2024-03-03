@@ -13,31 +13,31 @@
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             var body = new { loginId, user = details };
-            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignUp + deliveryMethod.ToString(), body: body);
-            return deliveryMethod == DeliveryMethod.email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
+            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignUp + deliveryMethod.ToString().ToLower(), body: body);
+            return deliveryMethod == DeliveryMethod.Email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
         }
 
         public async Task<string> SignIn(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             var body = new { loginId, loginOptions };
-            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignIn + deliveryMethod, body: body);
-            return deliveryMethod == DeliveryMethod.email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
+            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignIn + deliveryMethod.ToString().ToLower(), body: body);
+            return deliveryMethod == DeliveryMethod.Email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
         }
 
         public async Task<string> SignUpOrIn(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             var body = new { loginId, loginOptions };
-            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignUpOrIn + deliveryMethod, body: body);
-            return deliveryMethod == DeliveryMethod.email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
+            var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignUpOrIn + deliveryMethod.ToString().ToLower(), body: body);
+            return deliveryMethod == DeliveryMethod.Email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
         }
 
         public async Task<AuthenticationResponse> Verify(DeliveryMethod deliveryMethod, string loginId, string code)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             var body = new { loginId, code };
-            return await _httpClient.Post<AuthenticationResponse>(Routes.OtpVerify + deliveryMethod, body: body);
+            return await _httpClient.Post<AuthenticationResponse>(Routes.OtpVerify + deliveryMethod.ToString().ToLower(), body: body);
         }
 
         public async Task<string> UpdateEmail(string loginId, string email, string refreshJwt, UpdateOptions? updateOptions)

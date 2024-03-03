@@ -128,6 +128,6 @@ namespace Descope
         /// </summary>
         /// <param name="refreshJwt">A valid refresh JWT</param>
         /// <returns>The current session user details</returns>
-        Task<DescopeUser> Me(string refreshJwt);
+        Task<UserResponse> Me(string refreshJwt);
     }
 }

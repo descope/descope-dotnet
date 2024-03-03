@@ -15,8 +15,14 @@ namespace Descope.Internal.Management
 
         public async Task<string> Create(TenantOptions options, string? id = null)
         {
-            if (string.IsNullOrEmpty(options.name)) throw new DescopeException("Tenant name is required for creation");
-            var body = new { id, options.name, options.selfProvisioningDomains, options.customAttributes };
+            if (string.IsNullOrEmpty(options.Name)) throw new DescopeException("Tenant name is required for creation");
+            var body = new
+            {
+                id,
+                name = options.Name,
+                selfProvisioningDomains = options.SelfProvisioningDomains,
+                customAttributes = options.CustomAttributes
+            };
             var result = await _httpClient.Post<TenantServerResponse>(Routes.TenantCreate, _managementKey, body);
             return result.Id;
         }
@@ -24,8 +30,14 @@ namespace Descope.Internal.Management
         public async Task Update(string id, TenantOptions options)
         {
             if (string.IsNullOrEmpty(id)) throw new DescopeException("Tenant ID is required for update");
-            if (string.IsNullOrEmpty(options.name)) throw new DescopeException("Tenant name cannot be updated to empty");
-            var body = new { id, options.name, options.selfProvisioningDomains, options.customAttributes };
+            if (string.IsNullOrEmpty(options.Name)) throw new DescopeException("Tenant name cannot be updated to empty");
+            var body = new
+            {
+                id,
+                name = options.Name,
+                selfProvisioningDomains = options.SelfProvisioningDomains,
+                customAttributes = options.CustomAttributes
+            };
             await _httpClient.Post<TenantServerResponse>(Routes.TenantUpdate, _managementKey, body);
         }
 
@@ -52,11 +64,11 @@ namespace Descope.Internal.Management
         {
             var body = new
             {
-                tenantIds = options?.ids,
-                tenantNames = options?.names,
-                tenantSelfProvisioningDomains = options?.selfProvisioningDomains,
-                options?.customAttributes,
-                options?.authType,
+                tenantIds = options?.Ids,
+                tenantNames = options?.Names,
+                tenantSelfProvisioningDomains = options?.SelfProvisioningDomains,
+                customAttributes = options?.CustomAttributes,
+                authType = options?.AuthType,
             };
             var tenantList = await _httpClient.Post<TenantListResponse>(Routes.TenantSearch, _managementKey, body);
             return tenantList.Tenants;

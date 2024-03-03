@@ -39,7 +39,7 @@ namespace Descope.Internal.Auth
             var response = await _httpClient.Post<AuthenticationResponse>(Routes.AuthRefresh, refreshJwt);
             try
             {
-                return new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.sessionJwt))
+                return new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.SessionJwt))
                 {
                     RefreshExpiration = refreshToken.Expiration
                 };
@@ -112,11 +112,11 @@ namespace Descope.Internal.Auth
             await _httpClient.Post<object>(Routes.AuthLogOutAll, refreshJwt);
         }
 
-        public async Task<DescopeUser> Me(string refreshJwt)
+        public async Task<UserResponse> Me(string refreshJwt)
         {
             if (string.IsNullOrEmpty(refreshJwt)) throw new DescopeException("refreshJwt empty");
             _ = await ValidateToken(refreshJwt) ?? throw new DescopeException("invalid refreshJwt");
-            return await _httpClient.Get<DescopeUser>(Routes.AuthMe, refreshJwt);
+            return await _httpClient.Get<UserResponse>(Routes.AuthMe, refreshJwt);
         }
 
         #region Internal
@@ -160,13 +160,13 @@ namespace Descope.Internal.Auth
 
         private Session AuthResponseToSession(AuthenticationResponse response, Token refreshToken)
         {
-            var sessionToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.sessionJwt)) ?? throw new DescopeException("Failed to parse session JWT");
-            if (!string.IsNullOrEmpty(response.refreshJwt))
+            var sessionToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.SessionJwt)) ?? throw new DescopeException("Failed to parse session JWT");
+            if (!string.IsNullOrEmpty(response.RefreshJwt))
             {
-                refreshToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.refreshJwt)) ?? throw new DescopeException("Failed to parse refresh JWT");
+                refreshToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.RefreshJwt)) ?? throw new DescopeException("Failed to parse refresh JWT");
             }
             sessionToken.RefreshExpiration = refreshToken.Expiration;
-            return new Session(sessionToken, refreshToken, response.user, response.firstSeen);
+            return new Session(sessionToken, refreshToken, response.User, response.FirstSeen);
         }
 
         private static bool ValidateAgainstClaims(Token token, string claim, List<string> values, string? tenant)

@@ -12,18 +12,19 @@ namespace Descope.Test.Integration
             string? loginId = null;
             try
             {
+                await _descopeClient.Management.User.DeleteAllTestUsers();
                 // Create a logged in test user
                 var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
-                loginId = testUser.User.loginIds.First();
+                loginId = testUser.User.LoginIds.First();
 
                 // Make sure the session is valid
-                var token = await _descopeClient.Auth.ValidateSession(testUser.AuthInfo.sessionJwt);
-                Assert.Equal(testUser.AuthInfo.sessionJwt, token.Jwt);
+                var token = await _descopeClient.Auth.ValidateSession(testUser.AuthInfo.SessionJwt);
+                Assert.Equal(testUser.AuthInfo.SessionJwt, token.Jwt);
                 Assert.NotEmpty(token.Id);
                 Assert.NotEmpty(token.ProjectId);
 
                 // Refresh and see we got a new token
-                var refreshedToken = await _descopeClient.Auth.RefreshSession(testUser.AuthInfo.refreshJwt!);
+                var refreshedToken = await _descopeClient.Auth.RefreshSession(testUser.AuthInfo.RefreshJwt!);
                 Assert.NotNull(refreshedToken.RefreshExpiration);
                 Assert.Equal(token.Id, refreshedToken.Id);
                 Assert.Equal(token.ProjectId, refreshedToken.ProjectId);
@@ -47,10 +48,10 @@ namespace Descope.Test.Integration
             {
                 // Create a logged in test user
                 var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
-                loginId = testUser.User.loginIds.First();
+                loginId = testUser.User.LoginIds.First();
 
                 // Create an access key and exchange it
-                var accessKeyResponse = await _descopeClient.Management.AccessKey.Create(loginId, userId: testUser.User.userId);
+                var accessKeyResponse = await _descopeClient.Management.AccessKey.Create(loginId, userId: testUser.User.UserId);
                 accessKeyId = accessKeyResponse.Key.Id;
                 var token = await _descopeClient.Auth.ExchangeAccessKey(accessKeyResponse.Cleartext);
                 Assert.NotEmpty(token.Id);
@@ -81,16 +82,16 @@ namespace Descope.Test.Integration
             {
                 // Create a logged in test user
                 var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
-                loginId = testUser.User.loginIds.First();
+                loginId = testUser.User.LoginIds.First();
 
                 // Create a couple of tenants and add to the user
-                var tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions { name = Guid.NewGuid().ToString() });
+                var tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions(Guid.NewGuid().ToString()));
                 tenantIds.Add(tenantId);
                 await _descopeClient.Management.User.AddTenant(loginId, tenantId);
-                tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions { name = Guid.NewGuid().ToString() });
+                tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions(Guid.NewGuid().ToString()));
                 tenantIds.Add(tenantId);
                 await _descopeClient.Management.User.AddTenant(loginId, tenantId);
-                var session = await _descopeClient.Auth.SelectTenant(tenantId, testUser.AuthInfo.refreshJwt!);
+                var session = await _descopeClient.Auth.SelectTenant(tenantId, testUser.AuthInfo.RefreshJwt!);
                 Assert.NotEmpty(session.SessionToken.Id);
                 Assert.NotEmpty(session.SessionToken.ProjectId);
                 Assert.NotEmpty(session.SessionToken.Jwt);
@@ -120,17 +121,17 @@ namespace Descope.Test.Integration
             {
                 // Create a logged in test user
                 var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
-                loginId = testUser.User.loginIds.First();
+                loginId = testUser.User.LoginIds.First();
 
                 // Me
-                var user = await _descopeClient.Auth.Me(testUser.AuthInfo.refreshJwt!);
-                Assert.Equal(testUser.User.userId, user.userId);
+                var user = await _descopeClient.Auth.Me(testUser.AuthInfo.RefreshJwt!);
+                Assert.Equal(testUser.User.UserId, user.UserId);
 
                 // Logout
-                await _descopeClient.Auth.LogOut(testUser.AuthInfo.refreshJwt!);
+                await _descopeClient.Auth.LogOut(testUser.AuthInfo.RefreshJwt!);
 
                 // Try me again
-                async Task Act() => await _descopeClient.Auth.Me(testUser.AuthInfo.refreshJwt!);
+                async Task Act() => await _descopeClient.Auth.Me(testUser.AuthInfo.RefreshJwt!);
                 DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
                 Assert.Contains("Expired due to logout", result.Message);
             }

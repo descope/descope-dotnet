@@ -33,12 +33,12 @@ namespace Descope.Test.Integration
             var loginId = Guid.NewGuid().ToString();
             var user = await descopeClient.Management.User.Create(loginId: loginId, new UserRequest()
             {
-                phone = "+972555555555",
-                verifiedPhone = true,
+                Phone = "+972555555555",
+                VerifiedPhone = true,
             }, testUser: true);
 
-            var generatedOtp = await descopeClient.Management.User.GenerateOtpForTestUser(DeliveryMethod.sms, loginId);
-            var authInfo = await descopeClient.Auth.Otp.Verify(DeliveryMethod.sms, loginId, generatedOtp.Code);
+            var generatedOtp = await descopeClient.Management.User.GenerateOtpForTestUser(DeliveryMethod.Sms, loginId);
+            var authInfo = await descopeClient.Auth.Otp.Verify(DeliveryMethod.Sms, loginId, generatedOtp.Code);
             return new SignedInTestUser(user, authInfo);
         }
 
@@ -46,9 +46,9 @@ namespace Descope.Test.Integration
 
     internal class SignedInTestUser
     {
-        internal DescopeUser User { get; }
+        internal UserResponse User { get; }
         internal AuthenticationResponse AuthInfo { get; }
-        internal SignedInTestUser(DescopeUser user, AuthenticationResponse authInfo)
+        internal SignedInTestUser(UserResponse user, AuthenticationResponse authInfo)
         {
             User = user;
             AuthInfo = authInfo;

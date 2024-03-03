@@ -21,6 +21,18 @@ namespace Descope
         public string? FamilyName { get; set; }
     }
 
+    public class LoginOptions
+    {
+        [JsonPropertyName("stepup")]
+        public bool StepUp { get; set; }
+
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
+
+        [JsonPropertyName("mfa")]
+        public bool Mfa { get; set; }
+    }
+
     public class UpdateOptions
     {
         public bool AddToLoginIds { get; set; } = false;
@@ -30,37 +42,48 @@ namespace Descope
     public class AuthenticationResponse
     {
         [JsonPropertyName("sessionJwt")]
-        public string sessionJwt { get; set; }
+        public string SessionJwt { get; set; }
 
         [JsonPropertyName("refreshJwt")]
-        public string? refreshJwt { get; set; }
+        public string? RefreshJwt { get; set; }
 
         [JsonPropertyName("cookieDomain")]
-        public string cookieDomain { get; set; }
+        public string CookieDomain { get; set; }
 
         [JsonPropertyName("cookiePath")]
-        public string cookiePath { get; set; }
+        public string CookiePath { get; set; }
 
         [JsonPropertyName("cookieMaxAge")]
-        public int cookieMaxAge { get; set; }
+        public int CookieMaxAge { get; set; }
 
         [JsonPropertyName("cookieExpiration")]
-        public int cookieExpiration { get; set; }
+        public int CookieExpiration { get; set; }
 
         [JsonPropertyName("user")]
-        public DescopeUser user { get; set; }
+        public UserResponse User { get; set; }
 
         [JsonPropertyName("firstSeen")]
-        public bool firstSeen { get; set; }
+        public bool FirstSeen { get; set; }
+        public AuthenticationResponse(string sessionJwt, string? refreshJwt, string cookieDomain, string cookiePath, int cookieMaxAge, int cookieExpiration, UserResponse user, bool firstSeen)
+        {
+            SessionJwt = sessionJwt;
+            RefreshJwt = refreshJwt;
+            CookieDomain = cookieDomain;
+            CookiePath = cookiePath;
+            CookieMaxAge = cookieMaxAge;
+            CookieExpiration = cookieExpiration;
+            User = user;
+            FirstSeen = firstSeen;
+        }
     }
 
     public class Session
     {
         public Token SessionToken { get; set; }
         public Token RefreshToken { get; set; }
-        public DescopeUser User { get; set; }
+        public UserResponse User { get; set; }
         public bool FirstSeen { get; set; }
-        public Session(Token sessionToken, Token refreshToken, DescopeUser user, bool firstSeen)
+        public Session(Token sessionToken, Token refreshToken, UserResponse user, bool firstSeen)
         {
             SessionToken = sessionToken;
             RefreshToken = refreshToken;
@@ -124,59 +147,85 @@ namespace Descope
 
     public enum DeliveryMethod
     {
-        email,
-        sms,
-        whatsapp
+        Email, Sms, Whatsapp
     }
 
-    public class LoginOptions
+
+
+
+
+
+
+
+
+
+
+
+    public class UserResponse
     {
-        [JsonPropertyName("stepup")]
-        public bool stepup { get; set; }
-
-        [JsonPropertyName("customClaims")]
-        public Dictionary<string, object> customClaims { get; set; }
-
-        [JsonPropertyName("mfa")]
-        public bool mfa { get; set; }
-    }
-
-    public class DescopeUser
-    {
-        public List<string> loginIds { get; set; }
-        public string userId { get; set; }
-        public string name { get; set; }
-        public string givenName { get; set; }
-        public string middleName { get; set; }
-        public string familyName { get; set; }
-        public string email { get; set; }
-        public string phone { get; set; }
-        public bool verifiedEmail { get; set; }
-        public bool verifiedPhone { get; set; }
-        public List<string> roleNames { get; set; }
-        public List<AssociatedTenant> userTenants { get; set; }
-        public string status { get; set; }
-        public string picture { get; set; }
-        public bool test { get; set; }
-        public Dictionary<string, object> customAttributes { get; set; }
-        public int createdTime { get; set; }
-        public bool totp { get; set; }
-        public bool webauthn { get; set; }
-        public bool password { get; set; }
-        public bool saml { get; set; }
-        public Dictionary<string, object> oauth { get; set; }
-        public List<string> ssoAppIds { get; set; }
+        [JsonPropertyName("loginIds")]
+        public List<string> LoginIds { get; set; }
+        [JsonPropertyName("userId")]
+        public string UserId { get; set; }
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [JsonPropertyName("givenName")]
+        public string? GivenName { get; set; }
+        [JsonPropertyName("middleName")]
+        public string? MiddleName { get; set; }
+        [JsonPropertyName("familyName")]
+        public string? FamilyName { get; set; }
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+        [JsonPropertyName("phone")]
+        public string? Phone { get; set; }
+        [JsonPropertyName("verifiedEmail")]
+        public bool VerifiedEmail { get; set; }
+        [JsonPropertyName("verifiedPhone")]
+        public bool VerifiedPhone { get; set; }
+        [JsonPropertyName("roleNames")]
+        public List<string>? RoleNames { get; set; }
+        [JsonPropertyName("userTenants")]
+        public List<AssociatedTenant>? UserTenants { get; set; }
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+        [JsonPropertyName("test")]
+        public bool Test { get; set; }
+        [JsonPropertyName("customAttributes")]
+        public Dictionary<string, object>? CustomAttributes { get; set; }
+        [JsonPropertyName("createdTime")]
+        public int CreatedTime { get; set; }
+        [JsonPropertyName("totp")]
+        public bool Totp { get; set; }
+        [JsonPropertyName("webauthn")]
+        public bool Webauthn { get; set; }
+        [JsonPropertyName("password")]
+        public bool Password { get; set; }
+        [JsonPropertyName("saml")]
+        public bool Saml { get; set; }
+        [JsonPropertyName("oauth")]
+        public Dictionary<string, object>? oauth { get; set; }
+        [JsonPropertyName("ssoAppIds")]
+        public List<string>? SsoAppIds { get; set; }
+        public UserResponse(List<string> loginIds, string userId, string status)
+        {
+            LoginIds = loginIds;
+            UserId = userId;
+            Status = status;
+        }
     }
 
     public class BatchCreateUserResponse
     {
         [JsonPropertyName("createdUsers")]
-        public List<DescopeUser> CreatedUsers { get; set; }
+        public List<UserResponse> CreatedUsers { get; set; }
 
         [JsonPropertyName("failedUsers")]
         public List<UsersFailedResponse> FailedUsers { get; set; }
 
-        public BatchCreateUserResponse(List<DescopeUser> createdUsers, List<UsersFailedResponse> failedUsers)
+        public BatchCreateUserResponse(List<UserResponse> createdUsers, List<UsersFailedResponse> failedUsers)
         {
             CreatedUsers = createdUsers;
             FailedUsers = failedUsers;
@@ -189,9 +238,9 @@ namespace Descope
         [JsonPropertyName("failure")]
         public string Failure { get; set; }
         [JsonPropertyName("user")]
-        public DescopeUser User { get; set; }
+        public UserResponse User { get; set; }
 
-        public UsersFailedResponse(string failure, DescopeUser user)
+        public UsersFailedResponse(string failure, UserResponse user)
         {
             Failure = failure;
             User = user;
@@ -200,75 +249,114 @@ namespace Descope
 
     public class UserRequest
     {
-        public string name { get; set; }
-        public string givenName { get; set; }
-        public string middleName { get; set; }
-        public string familyName { get; set; }
-        public string email { get; set; }
-        public string phone { get; set; }
-        public List<string> roleNames { get; set; }
-        public List<AssociatedTenant> userTenants { get; set; }
-        public Dictionary<string, object> customAttributes { get; set; }
-        public string picture { get; set; }
-        public bool verifiedEmail { get; set; }
-        public bool verifiedPhone { get; set; }
-        public List<string> additionalLoginIds { get; set; }
-        public List<string> ssoAppIds { get; set; }
+        public string? Name { get; set; }
+        public string? GivenName { get; set; }
+        public string? MiddleName { get; set; }
+        public string? FamilyName { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public List<string>? RoleNames { get; set; }
+        public List<AssociatedTenant>? UserTenants { get; set; }
+        public Dictionary<string, object>? CustomAttributes { get; set; }
+        public string? Picture { get; set; }
+        public bool VerifiedEmail { get; set; }
+        public bool VerifiedPhone { get; set; }
+        public List<string>? AdditionalLoginIds { get; set; }
+        public List<string>? SsoAppIds { get; set; }
     }
 
     public class BatchUser : UserRequest
     {
-        public string loginId { get; set; }
-        public BatchUserPassword password { get; set; }
+        public string LoginId { get; set; }
+
+        public BatchUserPassword? Password { get; set; }
+
+        public BatchUser(string loginId)
+        {
+            LoginId = loginId;
+        }
     }
 
     public class BatchUserPassword
     {
-        public string cleartext { get; set; }
-        public BatchUserPasswordHashed hashed { get; set; }
+        public string Cleartext { get; set; }
+        public BatchUserPasswordHashed Hashed { get; set; }
+
+        public BatchUserPassword(string cleartext, BatchUserPasswordHashed hashed)
+        {
+            this.Cleartext = cleartext;
+            this.Hashed = hashed;
+        }
     }
 
     public class BatchUserPasswordHashed
     {
-        public BatchUserPasswordBcrypt bcrypt { get; set; }
-        public BatchUserPasswordFirebase firebase { get; set; }
-        public BatchUserPasswordPbkdf2 pbkdf2 { get; set; }
-        public BatchUserPasswordDjango django { get; set; }
+        public BatchUserPasswordBcrypt? Bcrypt { get; set; }
+        public BatchUserPasswordFirebase? Firebase { get; set; }
+        public BatchUserPasswordPbkdf2? Pbkdf2 { get; set; }
+        public BatchUserPasswordDjango? Django { get; set; }
     }
 
     public class BatchUserPasswordBcrypt
     {
-        public string hash { get; set; }
+        public string Hash { get; set; }
+
+        public BatchUserPasswordBcrypt(string hash)
+        {
+            Hash = hash;
+        }
     }
 
     public class BatchUserPasswordFirebase
     {
-        public byte[] hash { get; set; } // the hash in raw bytes (base64 strings should be decoded first)
-        public byte[] salt { get; set; } // the salt in raw bytes (base64 strings should be decoded first)
-        public byte[] saltSeparator { get; set; } // the salt separator (usually 1 byte long)
-        public byte[] signerKey { get; set; } // the signer key (base64 strings should be decoded first)
-        public int memory { get; set; } // the memory cost value (usually between 12 to 17)
-        public int rounds { get; init; } // the rounds cost value (usually between 6 to 10)
+        public byte[] Hash { get; set; } // the hash in raw bytes (base64 strings should be decoded first)
+        public byte[] Salt { get; set; } // the salt in raw bytes (base64 strings should be decoded first)
+        public byte[] SaltSeparator { get; set; } // the salt separator (usually 1 byte long)
+        public byte[] SignerKey { get; set; } // the signer key (base64 strings should be decoded first)
+        public int Memory { get; set; } // the memory cost value (usually between 12 to 17)
+        public int Rounds { get; init; } // the rounds cost value (usually between 6 to 10)
+
+        public BatchUserPasswordFirebase(byte[] hash, byte[] salt, byte[] saltSeparator, byte[] signerKey, int memory, int rounds)
+        {
+            Hash = hash;
+            Salt = salt;
+            SaltSeparator = saltSeparator;
+            SignerKey = signerKey;
+            Memory = memory;
+            Rounds = rounds;
+        }
     }
 
     public class BatchUserPasswordPbkdf2
     {
-        public byte[] hash { get; set; } // the hash in raw bytes (base64 strings should be decoded first)
-        public byte[] salt { get; set; } // the salt in raw bytes (base64 strings should be decoded first)
-        public int iterations { get; set; } // the iterations cost value (usually in the thousands)
-        public string type { get; set; } // the hash name (sha1, sha256, sha512)
+        public byte[] Hash { get; set; } // the hash in raw bytes (base64 strings should be decoded first)
+        public byte[] Salt { get; set; } // the salt in raw bytes (base64 strings should be decoded first)
+        public int Iterations { get; set; } // the iterations cost value (usually in the thousands)
+        public string Type { get; set; } // the hash name (sha1, sha256, sha512)
+        public BatchUserPasswordPbkdf2(byte[] hash, byte[] salt, int iterations, string type)
+        {
+            Hash = hash;
+            Salt = salt;
+            Iterations = iterations;
+            Type = type;
+        }
     }
 
     public class BatchUserPasswordDjango
     {
-        public string hash { get; set; }
+        public string Hash { get; set; }
+
+        public BatchUserPasswordDjango(string hash)
+        {
+            Hash = hash;
+        }
     }
 
     public class InviteOptions
     {
-        public string inviteUrl { get; set; }
-        public bool sendMail { get; set; } // send invite via mail, default is according to project settings
-        public bool sendSms { get; set; } // send invite via text message, default is according to project settings
+        public string? InviteUrl { get; set; }
+        public bool SendMail { get; set; } // send invite via mail, default is according to project settings
+        public bool SendSms { get; set; } // send invite via text message, default is according to project settings
     }
 
     // Options for searching and filtering users
@@ -379,69 +467,81 @@ namespace Descope
     // roles for the user / access key in this specific tenant.
     public class AssociatedTenant
     {
-        public string tenantId { get; set; }
-        public string tenantName { get; set; }
-        public List<string> roleNames { get; set; }
+        [JsonPropertyName("tenantId")]
+        public string TenantId { get; set; }
+        [JsonPropertyName("tenantName")]
+        public string TenantName { get; set; }
+        [JsonPropertyName("roleNames")]
+        public List<string>? RoleNames { get; set; }
+        public AssociatedTenant(string tenantId, string tenantName)
+        {
+            TenantId = tenantId;
+            TenantName = tenantName;
+        }
     }
 
     public class TenantResponse
     {
         [JsonPropertyName("name")]
-        public string name { get; set; }
+        public string Name { get; set; }
 
         [JsonPropertyName("id")]
-        public string id { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("selfProvisioningDomains")]
-        public List<string> selfProvisioningDomains { get; set; }
+        public List<string>? SelfProvisioningDomains { get; set; }
 
         [JsonPropertyName("customAttributes")]
-        public Dictionary<string, object> customAttributes { get; set; }
+        public Dictionary<string, object>? CustomAttributes { get; set; }
 
-        public TenantResponse(string Id, string Name, List<string> SelfProvisioningDomains = null, Dictionary<string, object> CustomAttributes = null)
+        public TenantResponse(string Id, string Name, List<string>? SelfProvisioningDomains = null, Dictionary<string, object>? CustomAttributes = null)
         {
-            id = Id;
-            name = Name;
-            selfProvisioningDomains = SelfProvisioningDomains;
-            customAttributes = CustomAttributes;
+            this.Id = Id;
+            this.Name = Name;
+            this.SelfProvisioningDomains = SelfProvisioningDomains;
+            this.CustomAttributes = CustomAttributes;
         }
     }
 
     public class TenantOptions
     {
-        public string name;
-        public List<string>? selfProvisioningDomains;
-        public Dictionary<string, object>? customAttributes;
+        public string Name { get; set; }
+        public List<string>? SelfProvisioningDomains { get; set; }
+        public Dictionary<string, object>? CustomAttributes { get; set; }
+        public TenantOptions(string name)
+        {
+            Name = name;
+        }
     }
 
     public class TenantSearchOptions
     {
-        public List<string>? ids;
-        public List<string>? names;
-        public List<string>? selfProvisioningDomains;
-        public Dictionary<string, object>? customAttributes;
-        public string? authType;
+        public List<string>? Ids { get; set; }
+        public List<string>? Names { get; set; }
+        public List<string>? SelfProvisioningDomains { get; set; }
+        public Dictionary<string, object>? CustomAttributes { get; set; }
+        public string? AuthType { get; set; }
     }
 
     public class ProviderTokenResponse
     {
-        public string provider;
-
-        public string providerUserID;
-
-        public string accessToken;
-
-        public int expiration;
-
-        public List<string> scopes;
-
+        [JsonPropertyName("provider")]
+        public string Provider { get; set; }
+        [JsonPropertyName("providerUserID")]
+        public string ProviderUserID { get; set; }
+        [JsonPropertyName("accessToken")]
+        public string AccessToken { get; set; }
+        [JsonPropertyName("expiration")]
+        public int Expiration { get; set; }
+        [JsonPropertyName("scopes")]
+        public List<string> Scopes { get; set; }
         public ProviderTokenResponse(string provider, string providerUserID, string accessToken, int expiration, List<string> scopes)
         {
-            this.provider = provider;
-            this.providerUserID = providerUserID;
-            this.accessToken = accessToken;
-            this.expiration = expiration;
-            this.scopes = scopes;
+            Provider = provider;
+            ProviderUserID = providerUserID;
+            AccessToken = accessToken;
+            Expiration = expiration;
+            Scopes = scopes;
         }
     }
 
@@ -449,10 +549,8 @@ namespace Descope
     {
         [JsonPropertyName("cleartext")]
         public string Cleartext { get; set; }
-
         [JsonPropertyName("key")]
         public AccessKeyResponse Key { get; set; }
-
         public AccessKeyCreateResponse(string cleartext, AccessKeyResponse key)
         {
             Cleartext = cleartext;
@@ -464,34 +562,24 @@ namespace Descope
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
-
         [JsonPropertyName("name")]
         public string Name { get; set; }
-
         [JsonPropertyName("roleNames")]
         public List<string> RoleNames { get; set; }
-
         [JsonPropertyName("keyTenants")]
         public List<AssociatedTenant> KeyTenants { get; set; }
-
         [JsonPropertyName("status")]
         public string Status { get; set; }
-
         [JsonPropertyName("createdTime")]
         public int CreatedTime { get; set; }
-
         [JsonPropertyName("expireTime")]
         public int ExpireTime { get; set; }
-
         [JsonPropertyName("createdBy")]
         public string CreatedBy { get; set; }
-
         [JsonPropertyName("clientId")]
         public string ClientId { get; set; }
-
         [JsonPropertyName("boundUserId")]
         public string UserId { get; set; }
-
         public AccessKeyResponse(string id, string name, List<string> roleNames, List<AssociatedTenant> keyTenants, string status, int createdTime, int expireTime, string createdBy, string clientId, string userId)
         {
             Id = id;
@@ -511,13 +599,10 @@ namespace Descope
     {
         [JsonPropertyName("projectId")]
         public string ProjectId { get; set; }
-
         [JsonPropertyName("projectName")]
         public string ProjectName { get; set; }
-
         [JsonPropertyName("tag")]
         public string Tag { get; set; }
-
         public ProjectCloneResponse(string projectId, string projectName, string tag)
         {
             ProjectId = projectId;

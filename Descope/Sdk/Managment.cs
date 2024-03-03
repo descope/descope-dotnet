@@ -88,10 +88,11 @@ namespace Descope
         /// </summary>
         /// <param name="loginId">A login ID to identify the created user</param>
         /// <param name="request">Optional information about the user being created</param>
+        /// <param name="sendInvite">Whether or not to send an invitation to the user</param>
         /// <param name="options">Optional invite options used to send an invitation to the created user</param>
         /// <param name="testUser">Optionally create a test user</param>
         /// <returns>The created user</returns>
-        Task<DescopeUser> Create(string loginId, UserRequest? request = null, InviteOptions? options = null, bool testUser = false);
+        Task<UserResponse> Create(string loginId, UserRequest? request = null, bool sendInvite = false, InviteOptions? options = null, bool testUser = false);
 
         /// <summary>
         /// Create users in batch.
@@ -107,9 +108,10 @@ namespace Descope
         /// </para>
         /// </summary>
         /// <param name="batchUsers">The list of users to create</param>
+        /// <param name="sendInvite">Whether or not to send an invitation to the users</param>
         /// <param name="options">Optional invite options used to send an invitation to the created users</param>
         /// <returns>A list of created users and a list of failures if occurred</returns>
-        Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, InviteOptions? options = null);
+        Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite = false, InviteOptions? options = null);
 
         /// <summary>
         /// Update an existing user.
@@ -123,21 +125,21 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="request">The information to set</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> Update(string loginId, UserRequest? request = null);
+        Task<UserResponse> Update(string loginId, UserRequest? request = null);
 
         /// <summary>
         /// Activate an existing user.
         /// </summary>
         /// <param name="loginId">The login ID of the user to activate</param>
         /// <returns>The activated user</returns>
-        Task<DescopeUser> Activate(string loginId);
+        Task<UserResponse> Activate(string loginId);
 
         /// <summary>
         /// Deactivate an existing user.
         /// </summary>
         /// <param name="loginId">The login ID of the user to deactivate</param>
         /// <returns>The deactivated user</returns>
-        Task<DescopeUser> Deactivate(string loginId);
+        Task<UserResponse> Deactivate(string loginId);
 
         /// <summary>
         /// Change current loginID to new one.
@@ -149,7 +151,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="newLoginId">The new login ID</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdateLoginId(string loginId, string? newLoginId = null);
+        Task<UserResponse> UpdateLoginId(string loginId, string? newLoginId = null);
 
         /// <summary>
         /// Update the email address for an existing user.
@@ -165,7 +167,7 @@ namespace Descope
         /// <param name="email">The email to update</param>
         /// <param name="verified">Whether this email is verified</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdateEmail(string loginId, string? email = null, bool verified = false);
+        Task<UserResponse> UpdateEmail(string loginId, string? email = null, bool verified = false);
 
         /// <summary>
         /// Update the phone number for an existing user.
@@ -181,7 +183,7 @@ namespace Descope
         /// <param name="phone">The phone to update</param>
         /// <param name="verified">Whether this phone is verified</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdatePhone(string loginId, string? phone = null, bool verified = false);
+        Task<UserResponse> UpdatePhone(string loginId, string? phone = null, bool verified = false);
 
         /// <summary>
         /// Update an existing user's display name (i.e., their full name).
@@ -192,7 +194,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update<</param>
         /// <param name="displayName">The display name to update</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdateDisplayName(string loginId, string? displayName = null);
+        Task<UserResponse> UpdateDisplayName(string loginId, string? displayName = null);
 
         /// <summary>
         /// Update an existing user's first/last/middle name.
@@ -205,7 +207,7 @@ namespace Descope
         /// <param name="middleName">The middle name to update</param>
         /// <param name="familyName">The family name to update</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdateUserNames(string loginId, string? givenName = null, string? middleName = null, string? familyName = null);
+        Task<UserResponse> UpdateUserNames(string loginId, string? givenName = null, string? middleName = null, string? familyName = null);
 
         /// <summary>
         /// Update an existing user's picture (i.e., url to the avatar).
@@ -216,7 +218,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="picture">The updated picture URL</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdatePicture(string loginId, string? picture);
+        Task<UserResponse> UpdatePicture(string loginId, string? picture);
 
         /// <summary>
         /// Update an existing user's custom attribute.
@@ -229,7 +231,7 @@ namespace Descope
         /// <param name="key">Existing attribute key</param>
         /// <param name="value">Value matching the given key</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> UpdateCustomAttributes(string loginId, string key, object value);
+        Task<UserResponse> UpdateCustomAttributes(string loginId, string key, object value);
 
         /// <summary>
         /// Set roles for a user. If the intended roles are associated with a tenant, provide
@@ -239,7 +241,7 @@ namespace Descope
         /// <param name="roleNames">The roles to set</param>
         /// <param name="tenantId">Optional tenant association</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> SetRoles(string loginId, List<string> roleNames, string? tenantId = null);
+        Task<UserResponse> SetRoles(string loginId, List<string> roleNames, string? tenantId = null);
 
         /// <summary>
         /// Add roles for a user. If the intended roles are associated with a tenant, provide
@@ -249,7 +251,7 @@ namespace Descope
         /// <param name="roleNames">The roles to add</param>
         /// <param name="tenantId">Optional tenant association</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> AddRoles(string loginId, List<string> roleNames, string? tenantId = null);
+        Task<UserResponse> AddRoles(string loginId, List<string> roleNames, string? tenantId = null);
 
         /// <summary>
         /// Remove roles from a user. If the intended roles are associated with a tenant, provide
@@ -259,7 +261,7 @@ namespace Descope
         /// <param name="roleNames">The roles to remove</param>
         /// <param name="tenantId">Optional tenant association</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> RemoveRoles(string loginId, List<string> roleNames, string? tenantId = null);
+        Task<UserResponse> RemoveRoles(string loginId, List<string> roleNames, string? tenantId = null);
 
         /// <summary>
         /// Set (associate) SSO applications for a user.
@@ -267,7 +269,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="ssoAppIds">The SSO app IDs to set</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> SetSsoApps(string loginId, List<string> ssoAppIds);
+        Task<UserResponse> SetSsoApps(string loginId, List<string> ssoAppIds);
 
         /// <summary>
         /// Associate SSO application for a user.
@@ -275,7 +277,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="ssoAppIds">The SSO app IDs to add</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> AddSsoApps(string loginId, List<string> ssoAppIds);
+        Task<UserResponse> AddSsoApps(string loginId, List<string> ssoAppIds);
 
         /// <summary>
         /// Remove SSO application association from a user.
@@ -283,7 +285,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="ssoAppIds">The SSO app IDs to remove</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> RemoveSsoApps(string loginId, List<string> ssoAppIds);
+        Task<UserResponse> RemoveSsoApps(string loginId, List<string> ssoAppIds);
 
         /// <summary>
         /// Add a tenant association for an existing user.
@@ -291,7 +293,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="tenantId">The tenant ID to add</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> AddTenant(string loginId, string tenantId);
+        Task<UserResponse> AddTenant(string loginId, string tenantId);
 
         /// <summary>
         /// Remove a tenant association from an existing user.
@@ -299,7 +301,7 @@ namespace Descope
         /// <param name="loginId">The login ID of the user to update</param>
         /// <param name="tenantId">The tenant ID to remove</param>
         /// <returns>The updated user</returns>
-        Task<DescopeUser> RemoveTenant(string loginId, string tenantId);
+        Task<UserResponse> RemoveTenant(string loginId, string tenantId);
 
         /// <summary>
         /// Set a temporary password for the given login ID.
@@ -384,7 +386,7 @@ namespace Descope
         /// </summary>
         /// <param name="loginId">The login ID of the user to load</param>
         /// <returns>The loaded user</returns>
-        Task<DescopeUser> Load(string loginId);
+        Task<UserResponse> Load(string loginId);
 
         /// <summary>
         /// Search all users according to given filters
@@ -396,7 +398,7 @@ namespace Descope
         /// </summary>
         /// <param name="options">Parameter to fine tune the search by</param>
         /// <returns>A list of found users</returns>
-        Task<List<DescopeUser>> SearchAll(SearchUserOptions? options = null);
+        Task<List<UserResponse>> SearchAll(SearchUserOptions? options = null);
 
         /// <summary>
         /// Generate OTP for the given login ID of a test user.

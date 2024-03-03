@@ -15,150 +15,150 @@ namespace Descope.Internal.Management
 
         #region IUser Implementation
 
-        public async Task<DescopeUser> Create(string loginId, UserRequest? request, InviteOptions? options, bool testUser)
+        public async Task<UserResponse> Create(string loginId, UserRequest? request, bool sendInvite, InviteOptions? options, bool testUser)
         {
             request ??= new UserRequest();
-            var body = MakeCreateUserRequestBody(loginId, request, options, testUser);
-            var result = await _httpClient.Post<UserResponse>(Routes.UserCreate, _managementKey, body);
+            var body = MakeCreateUserRequestBody(loginId, request, sendInvite, options, testUser);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserCreate, _managementKey, body);
             return result.User;
         }
 
-        public async Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, InviteOptions? options)
+        public async Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite, InviteOptions? options)
         {
             batchUsers ??= new List<BatchUser>();
-            var body = MakeCreateBatchUsersRequestBody(batchUsers, options);
+            var body = MakeCreateBatchUsersRequestBody(batchUsers, sendInvite, options);
             return await _httpClient.Post<BatchCreateUserResponse>(Routes.UserCreateBatch, _managementKey, body);
         }
 
-        public async Task<DescopeUser> Update(string loginId, UserRequest? request)
+        public async Task<UserResponse> Update(string loginId, UserRequest? request)
         {
             request ??= new UserRequest();
             var body = MakeUpdateUserRequestBody(loginId, request);
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdate, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdate, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> Activate(string loginId)
+        public async Task<UserResponse> Activate(string loginId)
         {
             var result = await updateStatus(loginId, "enabled");
             return result;
         }
 
-        public async Task<DescopeUser> Deactivate(string loginId)
+        public async Task<UserResponse> Deactivate(string loginId)
         {
             var result = await updateStatus(loginId, "disabled");
             return result;
         }
 
-        private async Task<DescopeUser> updateStatus(string loginId, string status)
+        private async Task<UserResponse> updateStatus(string loginId, string status)
         {
             var body = new { loginId, status };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateStatus, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateStatus, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdateLoginId(string loginId, string? newLoginId)
+        public async Task<UserResponse> UpdateLoginId(string loginId, string? newLoginId)
         {
             var body = new { loginId, newLoginId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateLoginId, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateLoginId, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdateEmail(string loginId, string? email, bool verified)
+        public async Task<UserResponse> UpdateEmail(string loginId, string? email, bool verified)
         {
             var body = new { loginId, email, verified };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateEmail, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateEmail, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdatePhone(string loginId, string? phone, bool verified)
+        public async Task<UserResponse> UpdatePhone(string loginId, string? phone, bool verified)
         {
             var body = new { loginId, phone, verified };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdatePhone, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdatePhone, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdateDisplayName(string loginId, string? displayName)
+        public async Task<UserResponse> UpdateDisplayName(string loginId, string? displayName)
         {
             var body = new { loginId, displayName };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateName, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateName, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdateUserNames(string loginId, string? givenName, string? middleName, string? familyName)
+        public async Task<UserResponse> UpdateUserNames(string loginId, string? givenName, string? middleName, string? familyName)
         {
             var body = new { loginId, givenName, middleName, familyName };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateName, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateName, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdatePicture(string loginId, string? picture)
+        public async Task<UserResponse> UpdatePicture(string loginId, string? picture)
         {
             var body = new { loginId, picture };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdatePicture, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdatePicture, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> UpdateCustomAttributes(string loginId, string attributeKey, object attributeValue)
+        public async Task<UserResponse> UpdateCustomAttributes(string loginId, string attributeKey, object attributeValue)
         {
             var body = new { loginId, attributeKey, attributeValue };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserUpdateCustomAttribute, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserUpdateCustomAttribute, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> SetRoles(string loginId, List<string> roleNames, string? tenantId)
+        public async Task<UserResponse> SetRoles(string loginId, List<string> roleNames, string? tenantId)
         {
             var body = new { loginId, roleNames, tenantId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserRolesSet, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserRolesSet, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> AddRoles(string loginId, List<string> roleNames, string? tenantId)
+        public async Task<UserResponse> AddRoles(string loginId, List<string> roleNames, string? tenantId)
         {
             var body = new { loginId, roleNames, tenantId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserRolesAdd, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserRolesAdd, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> RemoveRoles(string loginId, List<string> roleNames, string? tenantId)
+        public async Task<UserResponse> RemoveRoles(string loginId, List<string> roleNames, string? tenantId)
         {
             var body = new { loginId, roleNames, tenantId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserRoleRemove, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserRoleRemove, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> SetSsoApps(string loginId, List<string> ssoAppIds)
+        public async Task<UserResponse> SetSsoApps(string loginId, List<string> ssoAppIds)
         {
             var body = new { loginId, ssoAppIds };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserSsoAppSet, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserSsoAppSet, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> AddSsoApps(string loginId, List<string> ssoAppIds)
+        public async Task<UserResponse> AddSsoApps(string loginId, List<string> ssoAppIds)
         {
             var body = new { loginId, ssoAppIds };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserSsoAppAdd, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserSsoAppAdd, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> RemoveSsoApps(string loginId, List<string> ssoAppIds)
+        public async Task<UserResponse> RemoveSsoApps(string loginId, List<string> ssoAppIds)
         {
             var body = new { loginId, ssoAppIds };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserSsoAppRemove, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserSsoAppRemove, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> AddTenant(string loginId, string tenantId)
+        public async Task<UserResponse> AddTenant(string loginId, string tenantId)
         {
             var body = new { loginId, tenantId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserTenantAdd, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserTenantAdd, _managementKey, body);
             return result.User;
         }
 
-        public async Task<DescopeUser> RemoveTenant(string loginId, string tenantId)
+        public async Task<UserResponse> RemoveTenant(string loginId, string tenantId)
         {
             var body = new { loginId, tenantId };
-            var result = await _httpClient.Post<UserResponse>(Routes.UserTenantRemove, _managementKey, body);
+            var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserTenantRemove, _managementKey, body);
             return result.User;
         }
 
@@ -214,30 +214,30 @@ namespace Descope.Internal.Management
             await _httpClient.Delete<object>(Routes.UserDeleteAllTestUsers, _managementKey);
         }
 
-        public async Task<DescopeUser> Load(string loginId)
+        public async Task<UserResponse> Load(string loginId)
         {
-            var result = await _httpClient.Get<UserResponse>(Routes.UserLoad + $"?loginId={loginId}", _managementKey);
+            var result = await _httpClient.Get<WrappedUserResponse>(Routes.UserLoad + $"?loginId={loginId}", _managementKey);
             return result.User;
         }
 
-        public async Task<List<DescopeUser>> SearchAll(SearchUserOptions? options)
+        public async Task<List<UserResponse>> SearchAll(SearchUserOptions? options)
         {
             options ??= new SearchUserOptions();
-            var result = await _httpClient.Post<UsersResponse>(Routes.UserSearch, _managementKey, options);
+            var result = await _httpClient.Post<WrappedUsersResponse>(Routes.UserSearch, _managementKey, options);
             return result.Users;
         }
 
         public async Task<UserTestOTPResponse> GenerateOtpForTestUser(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, deliveryMethod = deliveryMethod.ToString(), loginOptions };
+            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), loginOptions };
             return await _httpClient.Post<UserTestOTPResponse>(Routes.UserTestsGenerateOtp, _managementKey, body);
         }
 
         public async Task<UserTestMagicLinkResponse> GenerateMagicLinkForTestUser(DeliveryMethod deliveryMethod, string loginId, string? redirectUrl, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, deliveryMethod = deliveryMethod.ToString(), redirectUrl, loginOptions };
+            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), redirectUrl, loginOptions };
             return await _httpClient.Post<UserTestMagicLinkResponse>(Routes.UserTestsGenerateMagicLink, _managementKey, body);
         }
 
@@ -261,68 +261,69 @@ namespace Descope.Internal.Management
 
         #region Internal
 
-        private static Dictionary<string, object> MakeCreateUserRequestBody(string loginId, UserRequest request, InviteOptions? options, bool test)
+        private static Dictionary<string, object> MakeCreateUserRequestBody(string loginId, UserRequest request, bool sendInvite, InviteOptions? options, bool test)
         {
             var body = MakeUpdateUserRequestBody(loginId, request);
             body["test"] = test;
+            body["invite"] = sendInvite;
             if (options != null)
             {
-                body["invite"] = true;
-                body["inviteUrl"] = options.inviteUrl;
-                body["sendMail"] = options.sendMail;
-                body["sendSMS"] = options.sendSms;
+                if (!string.IsNullOrEmpty(options.InviteUrl)) body["inviteUrl"] = options.InviteUrl;
+                body["sendMail"] = options.SendMail;
+                body["sendSMS"] = options.SendSms;
             }
             return body;
         }
 
-        private static Dictionary<string, object> MakeCreateBatchUsersRequestBody(List<BatchUser> users, InviteOptions? options)
+        private static Dictionary<string, object> MakeCreateBatchUsersRequestBody(List<BatchUser> users, bool sendInvite, InviteOptions? options)
         {
             var body = new Dictionary<string, object>();
             var userList = new List<Dictionary<string, object>>();
             foreach (var user in users)
             {
-                var dict = MakeUpdateUserRequestBody(user.loginId, user);
-                if (!string.IsNullOrEmpty(user.password?.cleartext))
+                var dict = MakeUpdateUserRequestBody(user.LoginId, user);
+                if (!string.IsNullOrEmpty(user.Password?.Cleartext))
                 {
-                    dict["password"] = user.password.cleartext;
+                    dict["password"] = user.Password.Cleartext;
                 }
-                if (user.password?.hashed != null)
+                if (user.Password?.Hashed != null)
                 {
-                    dict["hashedPassword"] = user.password.hashed;
+                    dict["hashedPassword"] = user.Password.Hashed;
                 }
                 userList.Add(dict);
             }
             body["users"] = userList;
+            body["invite"] = sendInvite;
             if (options != null)
             {
-                body["invite"] = true;
-                body["inviteUrl"] = options.inviteUrl;
-                body["sendMail"] = options.sendMail;
-                body["sendSMS"] = options.sendSms;
+                if (!string.IsNullOrEmpty(options.InviteUrl)) body["inviteUrl"] = options.InviteUrl;
+                body["sendMail"] = options.SendMail;
+                body["sendSMS"] = options.SendSms;
             }
             return body;
         }
 
         private static Dictionary<string, object> MakeUpdateUserRequestBody(string loginId, UserRequest request)
         {
-            return new Dictionary<string, object>
+            var body = new Dictionary<string, object>
             {
                 {"loginId", loginId},
-                {"email", request.email},
-                {"phone", request.phone},
-                {"displayName", request.name},
-                {"givenName", request.givenName},
-                {"middleName", request.middleName},
-                {"familyName", request.familyName},
-                {"roleNames", request.roleNames},
-                {"userTenants", MakeAssociatedTenantList(request.userTenants)},
-                {"customAttributes", request.customAttributes},
-                {"picture", request.picture},
-                {"additionalLoginIds", request.additionalLoginIds},
-                {"verifiedEmail", request.verifiedEmail},
-                {"verifiedPhone", request.verifiedPhone},
-                {"ssoAppIDs", request.ssoAppIds}
+                {"verifiedEmail", request.VerifiedEmail},
+                {"verifiedPhone", request.VerifiedPhone},
             };
+            if (!string.IsNullOrEmpty(request.Email)) body["email"] = request.Email;
+            if (!string.IsNullOrEmpty(request.Phone)) body["phone"] = request.Phone;
+            if (!string.IsNullOrEmpty(request.Name)) body["displayName"] = request.Name;
+            if (!string.IsNullOrEmpty(request.GivenName)) body["givenName"] = request.GivenName;
+            if (!string.IsNullOrEmpty(request.MiddleName)) body["middleName"] = request.MiddleName;
+            if (!string.IsNullOrEmpty(request.FamilyName)) body["familyName"] = request.FamilyName;
+            if (request.RoleNames != null) body["roleNames"] = request.RoleNames;
+            if (request.UserTenants != null) body["userTenants"] = MakeAssociatedTenantList(request.UserTenants);
+            if (request.CustomAttributes != null) body["customAttributes"] = request.CustomAttributes;
+            if (!string.IsNullOrEmpty(request.Picture)) body["picture"] = request.Picture;
+            if (request.AdditionalLoginIds != null) body["additionalLoginIds"] = request.AdditionalLoginIds;
+            if (request.SsoAppIds != null) body["ssoAppIDs"] = request.SsoAppIds;
+            return body;
         }
 
         private static List<Dictionary<string, object>> MakeAssociatedTenantList(List<AssociatedTenant> tenants)
@@ -333,8 +334,8 @@ namespace Descope.Internal.Management
             {
                 dict.Add(new Dictionary<string, object>
                 {
-                    {"tenantId", tenant.tenantId},
-                    {"roleNames", tenant.roleNames},
+                    {"tenantId", tenant.TenantId},
+                    {"roleNames", tenant.RoleNames},
                 });
             };
             return dict;
@@ -343,23 +344,23 @@ namespace Descope.Internal.Management
         #endregion Internal
     }
 
-    internal class UserResponse
+    internal class WrappedUserResponse
     {
         [JsonPropertyName("user")]
-        public DescopeUser User { get; set; }
+        public UserResponse User { get; set; }
 
-        public UserResponse(DescopeUser user)
+        public WrappedUserResponse(UserResponse user)
         {
             User = user;
         }
     }
 
-    internal class UsersResponse
+    internal class WrappedUsersResponse
     {
         [JsonPropertyName("users")]
-        public List<DescopeUser> Users { get; set; }
+        public List<UserResponse> Users { get; set; }
 
-        public UsersResponse(List<DescopeUser> users)
+        public WrappedUsersResponse(List<UserResponse> users)
         {
             Users = users;
         }
