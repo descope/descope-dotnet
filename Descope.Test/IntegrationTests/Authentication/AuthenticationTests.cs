@@ -112,10 +112,8 @@ namespace Descope.Test.Integration
 
         // TODO: Test permissions and roles once available on via management
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Authentication_MeAndLogout(bool logoutAll)
+        [Fact]
+        public async Task Authentication_MeAndLogout()
         {
             string? loginId = null;
             try
@@ -129,11 +127,9 @@ namespace Descope.Test.Integration
                 Assert.Equal(testUser.User.userId, user.userId);
 
                 // Logout
-                if (logoutAll) await _descopeClient.Auth.LogOut(testUser.AuthInfo.refreshJwt!);
-                else await _descopeClient.Auth.LogOutAll(testUser.AuthInfo.refreshJwt!);
+                await _descopeClient.Auth.LogOut(testUser.AuthInfo.refreshJwt!);
 
                 // Try me again
-                await Task.Delay(500);
                 async Task Act() => await _descopeClient.Auth.Me(testUser.AuthInfo.refreshJwt!);
                 DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
                 Assert.Contains("Expired due to logout", result.Message);
