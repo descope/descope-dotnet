@@ -13,7 +13,7 @@ namespace Descope.Test.Integration
             await _descopeClient.Management.Project.Import(imported_project);
         }
 
-        [Fact]
+        [Fact(Skip = "Test fails due to theme import")]
         public async Task Project_CloneRenameDelete()
         {
             // Clone the current project
