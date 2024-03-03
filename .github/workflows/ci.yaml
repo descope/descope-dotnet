@@ -1,0 +1,50 @@
+name: dotnet package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        dotnet-version: ["6.x", "5.x"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
+      - name: Build with dotnet
+        run: dotnet build --no-restore --configuration Release
+      - name: Test with dotnet
+        timeout-minutes: 5
+        env:
+          AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
+          AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
+        run: dotnet test --no-build --configuration Release --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}" --blame --blame-hang --blame-hang-timeout 1min --diag "TestResults-${{ matrix.dotnet-version }}/vstest_diagnostics.log"
+
+      - name: Upload dotnet test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-results-${{ matrix.dotnet-version }}
+          path: TestResults-${{ matrix.dotnet-version }}
+      - name: Post test results to GitHub
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: TestResults-${{ matrix.dotnet-version }}/*.trx
+          reporter: dotnet-trx

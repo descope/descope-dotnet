@@ -1,0 +1,20 @@
+# Top-most EditorConfig file.
+root = true
+
+# Section for C# files
+# All rules below apply only to .cs files
+[*.cs]
+
+#### Core EditorConfig Options ####
+
+# Indentation and spacing
+indent_style = space
+indent_size = 4
+
+# New line preferences
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Charset preference
+charset = utf-8

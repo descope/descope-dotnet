@@ -1,0 +1,28 @@
+name: Upload dotnet package
+
+on:
+  release:
+    types: [created]
+
+env:
+  PACKAGE_NAME: Descope
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.0.x" # SDK Version to use.
+          source-url: https://nuget.pkg.github.com/${{github.repository_owner}}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - run: dotnet build --configuration Release ${{ env.PACKAGE_NAME }}
+      - name: Create the package
+        run: dotnet pack --configuration Release ${{ env.PACKAGE_NAME }}
+      - name: Publish the package to GPR
+        run: dotnet nuget push ${{ env.PACKAGE_NAME }}/bin/Release/*.nupkg
