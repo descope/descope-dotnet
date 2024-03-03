@@ -133,7 +133,7 @@ namespace Descope.Test.Integration
                 else await _descopeClient.Auth.LogOutAll(testUser.AuthInfo.refreshJwt!);
 
                 // Try me again
-                await Task.Delay(200);
+                await Task.Delay(500);
                 async Task Act() => await _descopeClient.Auth.Me(testUser.AuthInfo.refreshJwt!);
                 DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
                 Assert.Contains("Expired due to logout", result.Message);
