@@ -4,7 +4,7 @@ The Descope SDK for .NET provides convenient access to the Descope user manageme
 
 ## Requirements
 
-The SDK supports .NET 5 and above
+The SDK supports `.NET 6` and `.NET 8`.
 
 ## Setup
 
