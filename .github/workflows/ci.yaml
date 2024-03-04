@@ -6,6 +6,8 @@ on:
       - main
   pull_request:
 
+concurrency: ci
+
 jobs:
   test:
     permissions:
