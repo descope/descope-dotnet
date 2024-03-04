@@ -24,7 +24,6 @@ namespace Descope.Internal
         public HttpClient(DescopeConfig descopeConfig)
         {
             _descopeConfig = descopeConfig;
-            // TODO: extract URL from project ID
             var baseUrl = descopeConfig.BaseURL ?? "https://api.descope.com";
 
             // init rest client

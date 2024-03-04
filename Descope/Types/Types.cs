@@ -150,17 +150,6 @@ namespace Descope
         Email, Sms, Whatsapp
     }
 
-
-
-
-
-
-
-
-
-
-
-
     public class UserResponse
     {
         [JsonPropertyName("loginIds")]

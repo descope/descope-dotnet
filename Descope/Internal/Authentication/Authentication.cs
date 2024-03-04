@@ -18,7 +18,6 @@ namespace Descope.Internal.Auth
         private const string ClaimPermissions = "permissions";
         private const string ClaimRoles = "roles";
 
-        // TODO: Support cookies
         public Authentication(IHttpClient httpClient)
         {
             _httpClient = httpClient;

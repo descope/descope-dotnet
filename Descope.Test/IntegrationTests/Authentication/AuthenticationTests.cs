@@ -111,8 +111,6 @@ namespace Descope.Test.Integration
             }
         }
 
-        // TODO: Test permissions and roles once available on via management
-
         [Fact]
         public async Task Authentication_MeAndLogout()
         {

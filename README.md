@@ -1,6 +1,6 @@
-# Descope SDK in C# for .NET
+# Descope SDK for .NET
 
-The Descope SDK for in C# for .NET provides convenient access to the Descope user management and authentication API for a backend written in .NET. You can read more on the [Descope Website](https://descope.com).
+The Descope SDK for .NET provides convenient access to the Descope user management and authentication API for a backend written in .NET. You can read more on the [Descope Website](https://descope.com).
 
 ## Requirements
 
@@ -137,12 +137,14 @@ make sure to pass in the tenant ID, otherwise leave as `null`:
 
 ```cs
 // You can validate specific permissions
-if (!descopeClient.Auth.ValidatePermissions(sessionToken, new List<string> { "Permission to validate" }, "optional-tenant-ID")) {
+if (!descopeClient.Auth.ValidatePermissions(sessionToken, new List<string> { "Permission to validate" }, "optional-tenant-ID"))
+{
     // Deny access
 }
 
 // Or validate roles directly
-if (!descopeClient.Auth.ValidateRoles(sessionToken, new List<string> { "Role to validate" }, "optional-tenant-ID")) {
+if (!descopeClient.Auth.ValidateRoles(sessionToken, new List<string> { "Role to validate" }, "optional-tenant-ID"))
+{
     // Deny access
 }
 

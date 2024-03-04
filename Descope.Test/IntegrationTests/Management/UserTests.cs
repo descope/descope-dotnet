@@ -618,7 +618,7 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(el.Link);
                 Assert.NotEmpty(el.PendingRef);
                 Assert.Equal(loginId, el.LoginId);
-                // TODO: Enable embedded authentication to test
+                // Note: Enable embedded authentication to test
                 // var eml = await _descopeClient.Management.User.GenerateEmbeddedLink(loginId);
                 // Assert.NotEmpty(eml);
             }
