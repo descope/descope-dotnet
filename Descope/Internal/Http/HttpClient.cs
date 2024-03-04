@@ -33,9 +33,9 @@ namespace Descope.Internal
             _client = new RestClient(options);
             _client.AddDefaultHeader("Accept", "application/json");
             _client.AddDefaultHeader("Content-Type", "application/json");
-            _client.AddDefaultHeader("x-descope-sdk-dotnet-version", SdkInfo.DotNetVersion);
             _client.AddDefaultHeader("x-descope-sdk-name", SdkInfo.Name);
             _client.AddDefaultHeader("x-descope-sdk-version", SdkInfo.Version);
+            _client.AddDefaultHeader("x-descope-sdk-dotnet-version", Environment.Version.ToString());
         }
 
         public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null)

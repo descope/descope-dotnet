@@ -63,7 +63,7 @@ namespace Descope
         /// <param name="accessKey">The accessKey cleartext to exchange</param>
         /// <param name="loginOptions">Optional login options for the exchange</param>
         /// <returns>A valid session token if successful</returns>
-        Task<Token> ExchangeAccessKey(string accessKey, LoginOptions? loginOptions = null);
+        Task<Token> ExchangeAccessKey(string accessKey, AccessKeyLoginOptions? loginOptions = null);
 
         /// <summary>
         /// Ensure a validated session token has been granted the specified permissions.

@@ -22,6 +22,5 @@ namespace Descope
     {
         public static string Name { get; } = "dotnet";
         public static string Version { get; } = "0.1.0";
-        public static string DotNetVersion { get; } = Environment.Version.ToString();
     }
 }

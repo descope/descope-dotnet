@@ -62,7 +62,7 @@ namespace Descope.Internal.Auth
             return await RefreshSession(refreshJwt);
         }
 
-        public async Task<Token> ExchangeAccessKey(string accessKey, LoginOptions? loginOptions = null)
+        public async Task<Token> ExchangeAccessKey(string accessKey, AccessKeyLoginOptions? loginOptions = null)
         {
             if (string.IsNullOrEmpty(accessKey)) throw new DescopeException("access key missing");
             var response = await _httpClient.Post<AccessKeyExchangeResponse>(Routes.AuthAccessKeyExchange, accessKey, new { loginOptions });

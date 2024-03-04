@@ -279,14 +279,8 @@ namespace Descope
 
     public class BatchUserPassword
     {
-        public string Cleartext { get; set; }
-        public BatchUserPasswordHashed Hashed { get; set; }
-
-        public BatchUserPassword(string cleartext, BatchUserPasswordHashed hashed)
-        {
-            this.Cleartext = cleartext;
-            this.Hashed = hashed;
-        }
+        public string? Cleartext { get; set; }
+        public BatchUserPasswordHashed? Hashed { get; set; }
     }
 
     public class BatchUserPasswordHashed
@@ -389,7 +383,7 @@ namespace Descope
         [JsonPropertyName("roles")]
         public List<string>? Roles { get; set; }
         [JsonPropertyName("tenantIds")]
-        public List<string>? TenantIDs { get; set; }
+        public List<string>? TenantIds { get; set; }
         [JsonPropertyName("ssoAppIDs")]
         public List<string>? SsoAppIds { get; set; }
         [JsonPropertyName("customAttributes")]
@@ -470,13 +464,12 @@ namespace Descope
         [JsonPropertyName("tenantId")]
         public string TenantId { get; set; }
         [JsonPropertyName("tenantName")]
-        public string TenantName { get; set; }
+        public string? TenantName { get; set; }
         [JsonPropertyName("roleNames")]
         public List<string>? RoleNames { get; set; }
-        public AssociatedTenant(string tenantId, string tenantName)
+        public AssociatedTenant(string tenantId)
         {
             TenantId = tenantId;
-            TenantName = tenantName;
         }
     }
 
@@ -593,6 +586,12 @@ namespace Descope
             ClientId = clientId;
             UserId = userId;
         }
+    }
+
+    public class AccessKeyLoginOptions
+    {
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
     }
 
     public class ProjectCloneResponse

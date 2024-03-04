@@ -15,18 +15,18 @@ namespace Descope.Internal.Management
 
         #region IUser Implementation
 
-        public async Task<UserResponse> Create(string loginId, UserRequest? request, bool sendInvite, InviteOptions? options, bool testUser)
+        public async Task<UserResponse> Create(string loginId, UserRequest? request, bool sendInvite, InviteOptions? inviteOptions, bool testUser)
         {
             request ??= new UserRequest();
-            var body = MakeCreateUserRequestBody(loginId, request, sendInvite, options, testUser);
+            var body = MakeCreateUserRequestBody(loginId, request, sendInvite, inviteOptions, testUser);
             var result = await _httpClient.Post<WrappedUserResponse>(Routes.UserCreate, _managementKey, body);
             return result.User;
         }
 
-        public async Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite, InviteOptions? options)
+        public async Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite, InviteOptions? inviteOptions)
         {
             batchUsers ??= new List<BatchUser>();
-            var body = MakeCreateBatchUsersRequestBody(batchUsers, sendInvite, options);
+            var body = MakeCreateBatchUsersRequestBody(batchUsers, sendInvite, inviteOptions);
             return await _httpClient.Post<BatchCreateUserResponse>(Routes.UserCreateBatch, _managementKey, body);
         }
 
@@ -329,16 +329,14 @@ namespace Descope.Internal.Management
         private static List<Dictionary<string, object>> MakeAssociatedTenantList(List<AssociatedTenant> tenants)
         {
             tenants ??= new List<AssociatedTenant>();
-            var dict = new List<Dictionary<string, object>>();
+            var list = new List<Dictionary<string, object>>();
             foreach (var tenant in tenants)
             {
-                dict.Add(new Dictionary<string, object>
-                {
-                    {"tenantId", tenant.TenantId},
-                    {"roleNames", tenant.RoleNames},
-                });
+                var dict = new Dictionary<string, object> { { "tenantId", tenant.TenantId } };
+                if (tenant.RoleNames != null) dict["roleNames"] = tenant.RoleNames;
+                list.Add(dict);
             };
-            return dict;
+            return list;
         }
 
         #endregion Internal

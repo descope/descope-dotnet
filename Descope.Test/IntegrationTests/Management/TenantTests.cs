@@ -105,7 +105,7 @@ namespace Descope.Test.Integration
 
                 // Load all and make sure it's gone
                 var tenants = await _descopeClient.Management.Tenant.LoadAll();
-                foreach (TenantResponse tenant in tenants)
+                foreach (var tenant in tenants)
                 {
                     Assert.NotEqual(id, tenant.Id);
                 }

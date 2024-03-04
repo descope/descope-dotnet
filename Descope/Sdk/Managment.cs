@@ -89,10 +89,10 @@ namespace Descope
         /// <param name="loginId">A login ID to identify the created user</param>
         /// <param name="request">Optional information about the user being created</param>
         /// <param name="sendInvite">Whether or not to send an invitation to the user</param>
-        /// <param name="options">Optional invite options used to send an invitation to the created user</param>
+        /// <param name="inviteOptions">Optional invite options used to send an invitation to the created user</param>
         /// <param name="testUser">Optionally create a test user</param>
         /// <returns>The created user</returns>
-        Task<UserResponse> Create(string loginId, UserRequest? request = null, bool sendInvite = false, InviteOptions? options = null, bool testUser = false);
+        Task<UserResponse> Create(string loginId, UserRequest? request = null, bool sendInvite = false, InviteOptions? inviteOptions = null, bool testUser = false);
 
         /// <summary>
         /// Create users in batch.
@@ -109,9 +109,9 @@ namespace Descope
         /// </summary>
         /// <param name="batchUsers">The list of users to create</param>
         /// <param name="sendInvite">Whether or not to send an invitation to the users</param>
-        /// <param name="options">Optional invite options used to send an invitation to the created users</param>
+        /// <param name="inviteOptions">Optional invite options used to send an invitation to the created users</param>
         /// <returns>A list of created users and a list of failures if occurred</returns>
-        Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite = false, InviteOptions? options = null);
+        Task<BatchCreateUserResponse> CreateBatch(List<BatchUser> batchUsers, bool sendInvite = false, InviteOptions? inviteOptions = null);
 
         /// <summary>
         /// Update an existing user.
