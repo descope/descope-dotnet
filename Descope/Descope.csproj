@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Management\**" />
+    <EmbeddedResource Remove="Management\**" />
+    <None Remove="Management\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="DTO\Authtentication\SignUpRequest.cs" />
+    <Compile Remove="DTO\Authtentication\UserRequest.cs" />
+    <Compile Remove="SDK\Auth\AccessKeyService.cs" />
+    <Compile Remove="SDK\Auth\IAccessKeyService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
+  </ItemGroup>
+
+</Project>
