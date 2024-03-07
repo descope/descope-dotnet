@@ -611,4 +611,39 @@ namespace Descope
             Description = description;
         }
     }
+
+    public class RoleResponse
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+        [JsonPropertyName("permissionNames")]
+        public List<string> PermissionNames { get; set; }
+        [JsonPropertyName("createdTime")]
+        public int CreatedTime { get; set; }
+        [JsonPropertyName("tenantId")]
+        public string? TenantId { get; set; }
+
+        public RoleResponse(string name, int createdTime, string? description = null, List<string>? permissionNames = null, string? tenantId = null)
+        {
+            Name = name;
+            Description = description;
+            PermissionNames ??= new List<string>();
+            CreatedTime = createdTime;
+            TenantId = tenantId;
+        }
+    }
+
+    public class RoleSearchOptions
+    {
+        [JsonPropertyName("tenantIds")]
+        public List<string>? TenantIds { get; set; }
+        [JsonPropertyName("roleNames")]
+        public List<string>? RoleNames { get; set; }
+        [JsonPropertyName("roleNameLike")]
+        public string? RoleNameLike { get; set; }
+        [JsonPropertyName("permissionNames")]
+        public List<string>? PermissionNames { get; set; }
+    }
 }
