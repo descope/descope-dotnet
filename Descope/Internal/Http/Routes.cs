@@ -96,6 +96,15 @@
 
         #endregion AccessKey
 
+        #region Permission
+
+        public const string PermissionCreate = "/v1/mgmt/permission/create";
+        public const string PermissionUpdate = "/v1/mgmt/permission/update";
+        public const string PermissionDelete = "/v1/mgmt/permission/delete";
+        public const string PermissionLoadAll = "/v1/mgmt/permission/all";
+
+        #endregion Permission
+
         #region Project
 
         public const string ProjectExport = "/v1/mgmt/project/export";

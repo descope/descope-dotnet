@@ -598,4 +598,17 @@ namespace Descope
             Tag = tag;
         }
     }
+
+    public class PermissionResponse
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+        public PermissionResponse(string name, string? description = null)
+        {
+            Name = name;
+            Description = description;
+        }
+    }
 }

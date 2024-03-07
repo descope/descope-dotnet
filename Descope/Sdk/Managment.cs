@@ -517,6 +517,47 @@ namespace Descope
     }
 
     /// <summary>
+    /// Provides functions for managing permissions in a project.
+    /// </summary>
+    public interface IPermission
+    {
+        /// <summary>
+        /// Create a new permission.
+        /// </summary>
+        /// <param name="name">Required to uniquely identify a permission</param>
+        /// <param name="description">Optional description to briefly explain</param>
+        Task Create(string name, string? description = null);
+
+        /// <summary>
+        /// Update an existing permission.
+        /// <para>
+        /// <b>IMPORTANT</b>: All parameters will override whatever values are currently set
+        /// in the existing permission. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the permission to modify</param>
+        /// <param name="newName">The updated name</param>
+        /// <param name="description">The updated description</param>
+        /// <returns></returns>
+        Task Update(string name, string newName, string? description = null);
+
+        /// <summary>
+        /// Delete an existing permission.
+        /// <para>
+        /// <b>IMPORTANT</b>: This action is irreversible. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the permission to delete</param>
+        Task Delete(string name);
+
+        /// <summary>
+        /// Load all permissions.
+        /// </summary>
+        /// <returns>A list of all available permissions</returns>
+        Task<List<PermissionResponse>> LoadAll();
+    }
+
+    /// <summary>
     /// Provide functions for manipulating valid JWT
     /// </summary>
     public interface IJwt
@@ -598,6 +639,11 @@ namespace Descope
         /// Provides functions for managing access keys in a project.
         /// </summary>
         public IAccessKey AccessKey { get; }
+
+        /// <summary>
+        /// Provides functions for managing permissions in a project.
+        /// </summary>
+        public IPermission Permission { get; }
 
         /// <summary>
         /// Provides functions for exporting and importing project settings, flows, styles, etc.
