@@ -96,6 +96,25 @@
 
         #endregion AccessKey
 
+        #region Permission
+
+        public const string PermissionCreate = "/v1/mgmt/permission/create";
+        public const string PermissionUpdate = "/v1/mgmt/permission/update";
+        public const string PermissionDelete = "/v1/mgmt/permission/delete";
+        public const string PermissionLoadAll = "/v1/mgmt/permission/all";
+
+        #endregion Permission
+
+        #region Role
+
+        public const string RoleCreate = "/v1/mgmt/role/create";
+        public const string RoleUpdate = "/v1/mgmt/role/update";
+        public const string RoleDelete = "/v1/mgmt/role/delete";
+        public const string RoleLoadAll = "/v1/mgmt/role/all";
+        public const string RoleSearchAll = "/v1/mgmt/role/search";
+
+        #endregion Role
+
         #region Project
 
         public const string ProjectExport = "/v1/mgmt/project/export";

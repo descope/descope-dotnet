@@ -517,6 +517,98 @@ namespace Descope
     }
 
     /// <summary>
+    /// Provides functions for managing permissions in a project.
+    /// </summary>
+    public interface IPermission
+    {
+        /// <summary>
+        /// Create a new permission.
+        /// </summary>
+        /// <param name="name">Required to uniquely identify a permission</param>
+        /// <param name="description">Optional description to briefly explain</param>
+        Task Create(string name, string? description = null);
+
+        /// <summary>
+        /// Update an existing permission.
+        /// <para>
+        /// <b>IMPORTANT</b>: All parameters will override whatever values are currently set
+        /// in the existing permission. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the permission to modify</param>
+        /// <param name="newName">The updated name</param>
+        /// <param name="description">The updated description</param>
+        Task Update(string name, string newName, string? description = null);
+
+        /// <summary>
+        /// Delete an existing permission.
+        /// <para>
+        /// <b>IMPORTANT</b>: This action is irreversible. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the permission to delete</param>
+        Task Delete(string name);
+
+        /// <summary>
+        /// Load all permissions.
+        /// </summary>
+        /// <returns>A list of all available permissions</returns>
+        Task<List<PermissionResponse>> LoadAll();
+    }
+
+    /// <summary>
+    /// Provides functions for managing roles in a project.
+    /// </summary>
+    public interface IRole
+    {
+        /// <summary>
+        /// Create a new role.
+        /// </summary>
+        /// <param name="name">Required to uniquely identify a role</param>
+        /// <param name="description">Optional description to briefly explain</param>
+        /// <param name="permissionNames">Optional list of permissions granted by this role</param>
+        /// <param name="tenantId">Optionally bind this role to a specific tenant/param>
+        Task Create(string name, string? description = null, List<string>? permissionNames = null, string? tenantId = null);
+
+        /// <summary>
+        /// Update an existing role.
+        /// <para>
+        /// <b>IMPORTANT</b>: All parameters will override whatever values are currently set
+        /// in the existing role. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the role to modify</param>
+        /// <param name="newName">The updated name</param>
+        /// <param name="description">The updated description</param>
+        /// <param name="permissionNames">Optional list of permissions granted by this role</param>
+        /// <param name="tenantId">Optionally bind this role to a specific tenant/param>
+        Task Update(string name, string newName, string? description = null, List<string>? permissionNames = null, string? tenantId = null);
+
+        /// <summary>
+        /// Delete an existing role.
+        /// <para>
+        /// <b>IMPORTANT</b>: This action is irreversible. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the role to delete</param>
+        /// <param name="tenantId">Optional ID of the tenant this role is bound to/param>
+        Task Delete(string name, string? tenantId = null);
+
+        /// <summary>
+        /// Load all roles.
+        /// </summary>
+        /// <returns>A list of all available roles</returns>
+        Task<List<RoleResponse>> LoadAll();
+
+        /// <summary>
+        /// Load all roles.
+        /// </summary>
+        /// <param name="options">Optional options to fine tune the search</param>
+        /// <returns>A list of found roles according to the given options</returns>
+        Task<List<RoleResponse>> SearchAll(RoleSearchOptions? options);
+    }
+
+    /// <summary>
     /// Provide functions for manipulating valid JWT
     /// </summary>
     public interface IJwt
@@ -598,6 +690,16 @@ namespace Descope
         /// Provides functions for managing access keys in a project.
         /// </summary>
         public IAccessKey AccessKey { get; }
+
+        /// <summary>
+        /// Provides functions for managing permissions in a project.
+        /// </summary>
+        public IPermission Permission { get; }
+
+        /// <summary>
+        /// Provides functions for managing roles in a project.
+        /// </summary>
+        public IRole Role { get; }
 
         /// <summary>
         /// Provides functions for exporting and importing project settings, flows, styles, etc.

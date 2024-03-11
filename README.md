@@ -33,7 +33,9 @@ These sections show how to use the SDK to perform API management functions. Befo
 1. [Manage Tenants](#manage-tenants)
 2. [Manage Users](#manage-users)
 3. [Manage Access Keys](#manage-access-keys)
-4. [Manage Project](#manage-project)
+4. [Manage Permissions](#manage-permissions)
+5. [Manage Roles](#manage-roles)
+6. [Manage Project](#manage-project)
 
 ---
 
@@ -451,6 +453,86 @@ var loginOptions = new AccessKeyLoginOptions
 	CustomClaims = new Dictionary<string, object> { {"k1": "v1"} },
 }
 var token = await descopeClient.Auth.ExchangeAccessKey("accessKey", loginOptions);
+```
+
+### Manage Permissions
+
+You can create, update, delete or load permissions:
+
+```cs
+try
+{
+    // You can optionally set a description for a permission.
+    var name = "My Permission";
+    var description = "Optional description to briefly explain what this permission allows.";
+    await descopeClient.Management.Permission.Create(name, description);
+
+    // Update will override all fields as is. Use carefully.
+    var newName = "My Updated Permission";
+    description = "A revised description";
+    await descopeClient.Management.Permission.Update(name, newName, description);
+
+    // Permission deletion cannot be undone. Use carefully.
+    await descopeClient.Management.Permission.Delete(newName);
+
+    // Load all permissions
+    var permissions = await descopeClient.Management.Permission.LoadAll();
+    foreach(var permission in permissions)
+    {
+        // Do something
+    }
+}
+catch (DescopeException e)
+{
+    // handle errors
+}
+```
+
+### Manage Roles
+
+You can create, update, delete or load roles:
+
+```cs
+try
+{
+    // You can optionally set a description and associated permission for a roles.
+    var name = "My Role";
+    var description = "Optional description to briefly explain what this role allows.";
+    var permissionNames = new List<string>{"My Updated Permission"};
+    var tenantId = "" // set here tenant ID value in order to create a role for a specific tenant
+    await descopeClient.Management.Role.Create(name, description, permissionNames, tenantId);
+
+    // Update will override all fields as is. Use carefully.
+    var newName = "My Updated Role";
+    description = "A revised description";
+    permissionNames.Add("Another Permission");
+    await descopeClient.Management.Role.Update(name, newName, description, permissionNames, tenantId);
+
+    // Role deletion cannot be undone. Use carefully.
+    await descopeClient.Management.Role.Delete(newName, tenantId);
+
+    // Load all roles
+    var roles = await descopeClient.Management.Role().LoadAll(context.Background());
+    foreach(var role in roles)
+    {
+        // Do something
+    }
+
+    // Search roles
+    roles = await descopeClient.Management.Role.Search(new RoleSearchOptions
+    {
+        TenantIds: new List<string>{"tenant1", "tenant2"},
+        RoleNames: new List<string>{"name1"},
+    });
+    foreach(var role in roles)
+    {
+        // Do something
+    }
+}
+catch (DescopeException e)
+{
+    // handle errors
+}
 ```
 
 ### Manage Project
