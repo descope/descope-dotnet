@@ -620,6 +620,18 @@ namespace Descope
         /// <param name="customClaims">The custom claims to be added to the JWT</param>
         /// <returns>An updated JWT</returns>
         Task<string> UpdateJwtWithCustomClaims(string jwt, Dictionary<string, object> customClaims);
+
+        /// <summary>
+        /// Impersonate another user
+        /// <para>
+	    /// The impersonator user must have the <c>Impersonation</c> permission in order for this request to work
+        /// </para>
+        /// </summary>
+        /// <param name="impersonatorId">The user ID performing the impersonation</param>
+        /// <param name="loginId">The login ID of the user being impersonated</param>
+        /// <param name="validateConcent">Whether to validate concent or not</param>
+        /// <returns>A refresh JWT for the impersonated user</returns>
+        Task<string> Impersonate(string impersonatorId, string loginId, bool validateConcent = false);
     }
 
     /// <summary>
@@ -690,6 +702,11 @@ namespace Descope
         /// Provides functions for managing access keys in a project.
         /// </summary>
         public IAccessKey AccessKey { get; }
+
+        /// <summary>
+        /// Provides functions for manipulating valid JWTs
+        /// </summary>
+        public IJwt Jwt { get; }
 
         /// <summary>
         /// Provides functions for managing permissions in a project.
