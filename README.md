@@ -455,6 +455,27 @@ var loginOptions = new AccessKeyLoginOptions
 var token = await descopeClient.Auth.ExchangeAccessKey("accessKey", loginOptions);
 ```
 
+### Manage and Manipulate JWTs
+
+You can update custom claims on a valid JWT or even impersonate a different user - as long as the
+impersonating user has the permission to do so.
+
+```cs
+try
+{
+    // add custom claims to a valid JWT
+    var updatedJwt = await _descopeClient.Management.Jwt.UpdateJwtWithCustomClaims(jwt, myCustomClaims);
+
+    // impersonate a user, assuming the user identified by `impersonatorId` has the `Impersonation` permission.
+    // the resulting JWT will have the actor (`act`) custom claim identifying the impersonator
+     var impersonatedJwt = await _descopeClient.Management.Jwt.Impersonate(impersonatorId, impersonatedLoginId);
+}
+catch (DescopeException e)
+{
+    // handle errors
+}
+```
+
 ### Manage Permissions
 
 You can create, update, delete or load permissions:

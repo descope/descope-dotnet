@@ -65,9 +65,10 @@ namespace Descope.Test.Integration
                 // Have user1 impersonate user2
                 var jwt = await _descopeClient.Management.Jwt.Impersonate(userId1, loginId2);
 
-                // Make sure the session is valid
+                // Validate the impersonation data
                 var token = await _descopeClient.Auth.ValidateSession(jwt);
                 Assert.Equal(userId2, token.Id);
+                Assert.Contains(userId1, token.Claims["act"].ToString());
             }
             finally
             {
