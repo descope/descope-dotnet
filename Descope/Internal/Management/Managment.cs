@@ -5,6 +5,7 @@ namespace Descope.Internal.Management
         public ITenant Tenant => _tenant;
         public IUser User => _user;
         public IAccessKey AccessKey => _accessKey;
+        public IJwt Jwt => _jwt;
         public IPermission Permission => _permission;
         public IRole Role => _role;
         public IProject Project => _project;
@@ -12,6 +13,7 @@ namespace Descope.Internal.Management
         private readonly Tenant _tenant;
         private readonly User _user;
         private readonly AccessKey _accessKey;
+        private readonly Jwt _jwt;
         private readonly Permission _permission;
         private readonly Role _role;
         private readonly Project _project;
@@ -21,6 +23,7 @@ namespace Descope.Internal.Management
             _tenant = new Tenant(client, managementKey);
             _user = new User(client, managementKey);
             _accessKey = new AccessKey(client, managementKey);
+            _jwt = new Jwt(client, managementKey);
             _permission = new Permission(client, managementKey);
             _role = new Role(client, managementKey);
             _project = new Project(client, managementKey);

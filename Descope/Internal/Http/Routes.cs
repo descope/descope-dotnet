@@ -81,6 +81,7 @@
         #region JWT
 
         public const string JwtUpdate = "/v1/mgmt/jwt/update";
+        public const string Impersonate = "/v1/mgmt/impersonate";
 
         #endregion JWT
 

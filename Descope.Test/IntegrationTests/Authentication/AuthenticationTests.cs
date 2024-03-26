@@ -12,7 +12,6 @@ namespace Descope.Test.Integration
             string? loginId = null;
             try
             {
-                await _descopeClient.Management.User.DeleteAllTestUsers();
                 // Create a logged in test user
                 var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
                 loginId = testUser.User.LoginIds.First();
