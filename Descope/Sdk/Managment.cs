@@ -609,6 +609,30 @@ namespace Descope
     }
 
     /// <summary>
+    /// Provides functions for managing password policy for a project or a tenant.
+    /// </summary>
+    public interface IPasswordSettings
+    {
+        /// <summary>
+        /// Get password settings for a project or tenant.
+        /// </summary>
+        /// <param name="tenantId">Optionally scope the settings to a tenant</param>
+        /// <returns>The current password settings</returns>
+        Task<PasswordSettings> GetSettings(string? tenantId = null);
+
+        /// <summary>
+        /// Configure Password settings for a project or a tenant manually.
+        /// <para>
+        /// <b>NOTE:</b> The settings parameter is taken as is and overrides any current settings.
+        /// Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="settings">The settings to set - taken as is</param>
+        /// <param name="tenantId">Optionally scope the settings to a tenant</param>
+        Task ConfigureSettings(PasswordSettings settings, string? tenantId = null);
+    }
+
+    /// <summary>
     /// Provide functions for manipulating valid JWT
     /// </summary>
     public interface IJwt
@@ -624,7 +648,7 @@ namespace Descope
         /// <summary>
         /// Impersonate another user
         /// <para>
-	    /// The impersonator user must have the <c>Impersonation</c> permission in order for this request to work
+        /// The impersonator user must have the <c>Impersonation</c> permission in order for this request to work
         /// </para>
         /// </summary>
         /// <param name="impersonatorId">The user ID performing the impersonation</param>
@@ -702,6 +726,11 @@ namespace Descope
         /// Provides functions for managing access keys in a project.
         /// </summary>
         public IAccessKey AccessKey { get; }
+
+        /// <summary>
+        /// Provides functions for managing password policy for a project or a tenant.
+        /// </summary>
+        public IPasswordSettings Password { get; }
 
         /// <summary>
         /// Provides functions for manipulating valid JWTs

@@ -646,4 +646,32 @@ namespace Descope
         [JsonPropertyName("permissionNames")]
         public List<string>? PermissionNames { get; set; }
     }
+
+    public class PasswordSettings
+    {
+        [JsonPropertyName("enabled")]
+        public bool Enabled { get; set; }
+        [JsonPropertyName("minLength")]
+        public int MinLength { get; set; }
+        [JsonPropertyName("lowercase")]
+        public bool Lowercase { get; set; }
+        [JsonPropertyName("uppercase")]
+        public bool Uppercase { get; set; }
+        [JsonPropertyName("number")]
+        public bool Number { get; set; }
+        [JsonPropertyName("nonAlphanumeric")]
+        public bool NonAlphanumeric { get; set; }
+        [JsonPropertyName("expiration")]
+        public bool Expiration { get; set; }
+        [JsonPropertyName("expirationWeeks")]
+        public int ExpirationWeeks { get; set; }
+        [JsonPropertyName("reuse")]
+        public bool Reuse { get; set; }
+        [JsonPropertyName("reuseAmount")]
+        public int ReuseAmount { get; set; }
+        [JsonPropertyName("lock")]
+        public bool Lock { get; set; }
+        [JsonPropertyName("lockAttempts")]
+        public int LockAttempts { get; set; }
+    }
 }

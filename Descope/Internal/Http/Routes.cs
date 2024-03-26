@@ -78,6 +78,12 @@
 
         #endregion User
 
+        #region Password
+
+        public const string PasswordSettings = "/v1/mgmt/password/settings";
+
+        #endregion Password
+
         #region JWT
 
         public const string JwtUpdate = "/v1/mgmt/jwt/update";
