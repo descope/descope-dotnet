@@ -7,9 +7,9 @@ namespace Descope.Internal
     {
         DescopeConfig DescopeConfig { get; set; }
 
-        Task<TResponse> Get<TResponse>(string resource, string? pswd = null);
+        Task<TResponse> Get<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null);
 
-        Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null);
+        Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null, Dictionary<string, string?>? queryParams = null);
 
         Task<TResponse> Delete<TResponse>(string resource, string pswd);
     }
@@ -37,14 +37,14 @@ namespace Descope.Internal
             _client.AddDefaultHeader("x-descope-sdk-dotnet-version", Environment.Version.ToString());
         }
 
-        public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null)
+        public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null)
         {
-            return await Call<TResponse>(resource, Method.Get, pswd);
+            return await Call<TResponse>(resource, Method.Get, pswd, queryParams: queryParams);
         }
 
-        public async Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null)
+        public async Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null, Dictionary<string, string?>? queryParams = null)
         {
-            return await Call<TResponse>(resource, Method.Post, pswd, body);
+            return await Call<TResponse>(resource, Method.Post, pswd, body: body, queryParams: queryParams);
         }
 
         public async Task<TResponse> Delete<TResponse>(string resource, string? pswd = null)
@@ -52,7 +52,7 @@ namespace Descope.Internal
             return await Call<TResponse>(resource, Method.Delete, pswd);
         }
 
-        private async Task<TResponse> Call<TResponse>(string resource, Method method, string? pswd, object? body = null)
+        private async Task<TResponse> Call<TResponse>(string resource, Method method, string? pswd, object? body = null, Dictionary<string, string?>? queryParams = null)
         {
             var request = new RestRequest(resource, method);
 
@@ -61,10 +61,20 @@ namespace Descope.Internal
             if (!string.IsNullOrEmpty(pswd)) bearer = $"{bearer}:{pswd}";
             request.AddHeader("Authorization", "Bearer " + bearer);
 
+            // Add body if available
             if (body != null)
             {
                 var jsonBody = JsonSerializer.Serialize(body);
                 request.AddJsonBody(jsonBody);
+            }
+
+            // Add query params if available
+            if (queryParams != null)
+            {
+                foreach (var param in queryParams)
+                {
+                    request.AddQueryParameter(param.Key, param.Value);
+                }
             }
 
             var response = await _client.ExecuteAsync<TResponse>(request);

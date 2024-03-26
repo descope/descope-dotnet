@@ -455,6 +455,43 @@ var loginOptions = new AccessKeyLoginOptions
 var token = await descopeClient.Auth.ExchangeAccessKey("accessKey", loginOptions);
 ```
 
+### Manage Password Settings
+
+You can manage password settings for your project or tenants.
+
+```cs
+try
+{
+    // You can get password settings for the project or for a specific tenant ID.
+    var settings = await _descopeClient.Management.Password.GetSettings("optional-tenant-id");
+
+    // You can configure the project level settings, by leaving the optional tenant ID empty,
+    // or tenant level password settings by providing a tenant ID.
+    // The update is performed as-is in an overriding manner - use carefully.
+    var updatedSettings = new PasswordSettings
+    {
+        Enabled = true,
+        MinLength = 8,
+        Lowercase = true,
+        Uppercase = true,
+        Number = true,
+        NonAlphanumeric = true,
+        Expiration = true,
+        ExpirationWeeks = 3,
+        Reuse = true,
+        ReuseAmount = 3,
+        Lock = true,
+        LockAttempts = 5,
+    };
+    await _descopeClient.Management.Password.ConfigureSettings(updatedSettings, "optional-tenant-id");
+
+}
+catch (DescopeException e)
+{
+    // handle errors
+}
+```
+
 ### Manage and Manipulate JWTs
 
 You can update custom claims on a valid JWT or even impersonate a different user - as long as the

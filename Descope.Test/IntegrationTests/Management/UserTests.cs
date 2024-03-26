@@ -540,11 +540,11 @@ namespace Descope.Test.Integration
                 Assert.False(createResult.Password);
 
                 // Set a temporary password
-                await _descopeClient.Management.User.SetActivePassword(loginId, "abCD123#$");
+                await _descopeClient.Management.User.SetActivePassword(loginId, "abCD123#$abCD123#$");
                 var loadResult = await _descopeClient.Management.User.Load(loginId);
                 Assert.True(loadResult.Password);
                 await _descopeClient.Management.User.ExpirePassword(loginId);
-                await _descopeClient.Management.User.SetTemporaryPassword(loginId, "abCD123#$");
+                await _descopeClient.Management.User.SetTemporaryPassword(loginId, "abCD123#$abCD123#$");
             }
             finally
             {
