@@ -517,6 +517,62 @@ namespace Descope
     }
 
     /// <summary>
+    /// Provides functions for configuring SSO for a project.
+    /// </summary>
+    public interface ISso
+    {
+        /// <summary>
+        /// Load all tenant SSO setting.
+        /// </summary>
+        /// <param name="tenantId">Which tenant to load settings for</param>
+        /// <returns>The tenant SSO settings</returns>
+        Task<SsoTenantSettings> LoadSettings(string tenantId);
+
+        /// <summary>
+        /// Configure SSO SAML settings for a tenant manually.
+        /// </summary>
+        /// <param name="tenantId">Which tenant to configure SAML for</param>
+        /// <param name="settings">The settings to set</param>
+        /// <param name="redirectUrl">Optional redirect URL, if not given it has to be set when
+        /// starting an SSO authentication via the request. Leaving empty will override whatever is currently set.
+        /// </param>
+        /// <param name="domains">Optional list of domains is used to map users to this tenant when authenticating via SSO.
+        /// Leaving empty will override whatever is currently set.
+        /// </param>
+        Task ConfigureSAMLSettings(string tenantId, SsoSamlSettings settings, string? redirectUrl = null, List<string>? domains = null);
+
+        /// <summary>
+        /// Configure SSO SAML settings for a tenant by fetching them from an IDP metadata URL.
+        /// </summary>
+        /// <param name="tenantId">Which tenant to configure SAML for</param>
+        /// <param name="settings">The settings to set</param>
+        /// <param name="redirectUrl">Optional redirect URL, if not given it has to be set when
+        /// starting an SSO authentication via the request. Leaving empty will override whatever is currently set.
+        /// </param>
+        /// <param name="domains">Optional list of domains is used to map users to this tenant when authenticating via SSO.
+        /// Leaving empty will override whatever is currently set.
+        /// </param>
+        Task ConfigureSamlSettingsByMetadata(string tenantId, SsoSamlSettingsByMetadata settings, string? redirectUrl = null, List<string>? domains = null);
+
+        /// <summary>
+        /// Configure SSO OIDC settings for a tenant manually.
+        /// </summary>
+        /// <param name="tenantId">Which tenant to configure OIDC for</param>
+        /// <param name="settings">The settings to set</param>
+        /// <param name="domains">Optional list of domains is used to map users to this tenant when authenticating via SSO.
+        /// Leaving empty will override whatever is currently set.
+        /// </param>
+        Task ConfigureOidcSettings(string tenantId, SsoOidcSettings settings, List<string>? domains = null);
+
+        /// <summary>
+        /// Delete SSO settings for a tenant. The operation cannot be undone - user carefully.
+        /// </summary>
+        /// <param name="tenantId">Which tenant to delete SSO settings for</param>
+        /// <returns></returns>
+        Task DeleteSettings(string tenantId);
+    }
+
+    /// <summary>
     /// Provides functions for managing permissions in a project.
     /// </summary>
     public interface IPermission
@@ -726,6 +782,11 @@ namespace Descope
         /// Provides functions for managing access keys in a project.
         /// </summary>
         public IAccessKey AccessKey { get; }
+
+        /// <summary>
+        /// Provides functions for configuring SSO for a project.
+        /// </summary>
+        public ISso Sso { get; }
 
         /// <summary>
         /// Provides functions for managing password policy for a project or a tenant.

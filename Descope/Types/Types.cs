@@ -1,5 +1,6 @@
 
 using System.Text.Json.Serialization;
+using Descope.Internal.Management;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Descope
@@ -464,24 +465,27 @@ namespace Descope
 
     public class TenantResponse
     {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
         [JsonPropertyName("id")]
         public string Id { get; set; }
-
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
         [JsonPropertyName("selfProvisioningDomains")]
-        public List<string>? SelfProvisioningDomains { get; set; }
-
+        public List<string> SelfProvisioningDomains { get; set; }
         [JsonPropertyName("customAttributes")]
-        public Dictionary<string, object>? CustomAttributes { get; set; }
+        public Dictionary<string, object> CustomAttributes { get; set; }
+        [JsonPropertyName("authType")]
+        public string AuthType { get; set; }
+        [JsonPropertyName("domains")]
+        public List<string> Domains { get; set; }
 
-        public TenantResponse(string Id, string Name, List<string>? SelfProvisioningDomains = null, Dictionary<string, object>? CustomAttributes = null)
+        public TenantResponse(string id, string name, List<string>? selfProvisioningDomains, Dictionary<string, object>? customAttributes, string authType, List<string>? domains)
         {
-            this.Id = Id;
-            this.Name = Name;
-            this.SelfProvisioningDomains = SelfProvisioningDomains;
-            this.CustomAttributes = CustomAttributes;
+            Id = id;
+            Name = name;
+            SelfProvisioningDomains = selfProvisioningDomains ?? new List<string>();
+            CustomAttributes = customAttributes ?? new Dictionary<string, object>();
+            AuthType = authType;
+            Domains = domains ?? new List<string>();
         }
     }
 
@@ -673,5 +677,194 @@ namespace Descope
         public bool Lock { get; set; }
         [JsonPropertyName("lockAttempts")]
         public int LockAttempts { get; set; }
+    }
+
+    public class RoleMapping
+    {
+        public List<string> Groups { get; set; }
+        public string Role { get; set; }
+        public RoleMapping(List<string> groups, string role)
+        {
+            Groups = groups;
+            Role = role;
+        }
+    }
+
+    public class SsoSamlSettings
+    {
+        [JsonPropertyName("idpURL")]
+        public string IdpUrl { get; set; }
+        [JsonPropertyName("idpEntityId")]
+        public string IdpEntityId { get; set; }
+        [JsonPropertyName("idpCert")]
+        public string IdpCertificate { get; set; }
+        [JsonPropertyName("idpMetadataUrl")]
+        public AttributeMapping? AttributeMapping { get; set; }
+        [JsonPropertyName("roleMappings")]
+        public List<RoleMapping>? RoleMappings { get; set; }
+        public SsoSamlSettings(string idpUrl, string idpEntityId, string idpCertificate)
+        {
+            IdpUrl = idpUrl;
+            IdpEntityId = idpEntityId;
+            IdpCertificate = idpCertificate;
+        }
+    }
+
+    public class SsoSamlSettingsByMetadata
+    {
+        [JsonPropertyName("idpMetadataUrl")]
+        public string IdpMetadataUrl { get; set; }
+        [JsonPropertyName("attributeMapping")]
+        public AttributeMapping? AttributeMapping { get; set; }
+        [JsonPropertyName("roleMappings")]
+        public List<RoleMapping>? RoleMappings { get; set; }
+        public SsoSamlSettingsByMetadata(string idpMetadataUrl)
+        {
+            IdpMetadataUrl = idpMetadataUrl;
+        }
+    }
+
+    public class RoleItem
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        public RoleItem(string id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+    }
+
+    public class GroupsMapping
+    {
+        [JsonPropertyName("role")]
+        public RoleItem? Role { get; set; }
+        [JsonPropertyName("groups")]
+        public List<string>? Groups { get; set; }
+    }
+
+    // Represents a SAML mapping between Descope and IDP user attributes
+    public class AttributeMapping
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [JsonPropertyName("givenName")]
+        public string? GivenName { get; set; }
+        [JsonPropertyName("middleName")]
+        public string? MiddleName { get; set; }
+        [JsonPropertyName("familyName")]
+        public string? FamilyName { get; set; }
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+        [JsonPropertyName("phoneNumber")]
+        public string? PhoneNumber { get; set; }
+        [JsonPropertyName("group")]
+        public string? Group { get; set; }
+        [JsonPropertyName("customAttributes")]
+        public Dictionary<string, string>? CustomAttributes { get; set; }
+    }
+
+    public class SsoSamlSettingsResponse
+    {
+        [JsonPropertyName("idpEntityId")]
+        public string? IdpEntityId { get; set; }
+        [JsonPropertyName("idpSSOUrl")]
+        public string? IdpSsoUrl { get; set; }
+        [JsonPropertyName("idpCertificate")]
+        public string? IdpCertificate { get; set; }
+        [JsonPropertyName("idpMetadataUrl")]
+        public string? IdpMetadataUrl { get; set; }
+        [JsonPropertyName("spEntityId")]
+        public string? SpEntityId { get; set; }
+        [JsonPropertyName("spACSUrl")]
+        public string? SpAcsUrl { get; set; }
+        [JsonPropertyName("spCertificate")]
+        public string? SpCertificate { get; set; }
+        [JsonPropertyName("attributeMapping")]
+        public AttributeMapping? AttributeMapping { get; set; }
+        [JsonPropertyName("groupsMapping")]
+        public List<GroupsMapping>? GroupsMapping { get; set; }
+        [JsonPropertyName("redirectUrl")]
+        public string? RedirectUrl { get; set; }
+    }
+
+    public class OidcAttributeMapping
+    {
+        [JsonPropertyName("loginId")]
+        public string? LoginID { get; set; }
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [JsonPropertyName("givenName")]
+        public string? GivenName { get; set; }
+        [JsonPropertyName("middleName")]
+        public string? MiddleName { get; set; }
+        [JsonPropertyName("familyName")]
+        public string? FamilyName { get; set; }
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+        [JsonPropertyName("verifiedEmail")]
+        public string? VerifiedEmail { get; set; }
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+        [JsonPropertyName("phoneNumber")]
+        public string? PhoneNumber { get; set; }
+        [JsonPropertyName("verifiedPhone")]
+        public string? VerifiedPhone { get; set; }
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+    }
+
+    public class SsoOidcSettings
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [JsonPropertyName("clientId")]
+        public string? ClientId { get; set; }
+        [JsonPropertyName("clientSecret")]
+        public string? ClientSecret { get; set; } // will be empty on response
+        [JsonPropertyName("redirectUrl")]
+        public string? RedirectUrl { get; set; }
+        [JsonPropertyName("authUrl")]
+        public string? AuthUrl { get; set; }
+        [JsonPropertyName("tokenUrl")]
+        public string? TokenUrl { get; set; }
+        [JsonPropertyName("userDataUrl")]
+        public string? UserDataUrl { get; set; }
+        [JsonPropertyName("scope")]
+        public List<string>? Scope { get; set; }
+        [JsonPropertyName("JWKsUrl")]
+        public string? JwksUrl { get; set; }
+        [JsonPropertyName("userAttrMapping")]
+        public OidcAttributeMapping? AttributeMapping { get; set; }
+        [JsonPropertyName("manageProviderTokens")]
+        public bool ManageProviderTokens { get; set; }
+        [JsonPropertyName("callbackDomain")]
+        public string? CallbackDomain { get; set; }
+        [JsonPropertyName("prompt")]
+        public List<string>? Prompt { get; set; }
+        [JsonPropertyName("grantType")]
+        public string? GrantType { get; set; }
+        [JsonPropertyName("issuer")]
+        public string? Issuer { get; set; }
+    }
+
+    public class SsoTenantSettings
+    {
+        [JsonPropertyName("tenant")]
+        public TenantResponse Tenant { get; set; }
+        [JsonPropertyName("saml")]
+        public SsoSamlSettingsResponse Saml { get; set; }
+        [JsonPropertyName("oidc")]
+        public SsoOidcSettings Oidc { get; set; }
+        public SsoTenantSettings(TenantResponse tenant, SsoSamlSettingsResponse saml, SsoOidcSettings oidc)
+        {
+            Tenant = tenant;
+            Saml = saml;
+            Oidc = oidc;
+        }
     }
 }
