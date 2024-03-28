@@ -103,6 +103,16 @@
 
         #endregion AccessKey
 
+        #region SSO
+
+        public const string SsoLoadSettings = "/v2/mgmt/sso/settings";
+        public const string SsoSetSaml = "/v1/mgmt/sso/saml";
+        public const string SsoSetSamlByMetadata = "/v1/mgmt/sso/saml/metadata";
+        public const string SsoSetOidc = "/v1/mgmt/sso/oidc";
+        public const string SsoDeleteSettings = "/v1/mgmt/sso/settings";
+
+        #endregion SSO
+
         #region Permission
 
         public const string PermissionCreate = "/v1/mgmt/permission/create";
