@@ -11,7 +11,7 @@ namespace Descope.Internal
 
         Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null, Dictionary<string, string?>? queryParams = null);
 
-        Task<TResponse> Delete<TResponse>(string resource, string pswd);
+        Task<TResponse> Delete<TResponse>(string resource, string pswd, Dictionary<string, string?>? queryParams = null);
     }
 
     public class HttpClient : IHttpClient
@@ -47,9 +47,9 @@ namespace Descope.Internal
             return await Call<TResponse>(resource, Method.Post, pswd, body: body, queryParams: queryParams);
         }
 
-        public async Task<TResponse> Delete<TResponse>(string resource, string? pswd = null)
+        public async Task<TResponse> Delete<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null)
         {
-            return await Call<TResponse>(resource, Method.Delete, pswd);
+            return await Call<TResponse>(resource, Method.Delete, pswd, queryParams: queryParams);
         }
 
         private async Task<TResponse> Call<TResponse>(string resource, Method method, string? pswd, object? body = null, Dictionary<string, string?>? queryParams = null)

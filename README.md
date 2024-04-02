@@ -111,7 +111,7 @@ catch (DescopeException e)
 // have the session validated and automatically refreshed when expired
 try
 {
-    var sessionToken := descopeClient.Auth.ValidateAndRefreshSession(sessionJwt, refreshJwt);
+    var sessionToken = descopeClient.Auth.ValidateAndRefreshSession(sessionJwt, refreshJwt);
 }
 catch  (DescopeException e)
 {
@@ -453,6 +453,65 @@ var loginOptions = new AccessKeyLoginOptions
 	CustomClaims = new Dictionary<string, object> { {"k1": "v1"} },
 }
 var token = await descopeClient.Auth.ExchangeAccessKey("accessKey", loginOptions);
+```
+
+### Manage SSO Setting
+
+You can manage SSO (SAML or OIDC) settings for a specific tenant.
+
+```cs
+try
+{
+    // Load all tenant SSO settings
+    var ssoSettings = await descopeClient.Management.Sso.LoadSettings("tenant-id");
+
+    // Configure tenant SSO by OIDC settings
+    var oidcSettings = new SsoOidcSettings{...};
+    await descopeClient.Management.Sso.ConfigureOidcSettings("tenant-id", oidcSettings);
+    // OR
+    // Load all tenant SSO settings and use them to configure OIDC settings
+    ssoSettings = await descopeClient.Management.Sso.LoadSettings("tenant-id");
+    ssoSettings.Oidc.Name = "my prOvider";
+    ssoSettings.Oidc.AuthURL = authorizeEndpoint;
+    ...
+    ssoSettings.Oidc.Scope = new List<string>{"openid", "profile", "email"};
+    await descopeClient.Management.Sso.ConfigureOidcSettings("tenant-id", ssoSettings.Oidc);
+
+    // Configure tenant SSO by SAML settings
+    var tenantId = "tenant-id"; // Which tenant this configuration is for
+    var idpURL = "https://idp.com";
+    var entityID = "my-idp-entity-id";
+    var idpCert = "<your-cert-here>";
+    var redirectURL = "https://my-app.com/handle-saml"; // Global redirect URL for SSO/SAML
+    var domain = "domain.com"; // Users logging in from this domain will be logged in to this tenant
+    var samlSettings = SsoSamlSettings(idpURL, entityID, idpCert) {
+        AttributeMapping: new AttributeMapping{Email: "myEmail", ..},
+        RoleMappings: new List<RoleMapping>{...},
+    };
+    await descopeClient.Management.Sso.ConfigureSAMLSettings(tenantId, samlSettings, redirectURL, domain);
+
+    // Alternatively, configure using an SSO SAML metadata URL
+    var samlSettings = new SsoSamlSettingsByMetadata ("https://idp.com/my-idp-metadata") {
+        AttributeMapping: new AttributeMapping{Email: "myEmail", ..},
+        RoleMappings: new List<RoleMapping>{...},
+    };
+    await descopeClient.Management.Sso.ConfigureSAMLSettingsByMetadata(tenantId, samlSettings, redirectURL, domain);
+
+    // To delete SSO settings, call the following method
+    await descopeClient.Management.Sso.DeleteSettings("tenant-id");
+}
+catch (DescopeException e)
+{
+    // handle errors
+}
+```
+
+Note: Certificates should have a similar structure to:
+
+```
+-----BEGIN CERTIFICATE-----
+Certifcate contents
+-----END CERTIFICATE-----
 ```
 
 ### Manage Password Settings
