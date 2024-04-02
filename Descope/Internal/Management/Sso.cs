@@ -21,12 +21,6 @@ namespace Descope.Internal.Management
 
         public async Task ConfigureSAMLSettings(string tenantId, SsoSamlSettings settings, string? redirectUrl = null, List<string>? domains = null)
         {
-            Utils.EnforceRequiredArgs(
-                ("tenantId", tenantId),
-                ("IdpUrl", settings.IdpUrl),
-                ("IdpCertificate", settings.IdpCertificate),
-                ("IdpEntityId", settings.IdpEntityId));
-
             var body = new
             {
                 tenantId,

@@ -692,13 +692,13 @@ namespace Descope
 
     public class SsoSamlSettings
     {
-        [JsonPropertyName("idpURL")]
+        [JsonPropertyName("idpUrl")]
         public string IdpUrl { get; set; }
         [JsonPropertyName("idpEntityId")]
         public string IdpEntityId { get; set; }
         [JsonPropertyName("idpCert")]
         public string IdpCertificate { get; set; }
-        [JsonPropertyName("idpMetadataUrl")]
+        [JsonPropertyName("attributeMapping")]
         public AttributeMapping? AttributeMapping { get; set; }
         [JsonPropertyName("roleMappings")]
         public List<RoleMapping>? RoleMappings { get; set; }
