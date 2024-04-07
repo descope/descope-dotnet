@@ -1,3 +1,8 @@
 {
-    "xml.format.maxLineWidth": 0
+    "xml.format.maxLineWidth": 0,
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#3A2B16",
+        "titleBar.activeBackground": "#513C1E",
+        "titleBar.activeForeground": "#FCFAF7"
+    }
 }
