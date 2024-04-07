@@ -13,6 +13,7 @@ namespace Descope.Test.Integration
             await _descopeClient.Management.Project.Import(imported_project);
         }
 
+        [Fact]
         public async Task Project_Rename()
         {
             var name = Guid.NewGuid().ToString().Split("-").First();
