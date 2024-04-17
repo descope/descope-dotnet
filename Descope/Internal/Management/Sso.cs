@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Descope.Internal.Management
+﻿namespace Descope.Internal.Management
 {
     internal class Sso : ISso
     {

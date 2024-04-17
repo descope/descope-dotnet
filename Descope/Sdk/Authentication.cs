@@ -19,14 +19,49 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using a SSO.
+    /// <para>
+    /// Use the Descope console to configure your SSO details in order for this method to work properly.
+    /// </para>
+    /// </summary>
+    public interface ISsoAuth
+    {
+        /// <summary>
+        /// Initiate a login flow based on tenant configuration (SAML/OIDC).
+        /// <para>
+        /// After the redirect chain concludes, finalize the authentication passing the
+        /// received code the <c>Exchange</c> function.
+        /// </para>
+        /// </summary>
+        /// <param name="tenant">The tenant ID or name, or an email address belonging to a tenant domain</param>
+        /// <param name="redirectUrl">An optional parameter to generate the SSO link. If not given, the project default will be used.</param>
+        /// <param name="prompt">Relevant only in case tenant configured with AuthType OIDC</param>
+        /// <param name="loginOptions">Require additional behaviors when authenticating a user.</param>
+        /// <returns>The redirect URL that starts the SSO redirect chain</returns>
+        Task<string> Start(string tenant, string? redirectUrl = null, string? prompt = null, LoginOptions? loginOptions = null);
+
+        /// <summary>
+        /// Finalize SSO authentication by exchanging the received <c>code</c> with an <c>AuthenticationResponse</c>
+        /// </summary>
+        /// <param name="code"> The code appended to the returning URL via the <c>code</c> URL parameter.</param>
+        /// <returns>An <c>AuthenticationResponse</c> value upon successful exchange.</returns>
+        Task<AuthenticationResponse> Exchange(string code);
+    }
+
+    /// <summary>
     /// Provides various APIs for authenticating and authorizing users of a Descope project.
     /// </summary>
     public interface IAuthentication
     {
         /// <summary>
-        /// Provides functions for authenticating users using OTP (one-time password)
+        /// Authenticate a user using OTP (one-time password).
         /// </summary>
         public IOtp Otp { get; }
+
+        /// <summary>
+        /// Authenticate a user using a SSO.
+        /// </summary>
+        public ISsoAuth Sso { get; }
 
         /// <summary>
         /// Validate a session JWT.
