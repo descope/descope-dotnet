@@ -8,8 +8,10 @@ namespace Descope.Internal.Auth
     public class Authentication : IAuthentication
     {
         public IOtp Otp { get => _otp; }
+        public ISsoAuth Sso { get => _sso; }
 
         private readonly Otp _otp;
+        private readonly Sso _sso;
 
         private readonly IHttpClient _httpClient;
         private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
@@ -22,6 +24,7 @@ namespace Descope.Internal.Auth
         {
             _httpClient = httpClient;
             _otp = new Otp(httpClient);
+            _sso = new Sso(httpClient);
         }
 
         public async Task<Token> ValidateSession(string sessionJwt)

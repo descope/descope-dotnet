@@ -25,6 +25,7 @@ var descopeClient = new DescopeClient(config);
 These sections show how to use the SDK to perform various authentication/authorization functions:
 
 1. [OTP Authentication](#otp-authentication)
+2. [SSO Authentication](#sso-saml--oidc)
 
 ## Management Functions
 
@@ -72,6 +73,40 @@ The user will receive a code using the selected delivery method. Verify that cod
 try
 {
     var authInfo = await descopeClient.Auth.Otp.VerifyCode(DeliveryMethod.Email, loginId, code);
+}
+catch
+{
+    // handle error
+}
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### SSO (SAML / OIDC)
+
+Users can authenticate to a specific tenant using SAML or OIDC. Configure your SSO (SAML / OIDC) settings on the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:
+
+```cs
+// Choose which tenant to log into
+// If configured globally, the redirect URL is optional. If provided however, it will be used
+// instead of any global configuration.
+// Redirect the user to the returned URL to start the SSO SAML/OIDC redirect chain
+try
+{
+    var redirectUrl = await descopeClient.Auth.Sso.Start(tenant: "my-tenant-ID", redirectUrl: "https://my-app.com/handle-saml")
+}
+catch
+{
+    // handle error
+}
+```
+
+The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
+
+```cs
+try
+{
+    var authInfo = await descopeClient.Auth.Sso.Exchange(code);
 }
 catch
 {

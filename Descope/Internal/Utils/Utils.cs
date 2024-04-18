@@ -1,4 +1,4 @@
-namespace Descope.Internal.Management
+namespace Descope.Internal
 {
     internal class Utils
     {

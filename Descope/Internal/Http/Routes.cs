@@ -27,6 +27,13 @@
 
         #endregion OTP
 
+        #region SSO
+
+        public const string SsoStart = "/v1/auth/sso/authorize";
+        public const string SsoExchange = "/v1/auth/sso/exchange";
+
+        #endregion SSO
+
         #endregion Auth
 
         #region Management
