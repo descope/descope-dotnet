@@ -120,6 +120,18 @@
 
         #endregion SSO
 
+        #region SSO Application
+
+        public const string SsoApplicationOidcCreate = "/v1/mgmt/sso/idp/app/oidc/create";
+        public const string SsoApplicationSamlCreate = "/v1/mgmt/sso/idp/app/saml/create";
+        public const string SsoApplicationOidcUpdate = "/v1/mgmt/sso/idp/app/oidc/update";
+        public const string SsoApplicationSamlUpdate = "/v1/mgmt/sso/idp/app/saml/update";
+        public const string SsoApplicationDelete = "/v1/mgmt/sso/idp/app/delete";
+        public const string SsoApplicationLoad = "/v1/mgmt/sso/idp/app/load";
+        public const string SsoApplicationLoadAll = "/v1/mgmt/sso/idp/apps/load";
+
+        #endregion SSO Application
+
         #region Permission
 
         public const string PermissionCreate = "/v1/mgmt/permission/create";
