@@ -34,9 +34,13 @@ These sections show how to use the SDK to perform API management functions. Befo
 1. [Manage Tenants](#manage-tenants)
 2. [Manage Users](#manage-users)
 3. [Manage Access Keys](#manage-access-keys)
-4. [Manage Permissions](#manage-permissions)
-5. [Manage Roles](#manage-roles)
-6. [Manage Project](#manage-project)
+4. [Manage SSO Settings](#manage-sso-setting)
+5. [Manage SSO Applications](#manage-sso-applications)
+6. [Manage Password Settings](#manage-password-settings)
+7. [Manage and Manipulate JWTs](#manage-and-manipulate-jwts)
+8. [Manage Permissions](#manage-permissions)
+9. [Manage Roles](#manage-roles)
+10. [Manage Project](#manage-project)
 
 ---
 
@@ -547,6 +551,64 @@ Note: Certificates should have a similar structure to:
 -----BEGIN CERTIFICATE-----
 Certifcate contents
 -----END CERTIFICATE-----
+```
+
+### Manage SSO Applications
+
+You can create, update, delete or load sso applications:
+
+```cs
+try
+{
+    // Create OIDC SSO application
+    var oidcOptions = new OidcApplicationOptions("My OIDC App", "http://loginurl.com") { Enabled = true };
+    var appId = await descopeClient.Management.SsoApplication.CreateOidcApplication(oidcOptions);
+
+    // Create SAML SSO application
+    var samlOptions = new SamlApplicationOptions("samlApp", "http://loginurl.com")
+    {
+        Id = samlAppID,
+        Enabled = true,
+        EntityID = "EntityID",
+        AcsURL = "http://dummy.com/acs",
+        Certificate: "cert",
+        AttributeMapping = new List<SamlIdpAttributeMappingInfo> { new ("attrName1", "attrType1", "attrValue1") },
+        GroupsMapping = new List<SamlIdpGroupsMappingInfo>
+        {
+            new("grpName1", "grpType1", "grpFilterType1", "grpValue1", new List<SamlIdpRoleGroupMappingInfo> { new("rl1", "rlName1") })
+        },
+    };
+    appId = await descopeClient.Management.SsoApplication.CreateSamlApplication(samlOptions);
+
+    // Update OIDC SSO application
+    // Update will override all fields as is. Use carefully.
+    var oidcOptions = new OidcApplicationOptions("My OIDC App", "http://updated-loginurl.com") { Id = oidcAppId, Enabled = true };
+    await descopeClient.Management.SsoApplication.UpdateOidcApplication(options);
+
+    // Update SAML SSO application
+    // Update will override all fields as is. Use carefully.
+    var samlOptions = new SamlApplicationOptions("samlApp", "http://loginurl.com")
+    {
+        Id = samlAppID,
+        Enabled = true,
+        UseMetadataInfo = true,
+        MetadataURL = "https://metadata.com",
+    };
+    await descopeClient.Management.SsoApplication.UpdateSamlApplication(samlOptions);
+
+    // Load SSO application by id
+    var app = await descopeClient.Management.SsoApplication.Load( "appId");
+
+    // Load all SSO applications
+    var apps = await descopeClient.Management.SsoApplication.LoadAll();
+
+    // SSO application deletion cannot be undone. Use carefully.
+    await descopeClient.Management.SsoApplication.Delete("appId");
+}
+catch
+{
+    // handle errors
+}
 ```
 
 ### Manage Password Settings

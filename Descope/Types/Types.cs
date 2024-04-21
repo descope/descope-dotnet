@@ -1,6 +1,5 @@
 
 using System.Text.Json.Serialization;
-using Descope.Internal.Management;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Descope

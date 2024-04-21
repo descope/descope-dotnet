@@ -573,6 +573,66 @@ namespace Descope
     }
 
     /// <summary>
+    /// Provides functions for managing SSO applications in a project.
+    /// </summary>
+    public interface ISsoApplication
+    {
+        /// <summary>
+        /// Create a new OIDC SSO application according to the given options.
+        /// </summary>
+        /// <param name="options">Options to define an OIDC application</param>
+        /// <returns>The created application ID</returns>
+        public Task<string> CreateOidcApplication(OidcApplicationOptions options);
+
+        /// <summary>
+        /// Create a new SAML SSO application according to the given options.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns>The created application ID</returns>
+        public Task<string> CreateSAMLApplication(SamlApplicationOptions options);
+
+        /// <summary>
+        /// Update an existing OIDC SSO application.
+        /// <para>
+        /// <b>IMPORTANT:</b> All options are taken as-is and will override whatever value is currently set. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="options">The options to set for an existing SSO application</param>
+        public Task UpdateOidcApplication(OidcApplicationOptions options);
+
+        /// <summary>
+        /// Update an existing SAML SSO application.
+        /// <para>
+        /// <b>IMPORTANT:</b> All options are taken as-is and will override whatever value is currently set. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="options">The options to set for an existing SSO application</param>
+        public Task UpdateSamlApplication(SamlApplicationOptions options);
+
+        /// <summary>
+        /// Delete an existing SSO application.
+        /// <para>
+        /// <b>IMPORTANT:</b> This action is irreversible. Use carefully.
+        /// </para>
+        /// </summary>
+        /// <param name="id">The ID of application to delete</param>
+        public Task Delete(string id);
+
+        /// <summary>
+        /// Load an SSO application
+        /// </summary>
+        /// <param name="id">The ID of the application to load</param>
+        /// <returns>The loaded SSO application</returns>
+        public Task<SsoApplicationResponse> Load(string id);
+
+        /// <summary>
+        /// Load all project SSO applications.
+        /// </summary>
+        /// <returns>A list of all SSO applications.</returns>
+        public Task<List<SsoApplicationResponse>> LoadAll();
+    }
+
+    /// <summary>
     /// Provides functions for managing permissions in a project.
     /// </summary>
     public interface IPermission
@@ -787,6 +847,11 @@ namespace Descope
         /// Provides functions for configuring SSO for a project.
         /// </summary>
         public ISso Sso { get; }
+
+        /// <summary>
+        /// Provides functions for configuring SSO Applications in a project.
+        /// </summary>
+        public ISsoApplication SsoApplication { get; }
 
         /// <summary>
         /// Provides functions for managing password policy for a project or a tenant.
