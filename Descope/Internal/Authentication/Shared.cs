@@ -10,4 +10,15 @@ namespace Descope.Internal.Auth
         [JsonPropertyName("maskedPhone")]
         public string? MaskedPhone { get; set; }
     }
+
+    internal class UrlResponse
+    {
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        public UrlResponse(string url)
+        {
+            Url = url;
+        }
+    }
 }

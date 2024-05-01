@@ -13,16 +13,17 @@ namespace Descope.Test.Unit
             var client = new MockHttpClient();
             ISsoAuth sso = new Sso(client);
             client.PostResponse = new { url = "url" };
-            client.PostAssert = (url, body, queryParams) =>
+            client.PostAssert = (url, pswd, body, queryParams) =>
             {
                 Assert.Equal(Routes.SsoStart, url);
                 Assert.Equal("tenant", queryParams!["tenant"]);
                 Assert.Equal("redirectUrl", queryParams!["redirectUrl"]);
                 Assert.Equal("prompt", queryParams!["prompt"]);
                 Assert.Contains("\"stepup\":true", Utils.Serialize(body!));
+                Assert.Equal("refreshJwt", pswd);
                 return null;
             };
-            var response = await sso.Start("tenant", redirectUrl: "redirectUrl", prompt: "prompt", loginOptions: new LoginOptions { StepUp = true });
+            var response = await sso.Start("tenant", redirectUrl: "redirectUrl", prompt: "prompt", loginOptions: new LoginOptions { StepupRefreshJwt = "refreshJwt" });
             Assert.Equal("url", response);
             Assert.Equal(1, client.PostCount);
         }
@@ -33,11 +34,12 @@ namespace Descope.Test.Unit
             var client = new MockHttpClient();
             ISsoAuth sso = new Sso(client);
             client.PostResponse = new AuthenticationResponse("", "", "", "", 0, 0, new UserResponse(new List<string>(), "", ""), false);
-            client.PostAssert = (url, body, queryParams) =>
+            client.PostAssert = (url, pswd, body, queryParams) =>
             {
                 Assert.Equal(Routes.SsoExchange, url);
                 Assert.Null(queryParams);
                 Assert.Contains("\"code\":\"code\"", Utils.Serialize(body!));
+                Assert.Null(pswd);
                 return null;
             };
             var response = await sso.Exchange("code");

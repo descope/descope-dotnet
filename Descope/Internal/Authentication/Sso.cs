@@ -14,9 +14,9 @@ namespace Descope.Internal.Auth
         public async Task<string> Start(string tenant, string? redirectUrl, string? prompt, LoginOptions? loginOptions)
         {
             Utils.EnforceRequiredArgs(("tenant", tenant));
-            var body = new { loginOptions };
+            var body = new { loginOptions = loginOptions?.ToDictionary() };
             var queryParams = new Dictionary<string, string?> { { "tenant", tenant }, { "redirectUrl", redirectUrl }, { "prompt", prompt } };
-            var response = await _httpClient.Post<UrlResponse>(Routes.SsoStart, body: body, queryParams: queryParams);
+            var response = await _httpClient.Post<UrlResponse>(Routes.SsoStart, body: body, queryParams: queryParams, pswd: loginOptions?.GetRefreshJwt());
             return response.Url;
         }
 
@@ -28,14 +28,4 @@ namespace Descope.Internal.Auth
         }
     }
 
-    internal class UrlResponse
-    {
-        [JsonPropertyName("url")]
-        public string Url { get; set; }
-
-        public UrlResponse(string url)
-        {
-            Url = url;
-        }
-    }
 }
