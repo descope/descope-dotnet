@@ -153,7 +153,6 @@ catch
 {
     // handle error
 }
-````
 
 The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
