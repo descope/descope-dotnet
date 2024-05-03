@@ -133,6 +133,7 @@ catch
 {
     // handle error
 }
+```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
