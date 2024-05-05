@@ -122,7 +122,7 @@ catch
 
 Users can also connect the social login account to their existing user:
 
-````cs
+```cs
 // A valid Refresh Token of the existing user is required.
 // If allowAllMerge is 'true' the users will be merged also if there is no common identifier between the social provider and the existing user (like email).
 try
@@ -833,4 +833,4 @@ If you need help you can email [Descope Support](mailto:support@descope.com)
 
 ## License
 
-The Descope SDK for Go is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/descope-dotnet/blob/main/LICENSE).
+The Descope SDK for .NET is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/descope-dotnet/blob/main/LICENSE).
