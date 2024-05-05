@@ -20,7 +20,7 @@
         public async Task<string> SignIn(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, loginOptions };
+            var body = new { loginId, loginOptions = loginOptions?.ToDictionary() };
             var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignIn + deliveryMethod.ToString().ToLower(), body: body);
             return deliveryMethod == DeliveryMethod.Email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
         }
@@ -28,7 +28,7 @@
         public async Task<string> SignUpOrIn(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, loginOptions };
+            var body = new { loginId, loginOptions = loginOptions?.ToDictionary() };
             var response = await _httpClient.Post<MaskedAddressResponse>(Routes.OtpSignUpOrIn + deliveryMethod.ToString().ToLower(), body: body);
             return deliveryMethod == DeliveryMethod.Email ? response.MaskedEmail ?? "" : response.MaskedPhone ?? "";
         }

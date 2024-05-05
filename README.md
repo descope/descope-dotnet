@@ -24,8 +24,9 @@ var descopeClient = new DescopeClient(config);
 
 These sections show how to use the SDK to perform various authentication/authorization functions:
 
-1. [OTP Authentication](#otp-authentication)
-2. [SSO Authentication](#sso-saml--oidc)
+1. [OTP](#otp-authentication)
+2. [OAuth](#oauth)
+3. [SSO](#sso-saml--oidc)
 
 ## Management Functions
 
@@ -77,6 +78,56 @@ The user will receive a code using the selected delivery method. Verify that cod
 try
 {
     var authInfo = await descopeClient.Auth.Otp.VerifyCode(DeliveryMethod.Email, loginId, code);
+}
+catch
+{
+    // handle error
+}
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### OAuth
+
+Users can authenticate using their social logins, via the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social).
+To start an OAuth redirect chain call:
+
+```cs
+// Choose an oauth provider out of the supported providers, or create a custom one.
+// If configured globally, the redirect URL is optional. If provided however, it will be used
+// instead of any global configuration.
+// Redirect the user to the returned URL to start the OAuth redirect chain
+try
+{
+    var url = await descopeClient.Auth.OAuth.SignUpOrIn(OAuthProvider.Google, "https://my-app.com/handle-oauth");
+}
+catch
+{
+    // handle error
+}
+```
+
+The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
+
+```cs
+try
+{
+    var authInfo = await descopeClient.Auth.OAuth.Exchange(code);
+}
+catch
+{
+    // handle error
+}
+```
+
+Users can also connect the social login account to their existing user:
+
+````cs
+// A valid Refresh Token of the existing user is required.
+// If allowAllMerge is 'true' the users will be merged also if there is no common identifier between the social provider and the existing user (like email).
+try
+{
+    var url = await descopeClient.Auth.OAuth.UpdateUser(OAuthProvider.Google, "<refresh-jwt>", "https://my-app.com/handle-oauth", allowAllMerge: true);
 }
 catch
 {

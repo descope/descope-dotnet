@@ -27,6 +27,16 @@
 
         #endregion OTP
 
+        #region OAUTH
+
+        public const string OAuthSignUpOrIn = "/v1/auth/oauth/authorize";
+        public const string OAuthSignUp = "/v1/auth/oauth/authorize/signup";
+        public const string OAuthSignIn = "/v1/auth/oauth/authorize/signin";
+        public const string OAuthUpdate = "/v1/auth/oauth/authorize/update";
+        public const string OAuthExchange = "/v1/auth/oauth/exchange";
+
+        #endregion OAUTH
+
         #region SSO
 
         public const string SsoStart = "/v1/auth/sso/authorize";

@@ -1,6 +1,6 @@
 namespace Descope.Internal
 {
-    internal class Utils
+    internal static class Utils
     {
         internal static void EnforceRequiredArgs(params (string, object?)[] args)
         {
@@ -11,6 +11,22 @@ namespace Descope.Internal
                     throw new DescopeException($"The {arg.Item1} argument is required");
                 }
             }
+        }
+
+        // Extensions
+
+        internal static string? GetRefreshJwt(this LoginOptions options)
+        {
+            return options.StepupRefreshJwt ?? options.MfaRefreshJwt;
+        }
+
+        internal static Dictionary<string, object?> ToDictionary(this LoginOptions options)
+        {
+            return new Dictionary<string, object?>{
+                {"stepup", options.StepupRefreshJwt != null ? true : null},
+                {"mfa", options.MfaRefreshJwt != null ? true : null},
+                {"customClaims", options.CustomClaims},
+            };
         }
     }
 }

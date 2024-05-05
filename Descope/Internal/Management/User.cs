@@ -230,21 +230,21 @@ namespace Descope.Internal.Management
         public async Task<UserTestOTPResponse> GenerateOtpForTestUser(DeliveryMethod deliveryMethod, string loginId, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), loginOptions };
+            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), loginOptions = loginOptions?.ToDictionary() };
             return await _httpClient.Post<UserTestOTPResponse>(Routes.UserTestsGenerateOtp, _managementKey, body);
         }
 
         public async Task<UserTestMagicLinkResponse> GenerateMagicLinkForTestUser(DeliveryMethod deliveryMethod, string loginId, string? redirectUrl, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), redirectUrl, loginOptions };
+            var body = new { loginId, deliveryMethod = deliveryMethod.ToString().ToLower(), redirectUrl, loginOptions = loginOptions?.ToDictionary() };
             return await _httpClient.Post<UserTestMagicLinkResponse>(Routes.UserTestsGenerateMagicLink, _managementKey, body);
         }
 
         public async Task<UserTestEnchantedLinkResponse> GenerateEnchantedLinkForTestUser(string loginId, string? redirectUrl, LoginOptions? loginOptions)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
-            var request = new { loginId, redirectUrl, loginOptions };
+            var request = new { loginId, redirectUrl, loginOptions = loginOptions?.ToDictionary() };
             return await _httpClient.Post<UserTestEnchantedLinkResponse>(Routes.UserTestsGenerateEnchantedLink, _managementKey, request);
         }
 

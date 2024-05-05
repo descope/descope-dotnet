@@ -21,16 +21,43 @@ namespace Descope
         public string? FamilyName { get; set; }
     }
 
+    /// <summary>
+    /// Used to require additional behaviors when authenticating a user.
+    /// </summary>
     public class LoginOptions
     {
-        [JsonPropertyName("stepup")]
-        public bool StepUp { get; set; }
-
-        [JsonPropertyName("customClaims")]
+        /// <summary>
+        /// Used to add layered security to your app by implementing Step-up authentication.
+        /// <para>
+        /// After the Step-up authentication completes successfully the returned session JWT will
+        /// have an `su` claim with a value of `true`.
+        /// </para>
+        /// <para>
+        /// <b>Note:</b> The <c>su</c> claim is not set on the refresh JWT.
+        /// </para>
+        /// </summary>
+        public string? StepupRefreshJwt { get; set; }
+        /// <summary>
+        /// Used to add layered security to your app by implementing Multi-factor authentication.
+        /// <para>
+        /// Assuming the user has already signed in successfully with one authentication method,
+        /// we can take the <c>RefreshJwt</c> from the <c>AuthenticationResponse</c> and pass it as the
+        /// Refresh JWT value to another authentication method.
+        /// </para>
+        /// <para>
+        /// After the MFA authentication completes successfully the <c>amr</c> claim in both the session
+        /// and refresh JWTs will be an array with an entry for each authentication method used.
+        /// </para>
+        /// </summary>
+        public string? MfaRefreshJwt { get; set; }
+        /// <summary>
+        /// Adds additional custom claims to the user's JWT during authentication.
+        /// <para>
+        /// <b>Important:</b> Any custom claims added via this method are considered insecure and will
+        /// be nested under the <c>nsec</c> custom claim.
+        /// </para>
+        /// </summary>
         public Dictionary<string, object>? CustomClaims { get; set; }
-
-        [JsonPropertyName("mfa")]
-        public bool Mfa { get; set; }
     }
 
     public class UpdateOptions

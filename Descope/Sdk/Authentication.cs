@@ -19,6 +19,77 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using an OAuth provider.
+    /// </summary>
+    public interface IOAuth
+    {
+        /// <summary>
+        /// Authenticate an existing user if one exists, or create a new user using an OAuth redirect chain.
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// </summary>
+        /// <param name="provider">Which provider to authenticate against</param>
+        /// <param name="redirectUrl">Optional redirect URL. If null, the default redirect URL in Descope console will be used.</param>
+        /// <param name="loginOptions">Additional behaviors to perform during authentication</param>
+        /// <returns>A URL that starts the OAuth redirect chain</returns>
+        Task<string> SignUpOrIn(string provider, string? redirectUrl = null, LoginOptions? loginOptions = null);
+
+        /// <summary>
+        /// Authenticate a new user using an OAuth redirect chain.
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// </summary>
+        /// <param name="provider">Which provider to authenticate against</param>
+        /// <param name="redirectUrl">Optional redirect URL. If null, the default redirect URL in Descope console will be used.</param>
+        /// <param name="loginOptions">Additional behaviors to perform during authentication</param>
+        /// <returns>A URL that starts the OAuth redirect chain</returns>
+        Task<string> SignUp(string provider, string? redirectUrl = null, LoginOptions? loginOptions = null);
+
+        /// <summary>
+        /// Authenticate an existing user using an OAuth redirect chain.
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// </summary>
+        /// <param name="provider">Which provider to authenticate against</param>
+        /// <param name="redirectUrl">Optional redirect URL. If null, the default redirect URL in Descope console will be used.</param>
+        /// <param name="loginOptions">Additional behaviors to perform during authentication</param>
+        /// <returns>A URL that starts the OAuth redirect chain</returns>
+        Task<string> SignIn(string provider, string? redirectUrl = null, LoginOptions? loginOptions = null);
+
+        /// <summary>
+        /// Update an existing logged in user by enabling them to also sign in using OAuth.
+        /// </summary>
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// <param name="provider">Which provider to authenticate against</param>
+        /// <param name="refreshJwt">A valid refresh JWT</param>
+        /// <param name="redirectUrl">Optional redirect URL. If null, the default redirect URL in Descope console will be used.</param>
+        /// <param name="allowAllMerge">Allow updating the existing user also if there are no common identifiers between the OAuth data and the existing user (like email)</param>
+        /// <param name="loginOptions">Additional behaviors to perform during authentication</param>
+        /// <returns>A URL that starts the OAuth redirect chain</returns>
+        Task<string> UpdateUser(string provider, string refreshJwt, string? redirectUrl = null, bool allowAllMerge = false, LoginOptions? loginOptions = null);
+
+        /// <summary>
+        /// Completes an OAuth redirect chain.
+        /// <para>
+        /// This function exchanges the code received in the <c>code</c> URL parameter for an <c>AuthenticationResponse</c>.
+        /// </para>
+        /// <para>
+        /// <b>Important:</b> The redirect URL might not contain a <c>code</c> URL parameter
+        /// but can contain an <c>err</c> URL parameter instead. This can occur when attempting to
+        /// sign up with an existing user or trying to sign in with a non-existing user.
+        /// </para>
+        /// </summary>
+        /// <param name="code">The code extract from the code received in the <c>code</c> URL parameter</param>
+        /// <returns>An <c>AuthenticationResponse</c> value upon successful exchange.</returns>
+        Task<AuthenticationResponse> Exchange(string code);
+    }
+
+    /// <summary>
     /// Authenticate a user using a SSO.
     /// <para>
     /// Use the Descope console to configure your SSO details in order for this method to work properly.
@@ -59,7 +130,12 @@ namespace Descope
         public IOtp Otp { get; }
 
         /// <summary>
-        /// Authenticate a user using a SSO.
+        /// Authenticate a user using OAuth.
+        /// </summary>
+        public IOAuth OAuth { get; }
+
+        /// <summary>
+        /// Authenticate a user using SSO.
         /// </summary>
         public ISsoAuth Sso { get; }
 

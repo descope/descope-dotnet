@@ -25,21 +25,21 @@ namespace Descope.Test.Unit
         public bool DeleteFailure { get; set; }
         public Exception? DeleteError { get; set; }
         public int DeleteCount { get; set; }
-        public Func<string, Dictionary<string, string?>?, object?>? DeleteAssert { get; set; }
+        public Func<string, string?, Dictionary<string, string?>?, object?>? DeleteAssert { get; set; }
         public object? DeleteResponse { get; set; }
 
         // Get
         public bool GetFailure { get; set; }
         public Exception? GetError { get; set; }
         public int GetCount { get; set; }
-        public Func<string, Dictionary<string, string?>?, object?>? GetAssert { get; set; }
+        public Func<string, string?, Dictionary<string, string?>?, object?>? GetAssert { get; set; }
         public object? GetResponse { get; set; }
 
         // Post
         public bool PostFailure { get; set; }
         public Exception? PostError { get; set; }
         public int PostCount { get; set; }
-        public Func<string, object?, Dictionary<string, string?>?, object?>? PostAssert { get; set; }
+        public Func<string, string?, object?, Dictionary<string, string?>?, object?>? PostAssert { get; set; }
         public object? PostResponse { get; set; }
 
         // IHttpClient Properties
@@ -57,7 +57,7 @@ namespace Descope.Test.Unit
         public async Task<TResponse> Delete<TResponse>(string resource, string pswd, Dictionary<string, string?>? queryParams = null)
         {
             DeleteCount++;
-            DeleteAssert?.Invoke(resource, queryParams);
+            DeleteAssert?.Invoke(resource, pswd, queryParams);
             if (DeleteError != null) throw DeleteError;
             if (DeleteFailure) throw new Exception();
             return Utils.Convert<TResponse>(DeleteResponse);
@@ -66,7 +66,7 @@ namespace Descope.Test.Unit
         public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null)
         {
             GetCount++;
-            GetAssert?.Invoke(resource, queryParams);
+            GetAssert?.Invoke(resource, pswd, queryParams);
             if (GetError != null) throw GetError;
             if (GetFailure) throw new Exception();
             return Utils.Convert<TResponse>(GetResponse);
@@ -76,7 +76,7 @@ namespace Descope.Test.Unit
         public async Task<TResponse> Post<TResponse>(string resource, string? pswd = null, object? body = null, Dictionary<string, string?>? queryParams = null)
         {
             PostCount++;
-            PostAssert?.Invoke(resource, body, queryParams);
+            PostAssert?.Invoke(resource, pswd, body, queryParams);
             if (PostError != null) throw PostError;
             if (PostFailure) throw new Exception();
             return Utils.Convert<TResponse>(PostResponse);
