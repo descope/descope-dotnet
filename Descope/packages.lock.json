@@ -10,12 +10,9 @@
       },
       "RestSharp": {
         "type": "Direct",
-        "requested": "[110.2.0, )",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
+        "requested": "[111.4.0, )",
+        "resolved": "111.4.0",
+        "contentHash": "GcOIOyYYFm3oCFHbGBwGtDawC9yqvv6m7Ixyt+qeI+/UrPNyCJK31VOPRfEgj5M+3AfigSP6a8jZyFtBZxouTA=="
       },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Direct",
@@ -54,28 +51,6 @@
         "contentHash": "Q3DKpyFViP84IUlTFKH/zIkswIrmSh2Vd/eFDo4wlOHy4DYxoweZEEw4kDEiKt9VCX6o7SddK3HK2xDYyFpexA==",
         "dependencies": {
           "Microsoft.IdentityModel.Logging": "7.5.1"
-        }
-      },
-      "System.Runtime.CompilerServices.Unsafe": {
-        "type": "Transitive",
-        "resolved": "6.0.0",
-        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "OP6umVGxc0Z0MvZQBVigj4/U31Pw72ITihDWP9WiWDm+q5aoe0GaJivsfYGq53o6dxH7DcXWiCTl7+0o2CGdmg==",
-        "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
-        }
-      },
-      "System.Text.Json": {
-        "type": "Transitive",
-        "resolved": "7.0.2",
-        "contentHash": "/LZf/JrGyilojqwpaywb+sSz8Tew7ij4K/Sk+UW8AKfAK7KRhR6mKpKtTm06cYA7bCpGTWfYksIW+mVsdxPegQ==",
-        "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
-          "System.Text.Encodings.Web": "7.0.0"
         }
       }
     },
@@ -88,12 +63,9 @@
       },
       "RestSharp": {
         "type": "Direct",
-        "requested": "[110.2.0, )",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
+        "requested": "[111.4.0, )",
+        "resolved": "111.4.0",
+        "contentHash": "GcOIOyYYFm3oCFHbGBwGtDawC9yqvv6m7Ixyt+qeI+/UrPNyCJK31VOPRfEgj5M+3AfigSP6a8jZyFtBZxouTA=="
       },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Direct",
@@ -132,19 +104,6 @@
         "contentHash": "Q3DKpyFViP84IUlTFKH/zIkswIrmSh2Vd/eFDo4wlOHy4DYxoweZEEw4kDEiKt9VCX6o7SddK3HK2xDYyFpexA==",
         "dependencies": {
           "Microsoft.IdentityModel.Logging": "7.5.1"
-        }
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "OP6umVGxc0Z0MvZQBVigj4/U31Pw72ITihDWP9WiWDm+q5aoe0GaJivsfYGq53o6dxH7DcXWiCTl7+0o2CGdmg=="
-      },
-      "System.Text.Json": {
-        "type": "Transitive",
-        "resolved": "7.0.2",
-        "contentHash": "/LZf/JrGyilojqwpaywb+sSz8Tew7ij4K/Sk+UW8AKfAK7KRhR6mKpKtTm06cYA7bCpGTWfYksIW+mVsdxPegQ==",
-        "dependencies": {
-          "System.Text.Encodings.Web": "7.0.0"
         }
       }
     }
