@@ -64,7 +64,7 @@
         public const string UserCreate = "/v1/mgmt/user/create";
         public const string UserCreateBatch = "/v1/mgmt/user/create/batch";
         public const string UserLoad = "/v1/mgmt/user";
-        public const string UserSearch = "/v1/mgmt/user/search";
+        public const string UserSearch = "/v2/mgmt/user/search";
         public const string UserUpdate = "/v1/mgmt/user/update";
         public const string UserUpdateStatus = "/v1/mgmt/user/update/status";
         public const string UserUpdateEmail = "/v1/mgmt/user/update/email";
