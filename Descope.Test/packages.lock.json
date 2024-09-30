@@ -318,11 +318,8 @@
       },
       "RestSharp": {
         "type": "Transitive",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
+        "resolved": "112.0.0",
+        "contentHash": "vezxJ6DLk0eDx+rmXwVHQvJ3elZCJfnLd8neRrkA+IvTs9falf2CEAolsjI1YKkkHTOvG13xWTnHK7gU0zgaaw=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -1223,7 +1220,7 @@
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "[13.0.3, )",
-          "RestSharp": "[110.2.0, )",
+          "RestSharp": "[112.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[7.5.1, )"
         }
       }
@@ -1542,11 +1539,8 @@
       },
       "RestSharp": {
         "type": "Transitive",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
+        "resolved": "112.0.0",
+        "contentHash": "vezxJ6DLk0eDx+rmXwVHQvJ3elZCJfnLd8neRrkA+IvTs9falf2CEAolsjI1YKkkHTOvG13xWTnHK7gU0zgaaw=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -2438,7 +2432,7 @@
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "[13.0.3, )",
-          "RestSharp": "[110.2.0, )",
+          "RestSharp": "[112.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[7.5.1, )"
         }
       }
