@@ -21,6 +21,6 @@ namespace Descope
     public static class SdkInfo
     {
         public static string Name { get; } = "dotnet";
-        public static string Version { get; } = "0.3.1";
+        public static string Version { get; } = "0.3.2";
     }
 }
