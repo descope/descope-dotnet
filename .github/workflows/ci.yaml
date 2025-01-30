@@ -7,8 +7,10 @@ on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci # global group
+  cancel-in-progress: false # let them run
+  # this will disable CI parellelism
+  # TODO: refactor use of test users to allow running in parallel
 
 
 jobs:
