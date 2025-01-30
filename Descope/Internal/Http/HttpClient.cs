@@ -34,7 +34,7 @@ namespace Descope.Internal
             _client.AddDefaultHeader("Content-Type", "application/json");
             _client.AddDefaultHeader("x-descope-sdk-name", SdkInfo.Name);
             _client.AddDefaultHeader("x-descope-sdk-version", SdkInfo.Version);
-            _client.AddDefaultHeader("x-descope-sdk-dotnet-version", Environment.Version.ToString());
+            _client.AddDefaultHeader("x-descope-sdk-dotnet-version", SdkInfo.DotNetVersion);
         }
 
         public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null)

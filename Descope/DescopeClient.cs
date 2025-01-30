@@ -1,5 +1,7 @@
 ﻿using Descope.Internal.Management;
 using Descope.Internal.Auth;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Descope
 {
@@ -21,6 +23,7 @@ namespace Descope
     public static class SdkInfo
     {
         public static string Name { get; } = "dotnet";
-        public static string Version { get; } = "0.4.2";
+        public static string Version { get; } = Assembly.GetAssembly(typeof(DescopeClient))?.GetName()?.Version?.ToString() ?? "Unknown";
+        public static string DotNetVersion { get; } = Environment.Version.ToString();
     }
 }

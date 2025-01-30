@@ -20,6 +20,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.x.x
+            8.x.x
+            9.x.x
       - name: Install dependencies
         run: dotnet restore --locked-mode
       - name: Build with dotnet
