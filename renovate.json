@@ -1,6 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ]
+  "extends": ["local>descope/renovate-config"],
+  "constraints": { "dotnet": "^8.0.0" }
 }
