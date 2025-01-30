@@ -29,6 +29,7 @@ jobs:
         id: dotnet
         with:
           cache: true
+          cache-dependency-path: "*/packages.lock.json"
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Create temporary global.json
         run: |
