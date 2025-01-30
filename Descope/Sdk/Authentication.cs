@@ -107,9 +107,10 @@ namespace Descope
         /// <param name="tenant">The tenant ID or name, or an email address belonging to a tenant domain</param>
         /// <param name="redirectUrl">An optional parameter to generate the SSO link. If not given, the project default will be used.</param>
         /// <param name="prompt">Relevant only in case tenant configured with AuthType OIDC</param>
+        /// <param name="forceAuthn">Force authentication even if the user has an active session</param>
         /// <param name="loginOptions">Require additional behaviors when authenticating a user.</param>
         /// <returns>The redirect URL that starts the SSO redirect chain</returns>
-        Task<string> Start(string tenant, string? redirectUrl = null, string? prompt = null, LoginOptions? loginOptions = null);
+        Task<string> Start(string tenant, string? redirectUrl = null, string? prompt = null, bool? forceAuthn = null, LoginOptions? loginOptions = null);
 
         /// <summary>
         /// Finalize SSO authentication by exchanging the received <c>code</c> with an <c>AuthenticationResponse</c>
