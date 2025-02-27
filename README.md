@@ -141,6 +141,13 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 Users can authenticate to a specific tenant using SAML or OIDC. Configure your SSO (SAML / OIDC) settings on the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:
 
+These are the parameters you can send in addition to `tenant` and `redirectUrl`:
+
+| Parameter    | Protocol | Description |
+|-------------|----------|-------------|
+| `prompt`    | OIDC     | An OIDC parameter that lets you control whether a user has to sign in, give consent, etc. For more information, visit our docs [here](https://docs.descope.com/auth-methods/oauth#prompt). *(Doesn't work with SAML)* |
+| `forceAuthn` | SAML     | A SAML parameter that lets you control whether a user has to sign in again, regardless of a previously established SSO session. *(Doesn't work with OIDC)* |
+
 ```cs
 // Choose which tenant to log into
 // If configured globally, the redirect URL is optional. If provided however, it will be used
