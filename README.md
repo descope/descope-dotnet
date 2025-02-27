@@ -145,7 +145,7 @@ These are the parameters you can send in addition to `tenant` and `redirectUrl`:
 
 | Parameter    | Protocol | Description |
 |-------------|----------|-------------|
-| `prompt`    | OIDC     | An OIDC parameter that lets you control whether a user has to sign in, give consent, etc. For more information, visit our docs [here](). *(Doesn't work with SAML)* |
+| `prompt`    | OIDC     | An OIDC parameter that lets you control whether a user has to sign in, give consent, etc. For more information, visit our docs [here](https://docs.descope.com/auth-methods/oauth#prompt). *(Doesn't work with SAML)* |
 | `forceAuthn` | SAML     | A SAML parameter that lets you control whether a user has to sign in again, regardless of a previously established SSO session. *(Doesn't work with OIDC)* |
 
 ```cs
