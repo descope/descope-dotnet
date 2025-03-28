@@ -58,6 +58,8 @@ namespace Descope
         /// </para>
         /// </summary>
         public Dictionary<string, object>? CustomClaims { get; set; }
+
+        public bool IsJWTRequired => StepupRefreshJwt != null || MfaRefreshJwt != null;
     }
 
     public class UpdateOptions
@@ -893,4 +895,27 @@ namespace Descope
             Oidc = oidc;
         }
     }
+
+
+    public class EnchantedLinkResponse
+    {
+        // Pending referral code used to poll enchanted link authentication status
+        [JsonPropertyName("pendingRef")]
+        public string PendingRef { get; set; }
+        // Link id, on which link the user should click
+        [JsonPropertyName("linkId")]
+        public string LinkId { get; set; }
+        // Masked email to which the email was sent
+        [JsonPropertyName("maskedEmail")]
+        public string MaskedEmail {get; set;}
+
+
+        public EnchantedLinkResponse(string pendingRef, string linkId, string maskedEmail)
+        {
+            PendingRef = pendingRef;
+            LinkId = linkId;
+            MaskedEmail = maskedEmail;
+        }
+    }
+
 }
