@@ -21,6 +21,16 @@ namespace Descope
         public string? FamilyName { get; set; }
     }
 
+    public class SignUpOptions
+    {
+        [JsonPropertyName("templateId")]
+        public string? TemplateID { get; set; }
+        [JsonPropertyName("templateOptions")]
+        public Dictionary<string, string>? TemplateOptions { get; set; }
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
+    }
+
     /// <summary>
     /// Used to require additional behaviors when authenticating a user.
     /// </summary>
@@ -58,6 +68,8 @@ namespace Descope
         /// </para>
         /// </summary>
         public Dictionary<string, object>? CustomClaims { get; set; }
+
+        public bool IsJWTRequired => StepupRefreshJwt != null || MfaRefreshJwt != null;
     }
 
     public class UpdateOptions
@@ -893,4 +905,27 @@ namespace Descope
             Oidc = oidc;
         }
     }
+
+
+    public class EnchantedLinkResponse
+    {
+        // Pending referral code used to poll enchanted link authentication status
+        [JsonPropertyName("pendingRef")]
+        public string PendingRef { get; set; }
+        // Link id, on which link the user should click
+        [JsonPropertyName("linkId")]
+        public string LinkId { get; set; }
+        // Masked email to which the email was sent
+        [JsonPropertyName("maskedEmail")]
+        public string MaskedEmail {get; set;}
+
+
+        public EnchantedLinkResponse(string pendingRef, string linkId, string maskedEmail)
+        {
+            PendingRef = pendingRef;
+            LinkId = linkId;
+            MaskedEmail = maskedEmail;
+        }
+    }
+
 }

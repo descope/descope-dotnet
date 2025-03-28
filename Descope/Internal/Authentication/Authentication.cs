@@ -9,10 +9,12 @@ namespace Descope.Internal.Auth
     {
         public IOtp Otp { get => _otp; }
         public IOAuth OAuth { get => _oauth; }
+        public IEnchantedLink EnchantedLink { get => _enchantedLink; }
         public ISsoAuth Sso { get => _sso; }
 
         private readonly Otp _otp;
         private readonly OAuth _oauth;
+        private readonly EnchantedLink _enchantedLink;
         private readonly Sso _sso;
 
         private readonly IHttpClient _httpClient;
@@ -27,6 +29,7 @@ namespace Descope.Internal.Auth
             _httpClient = httpClient;
             _otp = new Otp(httpClient);
             _oauth = new OAuth(httpClient);
+            _enchantedLink = new EnchantedLink(httpClient);
             _sso = new Sso(httpClient);
         }
 
