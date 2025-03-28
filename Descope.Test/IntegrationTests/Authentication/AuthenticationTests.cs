@@ -168,5 +168,31 @@ namespace Descope.Test.Integration
                 }
             }
         }
+
+        [Fact]
+        public async Task Signup_EnchantedLink()
+        {
+            string? loginId = null;
+            try
+            {
+                loginId = $"tester+{Guid.NewGuid().ToString()}@test.com";
+
+                // Enchanted link sign up
+                var enchantedLinkResponse = await _descopeClient.Auth.EnchantedLink.SignUp(loginId, "https://example.com",
+                new SignUpDetails { Email = loginId },
+                new SignUpOptions { TemplateID = "test", TemplateOptions = new Dictionary<string, string> { { "key", "value" } } });
+                Assert.NotEmpty(enchantedLinkResponse.LinkId);
+                Assert.NotEmpty(enchantedLinkResponse.MaskedEmail);
+                Assert.NotEmpty(enchantedLinkResponse.PendingRef);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
     }
 }

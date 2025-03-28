@@ -21,6 +21,16 @@ namespace Descope
         public string? FamilyName { get; set; }
     }
 
+    public class SignUpOptions
+    {
+        [JsonPropertyName("templateId")]
+        public string? TemplateID { get; set; }
+        [JsonPropertyName("templateOptions")]
+        public Dictionary<string, string>? TemplateOptions { get; set; }
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
+    }
+
     /// <summary>
     /// Used to require additional behaviors when authenticating a user.
     /// </summary>

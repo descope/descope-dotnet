@@ -32,13 +32,40 @@ namespace Descope.Internal.Auth
             var response = await _httpClient.Post<EnchantedLinkResponse>(
                 Routes.EnchantedLinkSignIn,
                 body: body,
-                //queryParams: queryParams,
                 pswd: refreshJwt);
 
             return response;
         }
 
+        public async Task<EnchantedLinkResponse> SignUp(
+            string loginId,
+            string? uri,
+            SignUpDetails? signUpDetails = null,
+            SignUpOptions? signUpOptions = null)
+        {
+            if (string.IsNullOrEmpty(loginId))
+                throw new ArgumentException("loginId cannot be empty", nameof(loginId));
 
+            signUpOptions ??= new SignUpOptions();
+            signUpDetails ??= new SignUpDetails();
+
+            if (string.IsNullOrEmpty(signUpDetails.Email))
+                signUpDetails.Email = loginId;
+
+            var body = new EnchantedLinkSignUpRequestBody
+            {
+                LoginId = loginId,
+                URI = uri,
+                User = signUpDetails,
+                LoginOptions = signUpOptions
+            };
+
+            var response = await _httpClient.Post<EnchantedLinkResponse>(
+                Routes.EnchantedLinkSignUp,
+                body: body);
+
+            return response;
+        }
     }
 
     public record EnchantedLinkAuthenticationRequestBody
@@ -51,5 +78,19 @@ namespace Descope.Internal.Auth
         public bool CrossDevice { get; } = true; // always true for enchanted links
         [JsonPropertyName("loginOptions")]
         public Dictionary<string, object?>? LoginOptions { get; init; }
+    }
+
+    public record EnchantedLinkSignUpRequestBody
+    {
+        [JsonPropertyName("loginId")]
+        public string LoginId { get; init; }
+        [JsonPropertyName("URI")]
+        public string? URI { get; init; }
+        [JsonPropertyName("crossDevice")]
+        public bool CrossDevice { get; } = true; // always true for enchanted links
+        [JsonPropertyName("user")]
+        public SignUpDetails User { get; init; }
+        [JsonPropertyName("loginOptions")]
+        public SignUpOptions LoginOptions { get; init; }
     }
 }

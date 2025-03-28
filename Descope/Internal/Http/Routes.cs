@@ -40,6 +40,7 @@
         #region ENCHANTEDLINK
 
         public const string EnchantedLinkSignIn = "/v1/auth/enchantedlink/signin/email";
+        public const string EnchantedLinkSignUp = "/v1/auth/enchantedlink/signup/email";
 
         #endregion ENCHANTEDLINK
 
