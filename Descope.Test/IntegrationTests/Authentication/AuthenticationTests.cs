@@ -141,5 +141,32 @@ namespace Descope.Test.Integration
                 }
             }
         }
+
+        [Fact]
+        public async Task Authentication_EnchantedLink()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a logged in test user
+                var testUser = await IntegrationTestSetup.InitTestUser(_descopeClient);
+                loginId = testUser.User.LoginIds.First();
+
+                // Enchanted link sign in
+                //var enchantedLinkResponse = await _descopeClient.Auth.EnchantedLink.SignIn(loginId, "https://example.com", new LoginOptions {}, testUser.AuthInfo.RefreshJwt!);
+                var enchantedLinkResponse = await _descopeClient.Auth.EnchantedLink.SignIn(loginId, null, new LoginOptions { }, null);
+                Assert.NotEmpty(enchantedLinkResponse.LinkId);
+                Assert.NotEmpty(enchantedLinkResponse.MaskedEmail);
+                Assert.NotEmpty(enchantedLinkResponse.PendingRef);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
     }
 }

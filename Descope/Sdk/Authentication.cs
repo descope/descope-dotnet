@@ -90,6 +90,25 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using an Enchanted Link.
+    /// </summary>
+    public interface IEnchantedLink
+    {
+        /// <summary>
+        /// Authenticate a user using an enchanted link.
+        /// /// <para>
+        /// /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// /// </para>
+        /// /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after authentication, if empty then the URI set for the project in the descope console will be used instead</param>
+        /// <param name="loginOptions">Additional optional behaviors to perform during authentication</param>
+        /// <param name="refreshJwt">An optional valid refresh JWT, only needed if certain custom loginOptions were selected</param>
+        /// <returns>An <c>EnchantedLinkResponse</c> value upon successful exchange.</returns>
+        Task<EnchantedLinkResponse> SignIn(string loginId, string? uri, LoginOptions? loginOptions = null, string? refreshJwt = null);
+    }
+
+    /// <summary>
     /// Authenticate a user using a SSO.
     /// <para>
     /// Use the Descope console to configure your SSO details in order for this method to work properly.
@@ -134,6 +153,11 @@ namespace Descope
         /// Authenticate a user using OAuth.
         /// </summary>
         public IOAuth OAuth { get; }
+
+        /// <summary>
+        /// Authenticate a user using an enchanted link.
+        /// </summary>
+        public IEnchantedLink EnchantedLink { get; }
 
         /// <summary>
         /// Authenticate a user using SSO.
