@@ -96,10 +96,10 @@ namespace Descope
     {
         /// <summary>
         /// Authenticate a user using an enchanted link.
-        /// /// <para>
-        /// /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
-        /// /// </para>
-        /// /// </summary>
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// </summary>
         /// <param name="loginId">The login ID of the user</param>
         /// <param name="uri">Optional custom URI to redirect the user to after authentication, if empty then the URI set for the project in the descope console will be used instead</param>
         /// <param name="loginOptions">Additional optional behaviors to perform during authentication</param>
