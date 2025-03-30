@@ -203,7 +203,7 @@ namespace Descope.Test.Unit
                 try
                 {
                     var response = await enchanted.UpdateUserEmail("loginId", email, "uri", null, null, "refreshJwt");
-                    Assert.Fail("Should have thrown an exception");
+                    Assert.True(false, "Should have thrown an exception");
                 }
                 catch (ArgumentException)
                 {
