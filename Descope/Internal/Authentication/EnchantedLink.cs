@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 [assembly: InternalsVisibleTo("Descope.Test")] // expose request bodies for unit testing
 
@@ -11,6 +9,8 @@ namespace Descope.Internal.Auth
     public class EnchantedLink : IEnchantedLink
     {
         private readonly IHttpClient _httpClient;
+
+        private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
 
         public EnchantedLink(IHttpClient httpClient)
         {
@@ -91,8 +91,87 @@ namespace Descope.Internal.Auth
             return response;
         }
 
+        public async Task<Session> GetSession(string pendingRef)
+        {
+            if (string.IsNullOrEmpty(pendingRef))
+                throw new ArgumentException("pendingRef cannot be empty", nameof(pendingRef));
+
+            var body = new GetSessionRequest
+            {
+                PendingRef = pendingRef
+            };
+
+            var response = await _httpClient.Post<AuthenticationResponse>(
+                Routes.EnchantedLinkGetSession,
+                body: body) ?? throw new DescopeException("Failed to get session from enchanted link response");
+
+            var sessionToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.SessionJwt));
+            var refreshToken = new Token(_jsonWebTokenHandler.ReadJsonWebToken(response.RefreshJwt));
+            return new Session(
+                sessionToken: sessionToken,
+                refreshToken: refreshToken,
+                user: response.User,
+                firstSeen: response.FirstSeen
+            );
+        }
+
+        public async Task Verify(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                throw new ArgumentException("token cannot be empty", nameof(token));
+
+            var body = new VerifyRequest
+            {
+                Token = token
+            };
+
+            await _httpClient.Post<object>(
+                Routes.EnchantedLinkVerify,
+                body: body);
+        }
+
+        public async Task<EnchantedLinkResponse> UpdateUserEmail(
+    string loginId,
+    string email,
+    string? uri,
+    UpdateOptions? updateOptions,
+    Dictionary<string, string>? templateOptions,
+    string refreshJwt)
+        {
+            if (string.IsNullOrEmpty(loginId))
+                throw new ArgumentException("loginId cannot be empty", nameof(loginId));
+            if (string.IsNullOrEmpty(email))
+                throw new ArgumentException("email cannot be empty", nameof(email));
+            if (!Utils.IsValidEmail(email))
+                throw new ArgumentException("email format is invalid", nameof(email));
+            if (string.IsNullOrEmpty(refreshJwt))
+                throw new ArgumentException("Refresh JWT is required", nameof(refreshJwt));
+
+            updateOptions ??= new UpdateOptions();
+
+            var body = new UpdateEmailRequest
+            {
+                LoginId = loginId,
+                Email = email,
+                URI = uri,
+                AddToLoginIDs = updateOptions.AddToLoginIds,
+                OnMergeUseExisting = updateOptions.OnMergeUseExisting,
+                TemplateOptions = templateOptions
+            };
+
+            var response = await _httpClient.Post<EnchantedLinkResponse>(
+                Routes.EnchantedLinkUpdateEmail,
+                body: body,
+                pswd: refreshJwt);
+
+            return response;
+        }
+
+        // Request bodies for enchanted link API calls
+
         // Disable this warning since we cannot use 'required' without breaking backwards compatibility
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
         internal abstract record BaseAuthenticationRequest
         {
             [JsonPropertyName("loginId")]
@@ -120,7 +199,36 @@ namespace Descope.Internal.Auth
             [JsonPropertyName("user")]
             public SignUpDetails User { get; init; }
         }
+
+        internal record GetSessionRequest
+        {
+            [JsonPropertyName("pendingRef")]
+            public string PendingRef { get; init; }
+        }
+
+        internal record VerifyRequest
+        {
+            [JsonPropertyName("token")]
+            public string Token { get; init; }
+        }
+
+        internal record UpdateEmailRequest : BaseAuthenticationRequest
+        {
+            [JsonPropertyName("email")]
+            public string Email { get; init; }
+
+            [JsonPropertyName("addToLoginIds")]
+            public bool AddToLoginIDs { get; init; }
+
+            [JsonPropertyName("onMergeUseExisting")]
+            public bool OnMergeUseExisting { get; init; }
+
+            [JsonPropertyName("templateOptions")]
+            public Dictionary<string, string>? TemplateOptions { get; init; }
+        }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
     }
 
 }
