@@ -154,7 +154,7 @@ namespace Descope.Internal.Auth
                 LoginId = loginId,
                 Email = email,
                 URI = uri,
-                AddToLoginIDs = updateOptions.AddToLoginIds,
+                AddToLoginIds = updateOptions.AddToLoginIds,
                 OnMergeUseExisting = updateOptions.OnMergeUseExisting,
                 TemplateOptions = templateOptions
             };
@@ -218,7 +218,7 @@ namespace Descope.Internal.Auth
             public string Email { get; init; }
 
             [JsonPropertyName("addToLoginIds")]
-            public bool AddToLoginIDs { get; init; }
+            public bool AddToLoginIds { get; init; }
 
             [JsonPropertyName("onMergeUseExisting")]
             public bool OnMergeUseExisting { get; init; }

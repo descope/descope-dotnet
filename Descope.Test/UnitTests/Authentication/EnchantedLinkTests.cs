@@ -176,7 +176,7 @@ namespace Descope.Test.Unit
                 Assert.Equal("loginId", requestBody.LoginId);
                 Assert.Equal("pickachu@pokemans.org", requestBody.Email);
                 Assert.Equal("uri", requestBody.URI);
-                Assert.True(requestBody.AddToLoginIDs);
+                Assert.True(requestBody.AddToLoginIds);
                 return null;
             };
             var updateOptions = new UpdateOptions { AddToLoginIds = true };
