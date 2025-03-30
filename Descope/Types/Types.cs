@@ -21,16 +21,6 @@ namespace Descope
         public string? FamilyName { get; set; }
     }
 
-    public class SignUpOptions
-    {
-        [JsonPropertyName("templateId")]
-        public string? TemplateID { get; set; }
-        [JsonPropertyName("templateOptions")]
-        public Dictionary<string, string>? TemplateOptions { get; set; }
-        [JsonPropertyName("customClaims")]
-        public Dictionary<string, object>? CustomClaims { get; set; }
-    }
-
     /// <summary>
     /// Used to require additional behaviors when authenticating a user.
     /// </summary>
@@ -71,6 +61,33 @@ namespace Descope
 
         public bool IsJWTRequired => StepupRefreshJwt != null || MfaRefreshJwt != null;
     }
+
+    /// <summary>
+    /// Used to require additional behaviors when signing up and then authenticating a user.
+    /// </summary>
+    public class SignUpOptions
+    {
+        /// <summary>
+        /// Optional custom signup template ID
+        /// </summary>
+        [JsonPropertyName("templateId")]
+        public string? TemplateID { get; set; }
+        /// <summary>
+        /// Optional custom signup template key-value options
+        /// </summary>
+        [JsonPropertyName("templateOptions")]
+        public Dictionary<string, string>? TemplateOptions { get; set; }
+        /// <summary>
+        /// Adds additional custom claims to the user's JWT during authentication.
+        /// <para>
+        /// <b>Important:</b> Any custom claims added via this method are considered insecure and will
+        /// be nested under the <c>nsec</c> custom claim.
+        /// </para>
+        /// </summary>
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
+    }
+
 
     public class UpdateOptions
     {

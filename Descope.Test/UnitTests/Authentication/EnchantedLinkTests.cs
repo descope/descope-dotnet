@@ -18,7 +18,7 @@ namespace Descope.Test.Unit
             {
                 Assert.Equal(Routes.EnchantedLinkSignIn, url);
                 Assert.Equal("pswd", pswd);
-                EnchantedLinkAuthenticationRequestBody requestBody = Utils.Convert<EnchantedLinkAuthenticationRequestBody>(body);
+                EnchantedLink.SignInRequest requestBody = Utils.Convert<EnchantedLink.SignInRequest>(body);
                 Assert.Equal("loginId", requestBody.LoginId);
                 Assert.Equal("uri", requestBody.URI);
                 Assert.True(requestBody.CrossDevice);
@@ -41,7 +41,7 @@ namespace Descope.Test.Unit
             {
                 Assert.Equal(Routes.EnchantedLinkSignUp, url);
                 Assert.Null(pswd);
-                EnchantedLinkSignUpRequestBody requestBody = Utils.Convert<EnchantedLinkSignUpRequestBody>(body);
+                EnchantedLink.SignUpRequest requestBody = Utils.Convert<EnchantedLink.SignUpRequest>(body);
                 Assert.Equal("loginId", requestBody.LoginId);
                 Assert.Equal("uri", requestBody.URI);
                 Assert.Equal("email", requestBody.User.Email);
@@ -53,6 +53,28 @@ namespace Descope.Test.Unit
             var signUpDetails = new SignUpDetails { Email = "email", FamilyName = "smith" };
             var signUpOptions = new SignUpOptions { TemplateID = "test" , TemplateOptions = new Dictionary<string, string> { { "key", "value" } } };
             var response = await enchanted.SignUp("loginId", "uri", signUpDetails, signUpOptions);
+            Assert.Equal("maskedEmail", response.MaskedEmail);
+            Assert.Equal(1, client.PostCount);
+        }
+
+        [Fact]
+        public async Task EnchantedLink_SignUpOrIn(){
+            var client = new MockHttpClient();
+            IEnchantedLink enchanted = new EnchantedLink(client);
+            client.PostResponse = new { maskedEmail = "maskedEmail" };
+            client.PostAssert = (url, pswd, body, queryParams) =>
+            {
+                Assert.Equal(Routes.EnchantedLinkSignUpOrIn, url);
+                Assert.Null(pswd);
+                EnchantedLink.SignUpOrInRequest requestBody = Utils.Convert<EnchantedLink.SignUpOrInRequest>(body);
+                Assert.Equal("loginId", requestBody.LoginId);
+                Assert.Equal("uri", requestBody.URI);
+                Assert.Equal("test", requestBody.LoginOptions.TemplateID);
+                Assert.True(requestBody.LoginOptions.TemplateOptions!.ContainsKey("key"));
+                return null;
+            };
+            var signUpOptions = new SignUpOptions { TemplateID = "test", TemplateOptions = new Dictionary<string, string> { { "key", "value" } } };
+            var response = await enchanted.SignUpOrIn("loginId", "uri", signUpOptions);
             Assert.Equal("maskedEmail", response.MaskedEmail);
             Assert.Equal(1, client.PostCount);
         }

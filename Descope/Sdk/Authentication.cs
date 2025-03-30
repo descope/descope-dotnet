@@ -113,8 +113,17 @@ namespace Descope
         /// <param name="loginId">The login ID of the user</param>
         /// <param name="uri">Optional custom URI to redirect the user to after signup, if empty then the URI set for the project in the descope console will be used instead</param>
         /// <param name="signUpDetails">Additional optional user details</param>
-        /// <param name="signUpOptions">Additional optional templates and custom claims </param>
+        /// <param name="signUpOptions">Additional optional signup templates and custom claims</param>
         Task<EnchantedLinkResponse> SignUp(string loginId, string? uri, SignUpDetails? signUpDetails = null, SignUpOptions? signUpOptions = null);
+
+
+        /// <summary>
+        /// Start a sign up process or authenticate a user using an enchanted link (need to perform polling afterwards to see if the user clicked the link).
+        /// /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after signup, if empty then the URI set for the project in the descope console will be used instead</param>
+        /// <param name="signUpOptions">Additional optional signup templates and custom claims</param>
+        Task<EnchantedLinkResponse> SignUpOrIn(string loginId, string? uri, SignUpOptions? signUpOptions = null);
     }
 
     /// <summary>
