@@ -58,7 +58,36 @@ namespace Descope
         /// </para>
         /// </summary>
         public Dictionary<string, object>? CustomClaims { get; set; }
+
+        public bool IsJWTRequired => StepupRefreshJwt != null || MfaRefreshJwt != null;
     }
+
+    /// <summary>
+    /// Used to require additional behaviors when signing up and then authenticating a user.
+    /// </summary>
+    public class SignUpOptions
+    {
+        /// <summary>
+        /// Optional custom signup template ID
+        /// </summary>
+        [JsonPropertyName("templateId")]
+        public string? TemplateID { get; set; }
+        /// <summary>
+        /// Optional custom signup template key-value options
+        /// </summary>
+        [JsonPropertyName("templateOptions")]
+        public Dictionary<string, string>? TemplateOptions { get; set; }
+        /// <summary>
+        /// Adds additional custom claims to the user's JWT during authentication.
+        /// <para>
+        /// <b>Important:</b> Any custom claims added via this method are considered insecure and will
+        /// be nested under the <c>nsec</c> custom claim.
+        /// </para>
+        /// </summary>
+        [JsonPropertyName("customClaims")]
+        public Dictionary<string, object>? CustomClaims { get; set; }
+    }
+
 
     public class UpdateOptions
     {
@@ -893,4 +922,27 @@ namespace Descope
             Oidc = oidc;
         }
     }
+
+
+    public class EnchantedLinkResponse
+    {
+        // Pending referral code used to poll enchanted link authentication status
+        [JsonPropertyName("pendingRef")]
+        public string PendingRef { get; set; }
+        // Link id, on which link the user should click
+        [JsonPropertyName("linkId")]
+        public string LinkId { get; set; }
+        // Masked email to which the email was sent
+        [JsonPropertyName("maskedEmail")]
+        public string MaskedEmail {get; set;}
+
+
+        public EnchantedLinkResponse(string pendingRef, string linkId, string maskedEmail)
+        {
+            PendingRef = pendingRef;
+            LinkId = linkId;
+            MaskedEmail = maskedEmail;
+        }
+    }
+
 }

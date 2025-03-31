@@ -28,5 +28,21 @@ namespace Descope.Internal
                 {"customClaims", options.CustomClaims},
             };
         }
+
+        internal static bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email.Trim());
+                return addr.Address == email.Trim();
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

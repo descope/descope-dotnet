@@ -37,6 +37,17 @@
 
         #endregion OAUTH
 
+        #region ENCHANTEDLINK
+
+        public const string EnchantedLinkSignIn = "/v1/auth/enchantedlink/signin/email";
+        public const string EnchantedLinkSignUp = "/v1/auth/enchantedlink/signup/email";
+        public const string EnchantedLinkSignUpOrIn = "/v1/auth/enchantedlink/signup-in/email";
+        public const string EnchantedLinkGetSession = "/v1/auth/enchantedlink/pending-session";
+        public const string EnchantedLinkVerify = "/v1/auth/enchantedlink/verify";
+        public const string EnchantedLinkUpdateEmail = "/v1/auth/enchantedlink/update/email";
+
+        #endregion ENCHANTEDLINK
+
         #region SSO
 
         public const string SsoStart = "/v1/auth/sso/authorize";

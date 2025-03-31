@@ -90,6 +90,86 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using an Enchanted Link.
+    /// </summary>
+    public interface IEnchantedLink
+    {
+        /// <summary>
+        /// Authenticate a user using an enchanted link.
+        /// <para>
+        /// A successful authentication will result in a callback to the URL defined here or in the current project settings.
+        /// </para>
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after authentication, if empty then the URI set for the project in the descope console will be used instead</param>
+        /// <param name="loginOptions">Additional optional behaviors to perform during authentication</param>
+        /// <param name="refreshJwt">An optional valid refresh JWT, only needed if certain custom loginOptions were selected</param>
+        /// <returns>An <c>EnchantedLinkResponse</c> value upon successful exchange.</returns>
+        Task<EnchantedLinkResponse> SignIn(string loginId, string? uri, LoginOptions? loginOptions = null, string? refreshJwt = null);
+
+        /// <summary>
+        /// Start a sign up process using an enchanted link (need to perform polling afterwards to see if the user clicked the link).
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after signup, if empty then the URI set for the project in the descope console will be used instead</param>
+        /// <param name="signUpDetails">Additional optional user details</param>
+        /// <param name="signUpOptions">Additional optional signup templates and custom claims</param>
+        Task<EnchantedLinkResponse> SignUp(string loginId, string? uri, SignUpDetails? signUpDetails = null, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
+        /// Start a sign up process or authenticate a user using an enchanted link (need to perform polling afterwards to see if the user clicked the link).
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after signup, if empty then the URI set for the project in the descope console will be used instead</param>
+        /// <param name="signUpOptions">Additional optional signup templates and custom claims</param>
+        Task<EnchantedLinkResponse> SignUpOrIn(string loginId, string? uri, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
+        /// Retrieve the enchanted link session after the user clicked the link.
+        /// </summary>
+        /// <para>
+        /// Should be polled after invoking the SignIn/SignUp/SignUpOrIn method.
+        /// </para>
+        /// <param name="pendingRef">The pending reference received in the enchanted link response</param>
+        /// <exception cref="DescopeException">Thrown if session request fails, could happen during polling until the user clicks the link and the token is verified</exception>
+        /// <exception cref="ArgumentException">Thrown if the pendingRef is null or empty.</exception>
+        Task<Session> GetSession(string pendingRef);
+
+        /// <summary>
+        /// Verifies the enchanted link token received in the redirect URL "t=" parameter.
+        /// </summary>
+        /// <para>
+        /// Should be called once the user clicks the enchanted link and is redirected to the redirect URL.
+        /// GetSession will not return a session until the token is verified.
+        /// </para>
+        /// <param name="token">The token to verify.</param>
+        /// <exception cref="ArgumentException">Thrown if the token is null or empty.</exception>
+        /// <exception cref="HttpRequestException">Thrown if the HTTP request fails.</exception>
+        Task Verify(string token);
+
+        /// <summary>
+        /// Update the email address of a user using an enchanted link.
+        /// </summary>
+        /// <para>
+        /// Will send an email to the new address with an enchanted link to verify the change.
+        /// Verify must be called with the updated token received in the redirect URL "t=" parameter after the user clicks the link to complete the process.
+        /// </para>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="email">The new email address</param>
+        /// <param name="uri">Optional custom URI to redirect the user to after clicking the link, will use project default if empty</param>
+        /// <param name="updateOptions">Optional email update options</param>
+        /// <param name="templateOptions">Optional email template options</param>
+        /// <param name="refreshJwt">Required valid refresh JWT</param>
+        Task<EnchantedLinkResponse> UpdateUserEmail(
+            string loginId,
+            string email,
+            string? uri,
+            UpdateOptions? updateOptions,
+            Dictionary<string, string>? templateOptions,
+            string refreshJwt);
+    }
+
+    /// <summary>
     /// Authenticate a user using a SSO.
     /// <para>
     /// Use the Descope console to configure your SSO details in order for this method to work properly.
@@ -134,6 +214,11 @@ namespace Descope
         /// Authenticate a user using OAuth.
         /// </summary>
         public IOAuth OAuth { get; }
+
+        /// <summary>
+        /// Authenticate a user using an enchanted link.
+        /// </summary>
+        public IEnchantedLink EnchantedLink { get; }
 
         /// <summary>
         /// Authenticate a user using SSO.
