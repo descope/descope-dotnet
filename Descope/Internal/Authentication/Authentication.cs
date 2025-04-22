@@ -153,7 +153,7 @@ namespace Descope.Internal.Auth
 
         private async Task FetchKeyIfNeeded()
         {
-            if (!_securityKeys.IsNullOrEmpty()) return;
+            if (_securityKeys != null && _securityKeys.Count > 0) return;
 
             var response = await _httpClient.Get<JwtKeyResponse>(Routes.AuthKeys + $"{_httpClient.DescopeConfig.ProjectId}");
             foreach (var key in response.Keys)
