@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Descope.Internal.Management
 {
@@ -223,7 +224,20 @@ namespace Descope.Internal.Management
         public async Task<List<UserResponse>> SearchAll(SearchUserOptions? options)
         {
             options ??= new SearchUserOptions();
-            var result = await _httpClient.Post<WrappedUsersResponse>(Routes.UserSearch, _managementKey, options);
+
+            var json = JsonSerializer.Serialize(options);
+            var body = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new Dictionary<string, object>();
+
+            if (options.TenantRoleIds != null && options.TenantRoleIds.Count > 0)
+            {
+                body["tenantRoleIds"] = MapToValuesObject(options.TenantRoleIds);
+            }
+            if (options.TenantRoleNames != null && options.TenantRoleNames.Count > 0)
+            {
+                body["tenantRoleNames"] = MapToValuesObject(options.TenantRoleNames);
+            }
+
+            var result = await _httpClient.Post<WrappedUsersResponse>(Routes.UserSearch, _managementKey, body);
             return result.Users;
         }
 
@@ -337,6 +351,19 @@ namespace Descope.Internal.Management
                 list.Add(dict);
             };
             return list;
+        }
+
+        private static Dictionary<string, object> MapToValuesObject(Dictionary<string, List<string>> inputMap)
+        {
+            var result = new Dictionary<string, object>();
+            if (inputMap != null)
+            {
+                foreach (var kvp in inputMap)
+                {
+                    result[kvp.Key] = new Dictionary<string, object> { { "values", kvp.Value } };
+                }
+            }
+            return result;
         }
 
         #endregion Internal
