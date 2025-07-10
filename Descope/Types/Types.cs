@@ -437,6 +437,10 @@ namespace Descope
         public bool WithTestUsers { get; set; }
         [JsonPropertyName("testUsersOnly")]
         public bool TestUsersOnly { get; set; }
+        [JsonPropertyName("tenantRoleIds")]
+        public Dictionary<string, List<string>>? TenantRoleIds { get; set; }
+        [JsonPropertyName("tenantRoleNames")]
+        public Dictionary<string, List<string>>? TenantRoleNames { get; set; }
     }
 
     public class UserSearchSort
