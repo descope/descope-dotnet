@@ -27,6 +27,7 @@ These sections show how to use the SDK to perform various authentication/authori
 1. [OTP](#otp-authentication)
 2. [OAuth](#oauth)
 3. [SSO](#sso-saml--oidc)
+4. [Enchanted Link](#enchanted-link-authentication)
 
 ## Management Functions
 
@@ -81,7 +82,7 @@ try
 }
 catch
 {
-    // handle error
+    // handle errors
 }
 ```
 
@@ -176,6 +177,46 @@ catch
 }
 ```
 
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### Enchanted Link Authentication
+
+Send a user an enchanted link using email. An email address must be provided accordingly.
+
+The user can either `sign up`, `sign in` or `sign up or in`
+
+```cs
+var loginId = "email@company.com"; // email becomes the loginId for the user from here on and also used for delivery
+var uri = "http://auth.company.com/api/verify_enchantedlink";
+var signUpDetails = new SignUpDetails {
+    Name = "Joe Person",
+    Phone = "+15555555555",
+    Email = "email@company.com"
+};
+
+var signUpOptions = new SignUpOptions {
+    CustomClaims = new Dictionary<string, object> { { "claim", "Value1" } },
+    TemplateOptions = new Dictionary<string, string> { { "option", "Value1" } }
+};
+
+try {
+    var resp = await descopeClient.Authentication.EnchantedLink.SignUp(loginId, uri, signUpDetails, signUpOptions);
+} catch (DescopeException ex) {
+    // handle errors 
+}
+```
+When the user clicks the enchanted link, you will need to verify the token:
+```cs
+// Args:
+//   token:  URL parameter containing the enchanted link token, for example, https://auth.company.com/api/verify_enchantedlink?t=token.
+var token = "xxxx";
+
+try {
+    await descopeClient.Authentication.EnchantedLink.Verify(token);
+} catch (DescopeException ex) {
+    // handle errors 
+}
+```
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### Session Validation
