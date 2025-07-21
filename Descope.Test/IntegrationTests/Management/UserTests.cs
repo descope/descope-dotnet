@@ -561,18 +561,56 @@ namespace Descope.Test.Integration
         public async Task User_DeleteAndSearch()
         {
             string? loginId = null;
+            string? tenantId = null;
+            string? roleName = null;
             try
             {
+                // Create a tenant and role
+                tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions(Guid.NewGuid().ToString()));
+                roleName = "Tenant Admin";
+                await _descopeClient.Management.Role.Create(roleName, tenantId: tenantId);
+
                 // Create a user
                 var name = Guid.NewGuid().ToString();
                 var createResult = await _descopeClient.Management.User.Create(loginId: name, new UserRequest()
                 {
                     Phone = "+972111111111",
                     VerifiedPhone = true,
+                    UserTenants = new List<AssociatedTenant> {
+                        new(tenantId) { RoleNames = new List<string> { roleName } }
+                    },
                 });
                 loginId = createResult.LoginIds.First();
 
-                // Search for it
+                // Check serialization of TenantRoleNames
+                var searchOptions = new SearchUserOptions()
+                {
+                    TenantRoleNames = new Dictionary<string, List<string>>
+                    {
+                        { tenantId, new List<string> { roleName } }
+                    },
+                    Limit = 1
+                };
+
+                var transformed = Internal.Management.User.MapToValuesObject(searchOptions.TenantRoleNames);
+                Assert.True(transformed.ContainsKey(tenantId));
+                var valuesObj = transformed[tenantId] as Dictionary<string, object>;
+                Assert.NotNull(valuesObj);
+                Assert.True(valuesObj.ContainsKey("values"));
+                Assert.Equal(new List<string> { roleName }, valuesObj["values"] as List<string>);
+
+                // Search for the user by TenantRoleNames
+                var usersByRoleAndTenant = await _descopeClient.Management.User.SearchAll(new SearchUserOptions()
+                {
+                    TenantRoleNames = new Dictionary<string, List<string>>
+                    {
+                        { tenantId, new List<string> { roleName } }
+                    },
+                    Limit = 1
+                });
+                Assert.Contains(usersByRoleAndTenant, u => u.LoginIds.Contains(loginId));
+
+                // Search for user by name
                 var users = await _descopeClient.Management.User.SearchAll(new SearchUserOptions() { Text = name, Limit = 1 });
                 Assert.Single(users);
                 await _descopeClient.Management.User.Delete(loginId);

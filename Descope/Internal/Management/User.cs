@@ -353,7 +353,7 @@ namespace Descope.Internal.Management
             return list;
         }
 
-        private static Dictionary<string, object> MapToValuesObject(Dictionary<string, List<string>> inputMap)
+        internal static Dictionary<string, object> MapToValuesObject(Dictionary<string, List<string>> inputMap)
         {
             var result = new Dictionary<string, object>();
             if (inputMap != null)
