@@ -1,4 +1,4 @@
-
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -185,19 +185,33 @@ namespace Descope
             }
         }
 
-        internal List<string> GetTenants()
+        public List<string> GetTenants()
         {
             return new List<string>(GetTenantsClaim().Keys);
         }
 
-        internal object? GetTenantValue(string tenant, string key)
+        public List<string> GetTenantValue(string tenant, string key)
         {
-            return (GetTenantsClaim()[tenant] is Dictionary<string, object> info) ? info[key] : null;
+            var tenantsClaimJson = GetTenantsClaim()[tenant].ToString();
+            if (string.IsNullOrEmpty(tenantsClaimJson))
+                return new List<string>();
+            var tenantsClaim = JsonSerializer.Deserialize<Dictionary<string, object>>(tenantsClaimJson)
+                 ?? new Dictionary<string, object>();
+            if (!tenantsClaim.TryGetValue(key, out var tenants))
+                return new List<string>();
+
+            var tenatnsJson = tenants.ToString() ?? string.Empty;
+            return JsonSerializer.Deserialize<List<string>>(tenatnsJson) ?? new List<string>();
         }
 
-        private Dictionary<string, object> GetTenantsClaim()
+        public Dictionary<string, object> GetTenantsClaim()
         {
-            return Claims["tenants"] as Dictionary<string, object> ?? new Dictionary<string, object>();
+            if (!Claims.TryGetValue("tenants", out var value))
+                return new Dictionary<string, object>();
+            var tenants = value.ToString();
+            if (string.IsNullOrEmpty(tenants))
+                return new Dictionary<string, object>();
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(tenants) ?? new Dictionary<string, object>();
         }
     }
 
