@@ -27,6 +27,20 @@
 
         #endregion OTP
 
+        #region PASSWORD
+
+        public const string PasswordReset = "/v1/auth/password/reset";
+        public const string PasswordReplace = "/v1/auth/password/replace";
+        public const string PasswordUpdate = "/v1/auth/password/update";
+
+        #endregion PASSWORD
+
+        #region MAGICLINK
+
+        public const string MagicLinkVerify = "/v1/auth/magiclink/verify";
+
+        #endregion MAGICLINK
+
         #region OAUTH
 
         public const string OAuthSignUpOrIn = "/v1/auth/oauth/authorize";
