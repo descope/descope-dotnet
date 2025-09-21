@@ -6,6 +6,71 @@ namespace Descope.Test.Integration
     {
         private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
+        public MagicLinkTests()
+        {
+            // Clean up test users to avoid hitting the limit
+            try
+            {
+                _descopeClient.Management.User.DeleteAllTestUsers().GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Ignore errors during cleanup
+            }
+        }
+
+        [Fact]
+        public async Task MagicLink_Verify_Success()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a test user with email
+                var testLoginId = Guid.NewGuid().ToString() + "@test.descope.com";
+                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                {
+                    Email = testLoginId,
+                    VerifiedEmail = true,
+                    Name = "Magic Link Test User"
+                }, testUser: true);
+                loginId = testLoginId;
+
+                // Generate magic link for test user
+                var magicLinkResponse = await _descopeClient.Management.User.GenerateMagicLinkForTestUser(
+                    DeliveryMethod.Email, 
+                    testLoginId, 
+                    "https://example.com/auth"
+                );
+
+                // Extract token from the magic link URL
+                var uri = new Uri(magicLinkResponse.Link);
+                var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                var token = queryParams["t"];
+
+                Assert.NotNull(token);
+                Assert.NotEmpty(token);
+
+                // Verify the magic link token
+                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
+                
+                // Verify the response
+                Assert.NotNull(authResponse);
+                Assert.NotEmpty(authResponse.SessionJwt);
+                Assert.NotNull(authResponse.RefreshJwt);
+                Assert.NotEmpty(authResponse.RefreshJwt);
+                Assert.Equal(user.UserId, authResponse.User.UserId);
+                Assert.Equal(testLoginId, authResponse.User.Email);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
+
         [Fact]
         public async Task MagicLink_Verify_WithInvalidToken_ShouldFail()
         {
