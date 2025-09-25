@@ -170,6 +170,19 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using Magic Link.
+    /// </summary>
+    public interface IMagicLink
+    {
+        /// <summary>
+        /// Verify a magic link token on the server and return the resulting auth/session info.
+        /// </summary>
+        /// <param name="token">The magic link token to verify</param>
+        /// <returns>Authentication response with session information</returns>
+        Task<AuthenticationResponse> Verify(string token);
+    }
+
+    /// <summary>
     /// Authenticate a user using a SSO.
     /// <para>
     /// Use the Descope console to configure your SSO details in order for this method to work properly.
@@ -219,6 +232,11 @@ namespace Descope
         /// Authenticate a user using an enchanted link.
         /// </summary>
         public IEnchantedLink EnchantedLink { get; }
+
+        /// <summary>
+        /// Authenticate a user using magic link.
+        /// </summary>
+        public IMagicLink MagicLink { get; }
 
         /// <summary>
         /// Authenticate a user using SSO.
@@ -326,5 +344,30 @@ namespace Descope
         /// <param name="refreshJwt">A valid refresh JWT</param>
         /// <returns>The current session user details</returns>
         Task<UserResponse> Me(string refreshJwt);
+
+        /// <summary>
+        /// Send a password reset email to a user.
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="redirectUrl">Optional redirect URL after password reset</param>
+        /// <param name="templateOptions">Optional email template options</param>
+        Task SendPasswordReset(string loginId, string? redirectUrl = null, Dictionary<string, string>? templateOptions = null);
+
+        /// <summary>
+        /// Replace a user's password (old → new).
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="oldPassword">The user's current password</param>
+        /// <param name="newPassword">The new password to set</param>
+        /// <returns>Authentication response with new session</returns>
+        Task<AuthenticationResponse> ReplaceUserPassword(string loginId, string oldPassword, string newPassword);
+
+        /// <summary>
+        /// Update an authenticated user's password without the old password.
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="newPassword">The new password to set</param>
+        /// <param name="refreshJwt">Valid user refresh JWT</param>
+        Task UpdateUserPassword(string loginId, string newPassword, string refreshJwt);
     }
 }

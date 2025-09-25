@@ -28,6 +28,8 @@ These sections show how to use the SDK to perform various authentication/authori
 2. [OAuth](#oauth)
 3. [SSO](#sso-saml--oidc)
 4. [Enchanted Link](#enchanted-link-authentication)
+5. [Password Authentication](#password-authentication)
+6. [Magic Link](#magic-link-authentication)
 
 ## Management Functions
 
@@ -218,6 +220,98 @@ try {
 }
 ```
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### Password Authentication
+
+You can authenticate users using passwords along with password reset functionality.
+
+#### Send Password Reset Email
+
+Send a password reset email to a user:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var redirectUrl = "https://myapp.com/password-reset"; // Optional
+    var templateOptions = new Dictionary<string, string> 
+    { 
+        { "company", "ACME Corp" } 
+    }; // Optional
+    
+    await descopeClient.Auth.SendPasswordReset(loginId, redirectUrl, templateOptions);
+    // Email sent successfully
+}
+catch (DescopeException e)
+{
+    // Handle error
+}
+```
+
+#### Replace User Password (Authenticated)
+
+Allow an authenticated user to replace their own password:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var oldPassword = "currentPassword123";
+    var newPassword = "newSecurePassword456";
+    
+    var authResponse = await descopeClient.Auth.ReplaceUserPassword(loginId, oldPassword, newPassword);
+    // User authenticated with new password
+    var sessionJwt = authResponse.SessionJwt;
+    var refreshJwt = authResponse.RefreshJwt;
+}
+catch (DescopeException e)
+{
+    // Handle error - invalid old password, etc.
+}
+```
+
+#### Admin Password Update
+
+Allow an admin to update a user's password without requiring the old password:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var newPassword = "adminSetPassword789";
+    var adminRefreshJwt = "admin_refresh_jwt_here"; // Must have admin privileges
+    
+    await descopeClient.Auth.UpdateUserPassword(loginId, newPassword, adminRefreshJwt);
+    // Password updated successfully
+}
+catch (DescopeException e)
+{
+    // Handle error - insufficient permissions, invalid JWT, etc.
+}
+```
+
+### Magic Link Authentication
+
+Verify magic link tokens on the server side:
+
+#### Verify Magic Link Token
+
+```cs
+try
+{
+    var token = "magic_link_token_from_url_parameter";
+    
+    var authResponse = await descopeClient.Auth.VerifyMagicLinkToken(token);
+    // User authenticated via magic link
+    var sessionJwt = authResponse.SessionJwt;
+    var refreshJwt = authResponse.RefreshJwt;
+    var user = authResponse.User;
+}
+catch (DescopeException e)
+{
+    // Handle error - invalid or expired token
+}
+```
 
 ### Session Validation
 
