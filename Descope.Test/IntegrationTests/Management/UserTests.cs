@@ -41,6 +41,7 @@ namespace Descope.Test.Integration
                 var user1 = Guid.NewGuid().ToString();
                 var user2 = Guid.NewGuid().ToString();
                 var user3 = Guid.NewGuid().ToString();
+                var user4 = Guid.NewGuid().ToString();
                 var batchUsers = new List<BatchUser>()
                 {
                     new(loginId: user1)
@@ -60,12 +61,18 @@ namespace Descope.Test.Integration
                         Email = user3 + "@test.com",
                         VerifiedEmail = true,
                         Status = UserStatus.Invited,
+                    },
+                    new(loginId: user4)
+                    {
+                        Email = user4 + "@test.com",
+                        VerifiedEmail = true,
+                        // No Status set - testing backwards compatibility
                     }
                 };
 
                 // Create batch and check
                 var result = await _descopeClient.Management.User.CreateBatch(batchUsers);
-                Assert.True(result.CreatedUsers.Count == 3);
+                Assert.True(result.CreatedUsers.Count == 4);
                 loginIds = new List<string>();
                 foreach (var createdUser in result.CreatedUsers)
                 {
@@ -85,6 +92,11 @@ namespace Descope.Test.Integration
                     {
                         Assert.True(createdUser.VerifiedEmail);
                         Assert.Equal("invited", createdUser.Status);
+                    }
+                    else if (loginId == user4)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        // User4 has no Status set - should get default behavior, no need to assert on it
                     }
                 }
             }
