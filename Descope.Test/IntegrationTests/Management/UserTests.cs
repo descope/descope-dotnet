@@ -40,23 +40,39 @@ namespace Descope.Test.Integration
                 // Prepare batch info
                 var user1 = Guid.NewGuid().ToString();
                 var user2 = Guid.NewGuid().ToString();
+                var user3 = Guid.NewGuid().ToString();
+                var user4 = Guid.NewGuid().ToString();
                 var batchUsers = new List<BatchUser>()
                 {
                     new(loginId: user1)
                     {
                         Email = user1 + "@test.com",
                         VerifiedEmail = true,
+                        Status = UserStatus.Enabled,
                     },
                     new(loginId: user2)
                     {
                         Email = user2 + "@test.com",
                         VerifiedEmail = false,
+                        Status = UserStatus.Disabled,
+                    },
+                    new(loginId: user3)
+                    {
+                        Email = user3 + "@test.com",
+                        VerifiedEmail = true,
+                        Status = UserStatus.Invited,
+                    },
+                    new(loginId: user4)
+                    {
+                        Email = user4 + "@test.com",
+                        VerifiedEmail = true,
+                        // No Status set - testing backwards compatibility
                     }
                 };
 
                 // Create batch and check
                 var result = await _descopeClient.Management.User.CreateBatch(batchUsers);
-                Assert.True(result.CreatedUsers.Count == 2);
+                Assert.True(result.CreatedUsers.Count == 4);
                 loginIds = new List<string>();
                 foreach (var createdUser in result.CreatedUsers)
                 {
@@ -65,10 +81,22 @@ namespace Descope.Test.Integration
                     if (loginId == user1)
                     {
                         Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("enabled", createdUser.Status);
                     }
                     else if (loginId == user2)
                     {
                         Assert.False(createdUser.VerifiedEmail);
+                        Assert.Equal("disabled", createdUser.Status);
+                    }
+                    else if (loginId == user3)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("invited", createdUser.Status);
+                    }
+                    else if (loginId == user4)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        // User4 has no Status set - should get default behavior, no need to assert on it
                     }
                 }
             }

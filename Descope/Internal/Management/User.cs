@@ -304,6 +304,10 @@ namespace Descope.Internal.Management
                 {
                     dict["hashedPassword"] = user.Password.Hashed;
                 }
+                if (user.Status.HasValue)
+                {
+                    dict["status"] = user.Status.Value.ToStringValue();
+                }
                 userList.Add(dict);
             }
             body["users"] = userList;
@@ -349,7 +353,7 @@ namespace Descope.Internal.Management
                 var dict = new Dictionary<string, object> { { "tenantId", tenant.TenantId } };
                 if (tenant.RoleNames != null) dict["roleNames"] = tenant.RoleNames;
                 list.Add(dict);
-            };
+            }
             return list;
         }
 

@@ -206,6 +206,27 @@ namespace Descope
         Email, Sms, Whatsapp
     }
 
+    public enum UserStatus
+    {
+        Enabled,
+        Disabled,
+        Invited
+    }
+
+    public static class UserStatusExtensions
+    {
+        public static string ToStringValue(this UserStatus status)
+        {
+            return status switch
+            {
+                UserStatus.Enabled => "enabled",
+                UserStatus.Disabled => "disabled",
+                UserStatus.Invited => "invited",
+                _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+            };
+        }
+    }
+
     public class UserResponse
     {
         [JsonPropertyName("loginIds")]
@@ -315,6 +336,8 @@ namespace Descope
         public string LoginId { get; set; }
 
         public BatchUserPassword? Password { get; set; }
+
+        public UserStatus? Status { get; set; }
 
         public BatchUser(string loginId)
         {
@@ -938,7 +961,7 @@ namespace Descope
         public string LinkId { get; set; }
         // Masked email to which the email was sent
         [JsonPropertyName("maskedEmail")]
-        public string MaskedEmail {get; set;}
+        public string MaskedEmail { get; set; }
 
 
         public EnchantedLinkResponse(string pendingRef, string linkId, string maskedEmail)
