@@ -354,7 +354,6 @@ namespace Descope.Internal.Management
                 if (tenant.RoleNames != null) dict["roleNames"] = tenant.RoleNames;
                 list.Add(dict);
             }
-            ;
             return list;
         }
 
