@@ -40,23 +40,32 @@ namespace Descope.Test.Integration
                 // Prepare batch info
                 var user1 = Guid.NewGuid().ToString();
                 var user2 = Guid.NewGuid().ToString();
+                var user3 = Guid.NewGuid().ToString();
                 var batchUsers = new List<BatchUser>()
                 {
                     new(loginId: user1)
                     {
                         Email = user1 + "@test.com",
                         VerifiedEmail = true,
+                        Status = UserStatus.Enabled,
                     },
                     new(loginId: user2)
                     {
                         Email = user2 + "@test.com",
                         VerifiedEmail = false,
+                        Status = UserStatus.Disabled,
+                    },
+                    new(loginId: user3)
+                    {
+                        Email = user3 + "@test.com",
+                        VerifiedEmail = true,
+                        Status = UserStatus.Invited,
                     }
                 };
 
                 // Create batch and check
                 var result = await _descopeClient.Management.User.CreateBatch(batchUsers);
-                Assert.True(result.CreatedUsers.Count == 2);
+                Assert.True(result.CreatedUsers.Count == 3);
                 loginIds = new List<string>();
                 foreach (var createdUser in result.CreatedUsers)
                 {
@@ -65,10 +74,17 @@ namespace Descope.Test.Integration
                     if (loginId == user1)
                     {
                         Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("enabled", createdUser.Status);
                     }
                     else if (loginId == user2)
                     {
                         Assert.False(createdUser.VerifiedEmail);
+                        Assert.Equal("disabled", createdUser.Status);
+                    }
+                    else if (loginId == user3)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("invited", createdUser.Status);
                     }
                 }
             }

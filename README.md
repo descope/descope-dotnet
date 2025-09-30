@@ -545,11 +545,13 @@ try
         {
             Email = "user1@something.com",
             VerifiedEmail = true,
+            Status = UserStatus.Enabled, // Set user status: Enabled, Disabled, or Invited
         },
         new(loginId: "user2@something.com")
         {
             Email = "user2@something.com",
             VerifiedEmail = false,
+            Status = UserStatus.Invited, // Optional: if not set, defaults to project settings
         }
     };
     var result = await descopeClient.Management.User.CreateBatch(batchUsers);
@@ -557,6 +559,7 @@ try
     // Import users from another service by calling CreateBatch with each user's password hash
     var user = new BatchUser("desmond@descope.com")
     {
+        Status = UserStatus.Enabled, // Set the user status
         Password = new BatchUserPassword
         {
             Hashed = new BatchUserPasswordHashed
