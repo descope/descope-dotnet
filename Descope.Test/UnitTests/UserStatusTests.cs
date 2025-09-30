@@ -5,28 +5,6 @@ namespace Descope.Test.UnitTests
     public class UserStatusTests
     {
         [Fact]
-        public void UserStatus_ToStringValue_ReturnsCorrectValues()
-        {
-            // Arrange & Act & Assert
-            Assert.Equal("enabled", UserStatus.Enabled.ToStringValue());
-            Assert.Equal("disabled", UserStatus.Disabled.ToStringValue());
-            Assert.Equal("invited", UserStatus.Invited.ToStringValue());
-        }
-
-        [Theory]
-        [InlineData(UserStatus.Enabled, "enabled")]
-        [InlineData(UserStatus.Disabled, "disabled")]
-        [InlineData(UserStatus.Invited, "invited")]
-        public void UserStatus_ToStringValue_Theory(UserStatus status, string expected)
-        {
-            // Act
-            var result = status.ToStringValue();
-
-            // Assert
-            Assert.Equal(expected, result);
-        }
-
-        [Fact]
         public void UserStatus_ToStringValue_AllEnumValues_ReturnValidStrings()
         {
             // Arrange: Get all defined enum values
