@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
@@ -212,9 +212,9 @@ namespace Descope.Internal.Auth
             var claimItems = GetAuthorizationClaimItems(token, claim, tenant);
             foreach (var value in values)
             {
-                if (!claimItems.Contains(value)) return false;
+                if (claimItems.Contains(value)) return true;
             }
-            return true;
+            return false;
         }
 
         private static List<string> GetMatchedClaimValues(Token token, string claim, List<string> values, string? tenant)
@@ -317,6 +317,4 @@ namespace Descope.Internal.Auth
             return rsaParameters;
         }
     }
-
-
 }
