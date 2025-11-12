@@ -155,7 +155,9 @@ namespace Descope.Test.Integration
             }
         }
 
-        [Fact]
+        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
+        // This test is only for manual testing purposes
+        [Fact(Skip = "Manual testing only - requires email verification")]
         public async Task MagicLink_SignIn_Email_Success()
         {
             var scenario = GetScenario("signin");
@@ -203,7 +205,9 @@ namespace Descope.Test.Integration
             }
         }
 
-        [Fact]
+        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
+        // This test is only for manual testing purposes
+        [Fact(Skip = "Manual testing only - requires email verification")]
         public async Task MagicLink_SignUp_Email_Success()
         {
             var scenario = GetScenario("signup");
@@ -247,7 +251,9 @@ namespace Descope.Test.Integration
             }
         }
 
-        [Fact]
+        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
+        // This test is only for manual testing purposes
+        [Fact(Skip = "Manual testing only - requires email verification")]
         public async Task MagicLink_SignUpOrIn_Email_Success()
         {
             var scenario = GetScenario("sign-in-or-up");
