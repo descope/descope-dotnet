@@ -175,6 +175,38 @@ namespace Descope
     public interface IMagicLink
     {
         /// <summary>
+        /// Authenticates an existing user using a magic link sent via email or SMS/WhatsApp.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="loginOptions">Optional login options</param>
+        /// <param name="refreshJwt">Optional refresh JWT for stepup or MFA</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignIn(DeliveryMethod deliveryMethod, string loginId, string? uri = null, LoginOptions? loginOptions = null, string? refreshJwt = null);
+
+        /// <summary>
+        /// Creates a new user and sends a magic link for authentication via email or SMS/WhatsApp.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="signUpDetails">Optional user details for signup</param>
+        /// <param name="signUpOptions">Optional signup options</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignUp(DeliveryMethod deliveryMethod, string loginId, string? uri = null, SignUpDetails? signUpDetails = null, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
+        /// Authenticates a user using a magic link, signing them up if they don't exist.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="signUpOptions">Optional signup options</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignUpOrIn(DeliveryMethod deliveryMethod, string loginId, string? uri = null, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
         /// Verify a magic link token on the server and return the resulting auth/session info.
         /// </summary>
         /// <param name="token">The magic link token to verify</param>

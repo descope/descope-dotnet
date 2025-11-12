@@ -37,6 +37,9 @@
 
         #region MAGICLINK
 
+        public const string MagicLinkSignIn = "/v1/auth/magiclink/signin/";
+        public const string MagicLinkSignUp = "/v1/auth/magiclink/signup/";
+        public const string MagicLinkSignUpOrIn = "/v1/auth/magiclink/signup-in/";
         public const string MagicLinkVerify = "/v1/auth/magiclink/verify";
 
         #endregion MAGICLINK
