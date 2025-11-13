@@ -62,6 +62,7 @@ namespace Descope.Test.Unit
                 Assert.Equal(Routes.MagicLinkSignIn + "email", url);
                 var requestBody = Utils.Convert<dynamic>(body);
                 Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
+                Assert.Equal("value", customClaims.GetProperty("key").GetString());
                 return null;
             };
 
@@ -146,6 +147,7 @@ namespace Descope.Test.Unit
                 Assert.Equal(Routes.MagicLinkSignUp + "email", url);
                 var requestBody = Utils.Convert<dynamic>(body);
                 Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
+                Assert.Equal("value", customClaims.GetProperty("key").GetString());
                 Assert.Equal("template123", requestBody.GetProperty("loginOptions").GetProperty("templateId").GetString());
                 return null;
             };
@@ -221,6 +223,7 @@ namespace Descope.Test.Unit
                 Assert.Equal(Routes.MagicLinkSignUpOrIn + "email", url);
                 var requestBody = Utils.Convert<dynamic>(body);
                 Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
+                Assert.Equal("value", customClaims.GetProperty("key").GetString());
                 return null;
             };
 
