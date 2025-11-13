@@ -360,5 +360,126 @@ namespace Descope.Test.Integration
             var exception = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Equal("token missing", exception.Message);
         }
+
+        [Fact]
+        public async Task MagicLink_GenerateEmbeddedLink_WithCustomClaims_Success()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a user with email
+                var testLoginId = Guid.NewGuid().ToString() + "@descope.com";
+                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                {
+                    Email = testLoginId,
+                    VerifiedEmail = true,
+                    Name = "Embedded Link User"
+                }, testUser: false);
+                loginId = testLoginId;
+
+                // Generate embedded link for test user with custom claims
+                var customClaims = new Dictionary<string, object>
+                {
+                    { "embeddedTestKey", "embeddedTestValue" },
+                    { "numericKey", 123 },
+                    { "booleanKey", true }
+                };
+
+                var token = await _descopeClient.Management.User.GenerateEmbeddedLink(testLoginId, customClaims);
+
+                Assert.NotNull(token);
+                Assert.NotEmpty(token);
+
+                // Verify the embedded link token using magic link verification
+                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
+
+                // Verify the response
+                Assert.NotNull(authResponse);
+                Assert.NotEmpty(authResponse.SessionJwt);
+                Assert.NotNull(authResponse.RefreshJwt);
+                Assert.NotEmpty(authResponse.RefreshJwt);
+                Assert.Equal(user.UserId, authResponse.User.UserId);
+                Assert.Equal(testLoginId, authResponse.User.Email);
+
+                // Validate the session JWT
+                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
+                Assert.NotNull(validatedToken);
+                Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
+
+                // Verify custom claims are present in the token
+                // Custom claims should be directly in the claims or nested under 'nsec'
+                if (validatedToken.Claims.ContainsKey("nsec"))
+                {
+                    var nsecClaim = validatedToken.Claims["nsec"] as Dictionary<string, object>;
+                    Assert.NotNull(nsecClaim);
+                    Assert.Contains("embeddedTestKey", nsecClaim.Keys);
+                    Assert.Equal("embeddedTestValue", nsecClaim["embeddedTestKey"].ToString());
+                    Assert.Contains("numericKey", nsecClaim.Keys);
+                    Assert.Equal("123", nsecClaim["numericKey"].ToString());
+                    Assert.Contains("booleanKey", nsecClaim.Keys);
+                    Assert.Equal("true", nsecClaim["booleanKey"].ToString());
+                }
+                else
+                {
+                    // If not in nsec, check directly in claims
+                    Assert.Contains("embeddedTestKey", validatedToken.Claims.Keys);
+                    Assert.Equal("embeddedTestValue", validatedToken.Claims["embeddedTestKey"].ToString());
+                    Assert.Contains("numericKey", validatedToken.Claims.Keys);
+                    Assert.Equal("123", validatedToken.Claims["numericKey"].ToString());
+                    Assert.Contains("booleanKey", validatedToken.Claims.Keys);
+                    Assert.Equal("true", validatedToken.Claims["booleanKey"].ToString());
+                }
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task MagicLink_GenerateEmbeddedLink_WithTimeout_Expired()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a user with email
+                var testLoginId = Guid.NewGuid().ToString() + "@descope.com";
+                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                {
+                    Email = testLoginId,
+                    VerifiedEmail = true,
+                    Name = "Embedded Link Timeout Test User"
+                }, testUser: false);
+                loginId = testLoginId;
+
+                // Generate embedded link with a 1 second timeout
+                var token = await _descopeClient.Management.User.GenerateEmbeddedLink(testLoginId, null, 1);
+
+                Assert.NotNull(token);
+                Assert.NotEmpty(token);
+
+                // Sleep for 2 seconds to ensure the token expires
+                await Task.Delay(2000);
+
+                // Try to verify the expired token - should fail
+                async Task Act() => await _descopeClient.Auth.MagicLink.Verify(token);
+
+                // Should throw an exception for expired token
+                var exception = await Assert.ThrowsAsync<DescopeException>(Act);
+                Assert.Contains("expire", exception.Message.ToLowerInvariant());
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
     }
 }
