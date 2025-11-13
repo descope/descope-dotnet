@@ -291,8 +291,56 @@ catch (DescopeException e)
 ```
 
 ### Magic Link Authentication
+Send a user a magic link using any supported delivery method (`Email`, `Sms`, `Whatsapp`). Provide an email address for `Email` or a phone number for `Sms` / `Whatsapp`.
 
-Verify magic link tokens on the server side:
+The user can either `sign up`, `sign in` or `sign up or in`.
+
+```cs
+// SIGN UP (create a new user and send a magic link)
+var loginId = "user@example.com"; // For email delivery, the email is also used as loginId
+var redirectUrl = "https://my-app.com/handle-magic-link"; // Where the user will be redirected with ?t=<token>
+var signUpDetails = new SignUpDetails {
+    Name = "Jane Example",
+    Email = loginId,
+};
+var signUpOptions = new SignUpOptions {
+    CustomClaims = new Dictionary<string, object> { { "claim", "Value1" } },
+    TemplateOptions = new Dictionary<string, string> { { "option", "Value1" } }
+};
+try {
+    // Returns a masked destination (e.g. t***@example.com)
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignUp(DeliveryMethod.Email, loginId, redirectUrl, signUpDetails, signUpOptions);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// SIGN IN (existing user)
+try {
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignIn(DeliveryMethod.Email, loginId, redirectUrl);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// SIGN UP OR IN (create if needed, otherwise sign in) via SMS
+var phoneLoginId = "+15555555555"; // phone number for SMS
+try {
+    var maskedPhone = await descopeClient.Auth.MagicLink.SignUpOrIn(DeliveryMethod.Sms, phoneLoginId, redirectUrl);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// You can optionally pass LoginOptions on SignIn (e.g. for step-up / custom claims)
+var loginOptions = new LoginOptions {
+    CustomClaims = new Dictionary<string, object> { { "tier", "gold" } }
+};
+try {
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignIn(DeliveryMethod.Email, loginId, redirectUrl, loginOptions: loginOptions);
+} catch (DescopeException e) {
+    // handle errors
+}
+```
+
+When the user clicks the magic link, they'll be redirected to the `redirectUrl` with a `t` query parameter containing the magic link token (e.g. `https://my-app.com/handle-magic-link?t=<token>`). Verify that token on the server side:
 
 #### Verify Magic Link Token
 
@@ -300,8 +348,7 @@ Verify magic link tokens on the server side:
 try
 {
     var token = "magic_link_token_from_url_parameter";
-    
-    var authResponse = await descopeClient.Auth.VerifyMagicLinkToken(token);
+    var authResponse = await descopeClient.Auth.MagicLink.Verify(token);
     // User authenticated via magic link
     var sessionJwt = authResponse.SessionJwt;
     var refreshJwt = authResponse.RefreshJwt;
