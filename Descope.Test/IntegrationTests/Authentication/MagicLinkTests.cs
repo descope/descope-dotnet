@@ -114,11 +114,21 @@ namespace Descope.Test.Integration
                 }, testUser: true);
                 loginId = testLoginId;
 
-                // Generate magic link for test user
+                // Generate magic link for test user with custom claims
+                var loginOptions = new LoginOptions
+                {
+                    CustomClaims = new Dictionary<string, object>
+                    {
+                        { "testKey", "testValue" },
+                        { "numericKey", 42 }
+                    }
+                };
+
                 var magicLinkResponse = await _descopeClient.Management.User.GenerateMagicLinkForTestUser(
                     DeliveryMethod.Email,
                     testLoginId,
-                    "https://example.com/auth"
+                    "https://example.com/auth",
+                    loginOptions
                 );
 
                 // Extract token from the magic link URL
@@ -144,6 +154,27 @@ namespace Descope.Test.Integration
                 var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
+
+                // Verify custom claims are present in the token
+                // Custom claims added via LoginOptions are nested under 'nsec' claim according to documentation
+                // Let's check if nsec claim exists, if not check the claims directly
+                if (validatedToken.Claims.ContainsKey("nsec"))
+                {
+                    var nsecClaim = validatedToken.Claims["nsec"] as Dictionary<string, object>;
+                    Assert.NotNull(nsecClaim);
+                    Assert.Contains("testKey", nsecClaim.Keys);
+                    Assert.Equal("testValue", nsecClaim["testKey"].ToString());
+                    Assert.Contains("numericKey", nsecClaim.Keys);
+                    Assert.Equal("42", nsecClaim["numericKey"].ToString());
+                }
+                else
+                {
+                    // If not in nsec, check directly in claims (for test users or different flow)
+                    Assert.Contains("testKey", validatedToken.Claims.Keys);
+                    Assert.Equal("testValue", validatedToken.Claims["testKey"].ToString());
+                    Assert.Contains("numericKey", validatedToken.Claims.Keys);
+                    Assert.Equal("42", validatedToken.Claims["numericKey"].ToString());
+                }
             }
             finally
             {
