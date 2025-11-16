@@ -701,7 +701,7 @@ namespace Descope.Test.Integration
 
 
         [Fact]
-        public async Task MagicLink_GenerateEmbeddedLink_WithNonExistingUser_ShouldFail()
+        public async Task User_GenerateEmbeddedLink_WithNonExistingUser_ShouldFail()
         {
             // Use a non-existing login ID
             var nonExistingLoginId = Guid.NewGuid().ToString() + "@nonexisting.com";
