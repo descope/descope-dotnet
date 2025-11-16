@@ -699,5 +699,21 @@ namespace Descope.Test.Integration
             }
         }
 
+
+        [Fact]
+        public async Task User_GenerateEmbeddedLink_WithNonExistingUser_ShouldFail()
+        {
+            // Use a non-existing login ID
+            var nonExistingLoginId = Guid.NewGuid().ToString() + "@nonexisting.com";
+
+            // Try to generate embedded link for non-existing user
+            async Task Act() => await _descopeClient.Management.User.GenerateEmbeddedLink(nonExistingLoginId);
+
+            // Should throw an exception for non-existing user
+            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
+            Assert.NotNull(exception);
+            Assert.NotEmpty(exception.Message);
+        }
+
     }
 }

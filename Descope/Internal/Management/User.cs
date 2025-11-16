@@ -262,11 +262,23 @@ namespace Descope.Internal.Management
             return await _httpClient.Post<UserTestEnchantedLinkResponse>(Routes.UserTestsGenerateEnchantedLink, _managementKey, request);
         }
 
-        public async Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims)
+        public async Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims, int? timeout)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             customClaims ??= new Dictionary<string, object>();
-            var body = new { loginId, customClaims };
+
+            var body = new Dictionary<string, object>
+            {
+                { "loginId", loginId },
+                { "customClaims", customClaims }
+            };
+
+            // Only add timeout field if it's not null and greater than 0
+            if (timeout.HasValue && timeout.Value > 0)
+            {
+                body["timeout"] = timeout.Value;
+            }
+
             var result = await _httpClient.Post<GenerateEmbeddedLinkResponse>(Routes.UserTestsGenerateEmbeddedLink, _managementKey, body);
             return result.Token;
         }
@@ -398,11 +410,6 @@ namespace Descope.Internal.Management
     internal class GenerateEmbeddedLinkResponse
     {
         [JsonPropertyName("token")]
-        internal string Token { get; set; }
-
-        internal GenerateEmbeddedLinkResponse(string token)
-        {
-            Token = token;
-        }
+        public string Token { get; set; } = string.Empty;
     }
 }

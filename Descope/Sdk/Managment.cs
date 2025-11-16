@@ -451,8 +451,9 @@ namespace Descope
         /// </summary>
         /// <param name="loginId">The login ID of the test user</param>
         /// <param name="customClaims">Optional custom claims to be placed on the generated JWT after login</param>
+        /// <param name="timeout">Optional timeout in seconds for the embedded link. If null or less than 1, no timeout is applied.</param>
         /// <returns>The generated embedded link response</returns>
-        Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims = null);
+        Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims = null, int? timeout = null);
     }
 
     /// <summary>
