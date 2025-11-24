@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Descope", "Descope\Descope.csproj", "{EB18B5E1-03F7-0725-31D6-780C283EF468}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB18B5E1-03F7-0725-31D6-780C283EF468}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB18B5E1-03F7-0725-31D6-780C283EF468}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB18B5E1-03F7-0725-31D6-780C283EF468}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB18B5E1-03F7-0725-31D6-780C283EF468}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FFAD0018-5013-4C7A-A3C7-3A97B34026CF}
+	EndGlobalSection
+EndGlobal
