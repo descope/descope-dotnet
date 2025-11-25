@@ -1,5 +1,5 @@
 {
-  "descriptionHash": "7C88B2AFDE569DAEC68A4905CB85066FC2833B4CCA5C141199F58C271B0B335C8AF39DD21E6A9DA4A5B1A2C54DD7357C06BC9348EDDF00DA925369AD32A8DB60",
+  "descriptionHash": "13C5E1A70344E4088E5288F96C8BF4101A77C48D8BA3DF97F59C7641609E72B160C3F0675E8961B4FFC51D4B340ADE23458F64A24F079B3792774F3F5314B349",
   "descriptionLocation": "../../../../../go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.28.0",
@@ -28,7 +28,11 @@
     "application/x-www-form-urlencoded;q=0.2",
     "multipart/form-data;q=0.1"
   ],
-  "includePatterns": [],
-  "excludePatterns": [],
+  "includePatterns": [
+    "/v1/auth/**"
+  ],
+  "excludePatterns": [
+    "/v1/auth/validate"
+  ],
   "disabledValidationRules": []
 }

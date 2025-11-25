@@ -1,5 +1,5 @@
 {
-  "descriptionHash": "F9543A8E102C8B42013714BA8A0220CAF72788703ACF948BB46ADA1959D700C66100D513A07B86B291C33AD8E0B735F159FA608CE40934A4BEAAE7FDFDE1E2E7",
+  "descriptionHash": "0F9EB7B72781A9BAD20CBA93FAF470FEFA1FA86392B2EB2C395BCFFB4F669C1B612468CFC361145E3E03E503777A00FF4A964FEF3CC0DF6DEF4AA19146E1CF68",
   "descriptionLocation": "../../../../../go/src/github.com/descope/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.28.0",
@@ -29,6 +29,8 @@
     "multipart/form-data;q=0.1"
   ],
   "includePatterns": [],
-  "excludePatterns": [],
+  "excludePatterns": [
+    "/scim/**"
+  ],
   "disabledValidationRules": []
 }

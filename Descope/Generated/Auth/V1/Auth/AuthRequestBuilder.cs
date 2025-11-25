@@ -23,7 +23,6 @@ using Descope.Auth.V1.Auth.Sso;
 using Descope.Auth.V1.Auth.Tenant;
 using Descope.Auth.V1.Auth.Totp;
 using Descope.Auth.V1.Auth.TryRefresh;
-using Descope.Auth.V1.Auth.Validate;
 using Descope.Auth.V1.Auth.Webauthn;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
@@ -153,11 +152,6 @@ namespace Descope.Auth.V1.Auth
         public global::Descope.Auth.V1.Auth.TryRefresh.TryRefreshRequestBuilder TryRefresh
         {
             get => new global::Descope.Auth.V1.Auth.TryRefresh.TryRefreshRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The validate property</summary>
-        public global::Descope.Auth.V1.Auth.Validate.ValidateRequestBuilder Validate
-        {
-            get => new global::Descope.Auth.V1.Auth.Validate.ValidateRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The webauthn property</summary>
         public global::Descope.Auth.V1.Auth.Webauthn.WebauthnRequestBuilder Webauthn

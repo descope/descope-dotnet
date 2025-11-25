@@ -11,6 +11,7 @@ MGMT_KIOTA_LANG := CSharp
 MGMT_KIOTA_CLASS := DescopeMgmtKiotaClient
 MGMT_KIOTA_NAMESPACE := Descope.Mgmt
 MGMT_KIOTA_OUTPUT := ./Generated/Mgmt
+MGMT_KIOTA_EXCLUDE_PATHS := /scim/** # SCIM endpoints are not intended for direct SDK use
 
 # Auth API OpenAPI spec file location
 AUTH_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
@@ -20,6 +21,8 @@ AUTH_KIOTA_LANG := CSharp
 AUTH_KIOTA_CLASS := DescopeAuthKiotaClient
 AUTH_KIOTA_NAMESPACE := Descope.Auth
 AUTH_KIOTA_OUTPUT := ./Generated/Auth
+AUTH_KIOTA_INCLUDE_PATHS := /v1/auth/**
+AUTH_KIOTA_EXCLUDE_PATHS := /v1/auth/validate # not intended for direct SDK use, instead the SDK validates session JWTs internally with cached keys
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -39,7 +42,7 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	fi
 	@echo "Management API OpenAPI spec found: $(MGMT_OPENAPI_SPEC)"
 	@echo "Generating Management API Kiota client files..."
-	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT)
+	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) --exclude-path $(MGMT_KIOTA_EXCLUDE_PATHS) --clean-output
 	@echo "Management API Kiota generation complete."
 
 generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
@@ -50,7 +53,7 @@ generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
 	fi
 	@echo "Auth API OpenAPI spec found: $(AUTH_OPENAPI_SPEC)"
 	@echo "Generating Auth API Kiota client files..."
-	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT)
+	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT) --include-path $(AUTH_KIOTA_INCLUDE_PATHS) --exclude-path $(AUTH_KIOTA_EXCLUDE_PATHS) --clean-output
 	@echo "Auth API Kiota generation complete."
 
 dotnet-build: ## Build the C# project
