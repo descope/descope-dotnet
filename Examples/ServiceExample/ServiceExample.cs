@@ -86,8 +86,8 @@ public class ServiceExample
                 .AddPolicyHandler(GetRetryPolicy())
                 .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-            // Register Descope Management Client using the extension method
-            services.AddDescopeManagementClient(
+            // Register Descope Client using the extension method
+            services.AddDescopeClient(
                 projectId: config.ProjectId,
                 managementKey: config.ManagementKey,
                 httpClientFactoryName: "DescopeClient",
@@ -99,12 +99,12 @@ public class ServiceExample
             try
             {
                 var logger = serviceProvider.GetRequiredService<ILogger<ServiceExample>>();
-                var client = serviceProvider.GetRequiredService<IDescopeManagementClient>();
+                var client = serviceProvider.GetRequiredService<IDescopeClient>();
 
                 logger.LogInformation("Starting user search using DI-based client...");
 
-                // Search for 2 users
-                var usersResponse = await client.V2.Mgmt.User.Search.PostAsync(
+                // Search for 2 users using V2 API
+                var usersResponse = await client.Mgmt.V2.User.Search.PostAsync(
                     new Descope.Mgmt.Models.Managementv1.SearchUsersRequest
                     {
                         Limit = 2
@@ -119,6 +119,147 @@ public class ServiceExample
                     foreach (var user in usersResponse.Users)
                     {
                         Console.WriteLine($"  - User ID: {user.UserId}, Login IDs: {string.Join(", ", user.LoginIds ?? new System.Collections.Generic.List<string>())}");
+                    }
+                }
+
+                // Demonstrate Auth API with Magic Link flow
+                string? testLoginId = null;
+                try
+                {
+                    Console.WriteLine("\n--- Testing Auth API with Magic Link ---");
+                    logger.LogInformation("Starting Magic Link authentication flow");
+
+                    // Create a test user using V1 API
+                    testLoginId = Guid.NewGuid().ToString() + "@test.descope.com";
+                    logger.LogInformation("Creating test user: {LoginId}", testLoginId);
+                    Console.WriteLine($"Creating test user: {testLoginId}");
+
+                    var testUser = await client.Mgmt.V1.User.Create.Test.PostAsync(
+                        new Descope.Mgmt.Models.Managementv1.CreateUserRequest
+                        {
+                            Identifier = testLoginId,
+                            Email = testLoginId,
+                            VerifiedEmail = true,
+                            Name = "Magic Link Test User"
+                        });
+
+                    logger.LogInformation("Test user created with ID: {UserId}", testUser?.User?.UserId);
+                    Console.WriteLine($"Test user created with ID: {testUser?.User?.UserId}");
+
+                    // Generate magic link for test user with custom claims using V1 API
+                    logger.LogInformation("Generating magic link for test user");
+                    Console.WriteLine("Generating magic link for test user...");
+                    var loginOptions = new Descope.Mgmt.Models.Onetimev1.LoginOptions
+                    {
+                        CustomClaims = new Descope.Mgmt.Models.Onetimev1.LoginOptions_customClaims
+                        {
+                            AdditionalData = new Dictionary<string, object>
+                            {
+                                { "testKey", "testValue" },
+                                { "numericKey", 42 }
+                            }
+                        }
+                    };
+
+                    var magicLinkResponse = await client.Mgmt.V1.Tests.Generate.Magiclink.PostAsync(
+                        new Descope.Mgmt.Models.Onetimev1.TestUserGenerateMagicLinkRequest
+                        {
+                            LoginId = testLoginId,
+                            DeliveryMethod = "email",
+                            RedirectUrl = "https://example.com/auth",
+                            LoginOptions = loginOptions
+                        });
+
+                    logger.LogInformation("Magic link generated successfully");
+                    Console.WriteLine($"Magic link generated: {magicLinkResponse?.Link}");
+
+                    // Extract token from the magic link URL
+                    var uri = new Uri(magicLinkResponse!.Link!);
+                    var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    var token = queryParams["t"];
+
+                    logger.LogDebug("Extracted token from magic link");
+                    Console.WriteLine($"Extracted token: {token}");
+
+                    // Verify the magic link token using Auth V1 API
+                    logger.LogInformation("Verifying magic link token");
+                    Console.WriteLine("Verifying magic link token...");
+                    var authResponse = await client.Auth.V1.Magiclink.Verify.PostAsync(
+                        new Descope.Auth.Models.Onetimev1.VerifyMagicLinkRequest
+                        {
+                            Token = token
+                        });
+
+                    logger.LogInformation("Magic link verified successfully");
+                    Console.WriteLine("Magic link verified successfully!");
+                    Console.WriteLine($"  - User ID: {authResponse?.User?.UserId}");
+                    Console.WriteLine($"  - Email: {authResponse?.User?.Email}");
+                    Console.WriteLine($"  - Session JWT: {authResponse?.SessionJwt?.Substring(0, Math.Min(50, authResponse.SessionJwt.Length))}...");
+
+                    // Validate the session JWT using Auth V1 API
+                    logger.LogInformation("Validating session JWT");
+                    Console.WriteLine("Validating session JWT...");
+                    var validatedToken = await client.Auth.V1.Validate.PostAsync(
+                        new Descope.Auth.Models.Onetimev1.ValidateSessionRequest
+                        {
+                            AdditionalData = new Dictionary<string, object>
+                            {
+                                { "sessionJwt", authResponse?.SessionJwt ?? string.Empty }
+                            }
+                        });
+
+                    logger.LogInformation("Session JWT validated successfully");
+                    Console.WriteLine("Session JWT validated successfully!");
+                    Console.WriteLine($"  - Claims count: {validatedToken?.ParsedJWT?.AdditionalData?.Count ?? 0}");
+
+                    // Check for custom claims
+                    if (validatedToken?.ParsedJWT?.AdditionalData != null)
+                    {
+                        if (validatedToken.ParsedJWT.AdditionalData.ContainsKey("nsec"))
+                        {
+                            logger.LogInformation("Custom claims found in token");
+                            Console.WriteLine("Custom claims found in 'nsec':");
+                            var nsec = validatedToken.ParsedJWT.AdditionalData["nsec"] as Dictionary<string, object>;
+                            if (nsec != null)
+                            {
+                                foreach (var claim in nsec)
+                                {
+                                    Console.WriteLine($"    {claim.Key}: {claim.Value}");
+                                }
+                            }
+                        }
+                    }
+
+                    logger.LogInformation("Auth API flow completed successfully");
+                    Console.WriteLine("\nAuth API flow completed successfully!");
+                }
+                catch (Exception authEx)
+                {
+                    logger.LogError(authEx, "Error in auth flow");
+                    Console.WriteLine($"Auth flow error: {authEx.Message}");
+                }
+                finally
+                {
+                    // Clean up test user using V1 API
+                    if (!string.IsNullOrEmpty(testLoginId))
+                    {
+                        try
+                        {
+                            logger.LogInformation("Cleaning up test user: {LoginId}", testLoginId);
+                            Console.WriteLine($"\nCleaning up test user: {testLoginId}");
+                            await client.Mgmt.V1.User.DeletePath.PostAsync(
+                                new Descope.Mgmt.Models.Managementv1.DeleteUserRequest
+                                {
+                                    Identifier = testLoginId
+                                });
+                            logger.LogInformation("Test user deleted successfully");
+                            Console.WriteLine("Test user deleted successfully.");
+                        }
+                        catch (Exception cleanupEx)
+                        {
+                            logger.LogWarning(cleanupEx, "Error cleaning up test user");
+                            Console.WriteLine($"Cleanup error: {cleanupEx.Message}");
+                        }
                     }
                 }
             }
