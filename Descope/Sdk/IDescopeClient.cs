@@ -18,6 +18,7 @@ public interface IDescopeClient
     /// <summary>
     /// Access to Authentication API endpoints.
     /// Use Auth.V1 to access the authentication API.
+    /// Use Auth.ValidateSessionLocal() to validate JWTs locally without HTTP calls.
     /// </summary>
     DescopeClient.DescopeAuthClient Auth { get; }
 }

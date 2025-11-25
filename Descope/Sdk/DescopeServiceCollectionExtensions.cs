@@ -142,7 +142,15 @@ public static class DescopeServiceCollectionExtensions
         });
 
         // Register the wrapper client
-        services.AddScoped<IDescopeClient, DescopeClient>();
+        services.AddScoped<IDescopeClient>(sp =>
+        {
+            var mgmtClient = sp.GetRequiredService<DescopeMgmtKiotaClient>();
+            var authClient = sp.GetRequiredService<DescopeAuthKiotaClient>();
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient(options.HttpClientFactoryName!);
+
+            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl, httpClient);
+        });
 
         return services;
     }

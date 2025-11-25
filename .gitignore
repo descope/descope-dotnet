@@ -8,6 +8,7 @@
 
 # Example configuration file - might contain secrets
 Examples/config.json
+Descope.Test/appsettingsTest.json
 
 # User-specific files
 *.rsuser

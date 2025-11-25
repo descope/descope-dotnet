@@ -1,5 +1,6 @@
 using Descope.Mgmt;
 using Descope.Auth;
+using Descope.Sdk.Auth;
 
 namespace Descope;
 
@@ -11,16 +12,30 @@ public class DescopeClient : IDescopeClient
 {
     private readonly DescopeMgmtClient _mgmtClient;
     private readonly DescopeAuthClient _authClient;
+    private readonly string _projectId;
+    private readonly string _baseUrl;
+    private readonly HttpClient? _httpClient;
 
     /// <summary>
     /// Initializes a new instance of the DescopeClient wrapper.
     /// </summary>
     /// <param name="mgmtKiotaClient">The generated Management Kiota client to wrap.</param>
     /// <param name="authKiotaClient">The generated Auth Kiota client to wrap.</param>
-    public DescopeClient(DescopeMgmtKiotaClient mgmtKiotaClient, DescopeAuthKiotaClient authKiotaClient)
+    /// <param name="projectId">The Descope project ID.</param>
+    /// <param name="baseUrl">The base URL for the Descope API.</param>
+    /// <param name="httpClient">Optional HttpClient for JWT validation.</param>
+    internal DescopeClient(
+        DescopeMgmtKiotaClient mgmtKiotaClient,
+        DescopeAuthKiotaClient authKiotaClient,
+        string projectId,
+        string baseUrl = "",
+        HttpClient? httpClient = null) // todo: not optional
     {
         _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient ?? throw new ArgumentNullException(nameof(mgmtKiotaClient)));
-        _authClient = new DescopeAuthClient(authKiotaClient ?? throw new ArgumentNullException(nameof(authKiotaClient)));
+        _authClient = new DescopeAuthClient(authKiotaClient ?? throw new ArgumentNullException(nameof(authKiotaClient)), projectId, baseUrl, httpClient);
+        _projectId = projectId;
+        _baseUrl = baseUrl;
+        _httpClient = httpClient;
     }
 
     public class DescopeMgmtClient
@@ -39,13 +54,59 @@ public class DescopeClient : IDescopeClient
     public class DescopeAuthClient
     {
         private readonly DescopeAuthKiotaClient _authKiotaClient;
+        private readonly JwtValidator? _jwtValidator;
 
-        internal DescopeAuthClient(DescopeAuthKiotaClient authKiotaClient)
+        internal DescopeAuthClient(
+            DescopeAuthKiotaClient authKiotaClient,
+            string projectId = "",
+            string baseUrl = "",
+            HttpClient? httpClient = null)
         {
             _authKiotaClient = authKiotaClient;
+
+            // TODO: httpClient, projectID and baseUrl should not be optional, if any are empty, we should throw an exception
+            // Initialize JWT validator if we have the required components
+            if (!string.IsNullOrEmpty(projectId) && !string.IsNullOrEmpty(baseUrl) && httpClient != null)
+            {
+                _jwtValidator = new JwtValidator(projectId, baseUrl, httpClient);
+            }
         }
 
         public Auth.V1.Auth.AuthRequestBuilder V1 => _authKiotaClient.V1.Auth;
+
+        /// <summary>
+        /// Validates a session JWT locally using cached keys, loading keys if needed.
+        /// </summary>
+        /// <param name="sessionJwt">The session JWT to validate.</param>
+        /// <returns>A validated Token object.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when JWT validator is not initialized.</exception>
+        /// <exception cref="Exception">Thrown when the session JWT is invalid.</exception>
+        public async Task<Token> ValidateSession(string sessionJwt)
+        {
+            if (_jwtValidator == null)
+            {
+                throw new InvalidOperationException(
+                    "Local JWT validation is not available. Ensure the client was created with projectId, baseUrl, and httpClient.");
+            }
+
+            if (string.IsNullOrEmpty(sessionJwt))
+            {
+                throw new ArgumentException("Session JWT cannot be empty", nameof(sessionJwt));
+            }
+
+            var token = await _jwtValidator.ValidateToken(sessionJwt);
+            if (token == null)
+            {
+                throw new Exception("Session JWT is invalid");
+            }
+
+            return token;
+        }
+
+        /// <summary>
+        /// Checks if local JWT validation is available.
+        /// </summary>
+        public bool CanValidateLocally => _jwtValidator != null;
     }
 
     /// <inheritdoc/>

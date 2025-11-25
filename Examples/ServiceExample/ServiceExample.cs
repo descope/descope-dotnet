@@ -183,38 +183,24 @@ public class ServiceExample
                     Console.WriteLine($"  - Email: {authResponse?.User?.Email}");
                     Console.WriteLine($"  - Session JWT: {authResponse?.SessionJwt?.Substring(0, Math.Min(50, authResponse.SessionJwt.Length))}...");
 
-                    // Validate the session JWT using Auth V1 API
-                    logger.LogInformation("Validating session JWT");
-                    Console.WriteLine("Validating session JWT...");
-                    var validatedToken = await client.Auth.V1.Validate.PostAsync(
-                        new Descope.Auth.Models.Onetimev1.ValidateSessionRequest
-                        {
-                            AdditionalData = new Dictionary<string, object>
-                            {
-                                { "sessionJwt", authResponse?.SessionJwt ?? string.Empty }
-                            }
-                        });
-
+                    // Validate the session JWT using Auth V1 API - LOCAL VALIDATION (no HTTP call)
+                    logger.LogInformation("Validating session JWT locally");
+                    Console.WriteLine("Validating session JWT locally (no HTTP call)...");
+                    var validatedToken = await client.Auth.ValidateSession(authResponse!.SessionJwt!);
                     logger.LogInformation("Session JWT validated successfully");
                     Console.WriteLine("Session JWT validated successfully!");
-                    Console.WriteLine($"  - Claims count: {validatedToken?.ParsedJWT?.AdditionalData?.Count ?? 0}");
+                    Console.WriteLine($"  - Subject (User ID): {validatedToken.Subject}");
+                    Console.WriteLine($"  - Project ID: {validatedToken.ProjectId}");
+                    Console.WriteLine($"  - Expiration: {validatedToken.Expiration}");
+                    Console.WriteLine($"  - Claims count: {validatedToken.Claims.Count}");
 
-                    // Check for custom claims
-                    if (validatedToken?.ParsedJWT?.AdditionalData != null)
+                    // Check for custom claims in 'nsec'
+                    if (validatedToken.Claims.ContainsKey("nsec"))
                     {
-                        if (validatedToken.ParsedJWT.AdditionalData.ContainsKey("nsec"))
-                        {
-                            logger.LogInformation("Custom claims found in token");
-                            Console.WriteLine("Custom claims found in 'nsec':");
-                            var nsec = validatedToken.ParsedJWT.AdditionalData["nsec"] as Dictionary<string, object>;
-                            if (nsec != null)
-                            {
-                                foreach (var claim in nsec)
-                                {
-                                    Console.WriteLine($"    {claim.Key}: {claim.Value}");
-                                }
-                            }
-                        }
+                        logger.LogInformation("Custom claims found in token");
+                        Console.WriteLine("Custom claims found in 'nsec':");
+                        var nsec = validatedToken.Claims["nsec"];
+                        Console.WriteLine($"    nsec: {nsec}");
                     }
 
                     logger.LogInformation("Auth API flow completed successfully");

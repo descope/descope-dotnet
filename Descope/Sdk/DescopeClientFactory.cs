@@ -108,8 +108,8 @@ public static class DescopeManagementClientFactory
         var mgmtClient = new DescopeMgmtKiotaClient(mgmtAdapter);
         var authClient = new DescopeAuthKiotaClient(authAdapter);
 
-        // Wrap both clients
-        return new DescopeClient(mgmtClient, authClient);
+        // Wrap both clients with JWT validation support
+        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl, httpClient);
     }
 
     /// <summary>
