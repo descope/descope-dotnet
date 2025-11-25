@@ -211,7 +211,6 @@ public class InstanceExample
             Console.WriteLine(ex.StackTrace);
         }
 
-        Console.WriteLine("\nPress any key to exit...");
-        Console.ReadKey();
+        Console.WriteLine("END OF EXAMPLE");
     }
 }

@@ -68,20 +68,6 @@ public class ServiceExample
             // Configure HttpClient with HttpClientFactory, Polly policies, and custom handlers
             var httpClientBuilder = services.AddHttpClient("DescopeClient");
 
-            // Only configure unsafe SSL handling if specified in config
-            if (config.Unsafe)
-            {
-                httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    // Only for development/testing - accept any SSL certificate
-#if NETSTANDARD2_0
-                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-#else
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-#endif
-                });
-            }
-
             httpClientBuilder
                 .AddPolicyHandler(GetRetryPolicy())
                 .AddPolicyHandler(GetCircuitBreakerPolicy());
@@ -91,7 +77,8 @@ public class ServiceExample
                 projectId: config.ProjectId,
                 managementKey: config.ManagementKey,
                 httpClientFactoryName: "DescopeClient",
-                baseUrl: baseUrl);
+                baseUrl: baseUrl,
+                isUnsafe: true);
 
             // Build service provider
             var serviceProvider = services.BuildServiceProvider();
@@ -254,11 +241,13 @@ public class ServiceExample
                                 });
                             logger.LogInformation("Test user deleted successfully");
                             Console.WriteLine("Test user deleted successfully.");
+                            Console.WriteLine("END OF EXAMPLE");
                         }
                         catch (Exception cleanupEx)
                         {
                             logger.LogWarning(cleanupEx, "Error cleaning up test user");
                             Console.WriteLine($"Cleanup error: {cleanupEx.Message}");
+                            Console.WriteLine("END OF EXAMPLE");
                         }
                     }
                 }

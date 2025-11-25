@@ -19,6 +19,7 @@ public static class DescopeServiceCollectionExtensions
     /// <param name="managementKey">The Descope Management Key (required).</param>
     /// <param name="httpClientFactoryName">The name of the HttpClient to use from IHttpClientFactory (required).</param>
     /// <param name="baseUrl">The base URL for the Descope API. If null, defaults to "https://api.descope.com".</param>
+    /// <param name="isUnsafe">If true, allows unsafe HTTPS calls by accepting any server certificate. WARNING: Only use for development/testing.</param>
     /// <returns>The service collection for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null or empty.</exception>
     public static IServiceCollection AddDescopeClient(
@@ -26,7 +27,8 @@ public static class DescopeServiceCollectionExtensions
         string projectId,
         string managementKey,
         string httpClientFactoryName,
-        string? baseUrl = null)
+        string? baseUrl = null,
+        bool isUnsafe = false)
     {
         if (string.IsNullOrWhiteSpace(projectId))
         {
@@ -48,7 +50,8 @@ public static class DescopeServiceCollectionExtensions
             ProjectId = projectId,
             ManagementKey = managementKey,
             BaseUrl = baseUrl ?? "https://api.descope.com",
-            HttpClientFactoryName = httpClientFactoryName
+            HttpClientFactoryName = httpClientFactoryName,
+            IsUnsafe = isUnsafe
         };
 
         return services.AddDescopeClient(options);
@@ -78,6 +81,20 @@ public static class DescopeServiceCollectionExtensions
             throw new ArgumentException("HttpClientFactoryName is required for DI registration", nameof(options.HttpClientFactoryName));
         }
 
+        // Configure HttpClient with optional unsafe SSL handling
+        var httpClientBuilder = services.AddHttpClient(options.HttpClientFactoryName!);
+        if (options.IsUnsafe)
+        {
+            httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.HttpClientHandler
+            {
+#if NETSTANDARD2_0
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+#else
+                ServerCertificateCustomValidationCallback = System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+#endif
+            });
+        }
+
         // Register separate authentication providers for management and auth
         services.AddSingleton<IAuthenticationProvider>(sp =>
             new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey));
@@ -93,6 +110,10 @@ public static class DescopeServiceCollectionExtensions
             var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
 
             var httpClient = httpClientFactory.CreateClient(options.HttpClientFactoryName!);
+
+            // Configure Descope headers
+            DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+
             var adapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
             {
                 BaseUrl = options.BaseUrl
@@ -108,6 +129,10 @@ public static class DescopeServiceCollectionExtensions
             var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId);
 
             var httpClient = httpClientFactory.CreateClient(options.HttpClientFactoryName!);
+
+            // Configure Descope headers
+            DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+
             var adapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
             {
                 BaseUrl = options.BaseUrl

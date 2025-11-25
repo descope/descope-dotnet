@@ -90,6 +90,9 @@ public static class DescopeManagementClientFactory
             httpClient = new HttpClient();
         }
 
+        // Configure Descope headers
+        DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+
         // Create separate request adapters for management and auth
         var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
         {
