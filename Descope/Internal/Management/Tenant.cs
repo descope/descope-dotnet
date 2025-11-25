@@ -21,7 +21,8 @@ namespace Descope.Internal.Management
                 id,
                 name = options.Name,
                 selfProvisioningDomains = options.SelfProvisioningDomains,
-                customAttributes = options.CustomAttributes
+                customAttributes = options.CustomAttributes,
+                parent = options.Parent
             };
             var result = await _httpClient.Post<TenantServerResponse>(Routes.TenantCreate, _managementKey, body);
             return result.Id;

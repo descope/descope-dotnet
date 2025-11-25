@@ -582,6 +582,7 @@ namespace Descope
         public string Name { get; set; }
         public List<string>? SelfProvisioningDomains { get; set; }
         public Dictionary<string, object>? CustomAttributes { get; set; }
+        public string Parent { get; set; }
         public TenantOptions(string name)
         {
             Name = name;
