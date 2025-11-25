@@ -557,6 +557,10 @@ namespace Descope
         public Dictionary<string, object> CustomAttributes { get; set; }
         [JsonPropertyName("authType")]
         public string AuthType { get; set; }
+        [JsonPropertyName("parent")]
+        public string Parent { get; set; }
+        [JsonPropertyName("successors")]
+        public List<string> Successors { get; set; }
         [JsonPropertyName("domains")]
         public List<string> Domains { get; set; }
 
