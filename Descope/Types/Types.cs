@@ -557,16 +557,22 @@ namespace Descope
         public Dictionary<string, object> CustomAttributes { get; set; }
         [JsonPropertyName("authType")]
         public string AuthType { get; set; }
+        [JsonPropertyName("parent")]
+        public string Parent { get; set; }
+        [JsonPropertyName("successors")]
+        public List<string> Successors { get; set; }
         [JsonPropertyName("domains")]
         public List<string> Domains { get; set; }
 
-        public TenantResponse(string id, string name, List<string>? selfProvisioningDomains, Dictionary<string, object>? customAttributes, string authType, List<string>? domains)
+        public TenantResponse(string id, string name, List<string>? selfProvisioningDomains, Dictionary<string, object>? customAttributes, string authType, string? parent, List<string>? successors, List<string>? domains)
         {
             Id = id;
             Name = name;
             SelfProvisioningDomains = selfProvisioningDomains ?? new List<string>();
             CustomAttributes = customAttributes ?? new Dictionary<string, object>();
             AuthType = authType;
+            Parent = parent ?? string.Empty;
+            Successors = successors ?? new List<string>();
             Domains = domains ?? new List<string>();
         }
     }
@@ -576,6 +582,7 @@ namespace Descope
         public string Name { get; set; }
         public List<string>? SelfProvisioningDomains { get; set; }
         public Dictionary<string, object>? CustomAttributes { get; set; }
+        public string? Parent { get; set; }
         public TenantOptions(string name)
         {
             Name = name;
