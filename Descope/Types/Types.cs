@@ -564,13 +564,15 @@ namespace Descope
         [JsonPropertyName("domains")]
         public List<string> Domains { get; set; }
 
-        public TenantResponse(string id, string name, List<string>? selfProvisioningDomains, Dictionary<string, object>? customAttributes, string authType, List<string>? domains)
+        public TenantResponse(string id, string name, List<string>? selfProvisioningDomains, Dictionary<string, object>? customAttributes, string authType, string? parent, List<string>? successors, List<string>? domains)
         {
             Id = id;
             Name = name;
             SelfProvisioningDomains = selfProvisioningDomains ?? new List<string>();
             CustomAttributes = customAttributes ?? new Dictionary<string, object>();
             AuthType = authType;
+            Parent = parent ?? string.Empty;
+            Successors = successors ?? new List<string>();
             Domains = domains ?? new List<string>();
         }
     }
