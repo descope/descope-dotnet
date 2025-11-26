@@ -86,13 +86,15 @@ public static class DescopeManagementClientFactory
     /// <param name="authAdapter">The request adapter for auth endpoints.</param>
     /// <param name="mgmtAdapter">The request adapter for management endpoints.</param>
     /// <param name="options">The configuration options for the client.</param>
+    /// <param name="httpClient">Optional HttpClient for HTTP-level mocking (e.g., error responses). If provided, enables JWT validation.</param>
     /// <returns>A new instance of the Descope Client configured with the provided adapters.</returns>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     /// <exception cref="DescopeException">Thrown when required options are not set.</exception>
     public static IDescopeClient CreateForTest(
         IRequestAdapter authAdapter,
         IRequestAdapter mgmtAdapter,
-        DescopeClientOptions options)
+        DescopeClientOptions options,
+        HttpClient? httpClient = null)
     {
         if (authAdapter == null)
         {
@@ -115,7 +117,7 @@ public static class DescopeManagementClientFactory
         var authKiotaClient = new DescopeAuthKiotaClient(authAdapter);
         var mgmtKiotaClient = new DescopeMgmtKiotaClient(mgmtAdapter);
 
-        // Create and return the wrapper client
-        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl);
+        // Create and return the wrapper client with optional HttpClient for HTTP-level testing
+        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl, httpClient);
     }
 }

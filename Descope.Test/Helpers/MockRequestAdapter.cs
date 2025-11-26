@@ -66,6 +66,34 @@ internal class MockRequestAdapter : IRequestAdapter
     }
 
     /// <summary>
+    /// Creates a mock request adapter that throws a DescopeException with the specified error details.
+    /// Use this to test error handling scenarios at the adapter level.
+    /// Note: For HTTP-level error testing, use TestDescopeClientFactory.CreateWithError instead.
+    /// </summary>
+    /// <param name="errorCode">The error code to include in the exception</param>
+    /// <param name="errorDescription">The error description to include in the exception</param>
+    /// <param name="errorMessage">Optional error message to include in the exception</param>
+    /// <returns>A configured MockRequestAdapter that throws errors</returns>
+    internal static MockRequestAdapter CreateWithError(string errorCode, string errorDescription, string? errorMessage = null)
+    {
+        return new MockRequestAdapter(_ =>
+        {
+            var errorDetails = new ErrorDetails(errorCode, errorDescription, errorMessage);
+            throw new DescopeException(errorDetails);
+        });
+    }
+
+    /// <summary>
+    /// Creates a mock request adapter that returns an empty/no-content response (200 OK with no body).
+    /// Use this for endpoints that return void or no meaningful response.
+    /// </summary>
+    /// <returns>A configured MockRequestAdapter</returns>
+    internal static MockRequestAdapter CreateWithEmptyResponse()
+    {
+        return new MockRequestAdapter(_ => Task.FromResult(new MemoryStream() as Stream));
+    }
+
+    /// <summary>
     /// Creates an empty mock request adapter (no responses configured).
     /// Use this for scenarios where you're testing error conditions or don't need a response.
     /// </summary>
@@ -148,9 +176,9 @@ internal class MockRequestAdapter : IRequestAdapter
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
         CancellationToken cancellationToken = default)
     {
-        // Descope API endpoints response objects(e.g., UsersResponse with a Users property) rather than raw primitives,
-        // so we do not need to implement this method.
-        throw new NotImplementedException();
+        // For endpoints that return primitives (e.g., void/empty responses),
+        // we just return the default value for the type
+        return Task.FromResult(default(ModelType));
     }
 
     public Task<IEnumerable<ModelType>?> SendPrimitiveCollectionAsync<ModelType>(
@@ -168,6 +196,12 @@ internal class MockRequestAdapter : IRequestAdapter
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
         CancellationToken cancellationToken = default)
     {
+        // For endpoints that return no content, just complete successfully
+        if (_mockResponseHandler != null)
+        {
+            // Call the handler to allow for assertions, but ignore the result
+            _ = _mockResponseHandler(requestInfo);
+        }
         return Task.CompletedTask;
     }
 
