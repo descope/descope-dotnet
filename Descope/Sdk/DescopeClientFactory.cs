@@ -32,24 +32,30 @@ public static class DescopeManagementClientFactory
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
         var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null);
 
-        // Create HttpClient with optional unsafe SSL handling
+        // Create HttpClient with optional unsafe SSL handling and error handling
         HttpClient httpClient;
-        if (options.IsUnsafe)
+
+        // Create the base handler
+        HttpClientHandler baseHandler = new HttpClientHandler
         {
-            var handler = new HttpClientHandler
-            {
 #if NETSTANDARD2_0
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            ServerCertificateCustomValidationCallback = options.IsUnsafe
+                ? (message, cert, chain, errors) => true
+                : null
 #else
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            ServerCertificateCustomValidationCallback = options.IsUnsafe
+                ? HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                : null
 #endif
-            };
-            httpClient = new HttpClient(handler);
-        }
-        else
+        };
+
+        // Wrap the base handler with the Descope error response handler
+        var errorHandler = new DescopeErrorResponseHandler
         {
-            httpClient = new HttpClient();
-        }
+            InnerHandler = baseHandler
+        };
+
+        httpClient = new HttpClient(errorHandler);
 
         // Configure Descope headers
         DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);

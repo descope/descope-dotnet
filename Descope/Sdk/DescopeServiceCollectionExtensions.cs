@@ -35,8 +35,12 @@ public static class DescopeServiceCollectionExtensions
             throw new DescopeException("HttpClientFactoryName is required for DI registration");
         }
 
-        // Configure HttpClient with optional unsafe SSL handling
+        // Configure HttpClient with optional unsafe SSL handling and error handling
         var httpClientBuilder = services.AddHttpClient(options.HttpClientFactoryName!);
+
+        // Add the error response handler to the pipeline
+        httpClientBuilder.AddHttpMessageHandler(() => new DescopeErrorResponseHandler());
+
         if (options.IsUnsafe)
         {
             httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.HttpClientHandler

@@ -169,9 +169,16 @@ public class InstanceExample
 
                 Console.WriteLine("\nAuth API flow completed successfully!");
             }
+            catch (DescopeException descopeEx)
+            {
+                Console.WriteLine($"Auth flow error: {descopeEx.Message}");
+                Console.WriteLine($"  - Error Code: {descopeEx.ErrorCode}");
+                Console.WriteLine($"  - Error Description: {descopeEx.ErrorDescription}");
+                Console.WriteLine($"  - Error Message: {descopeEx.ErrorMessage}");
+            }
             catch (Exception authEx)
             {
-                Console.WriteLine($"Auth flow error: {authEx.Message}");
+                Console.WriteLine($"Auth flow error (non-Descope): {authEx.Message}");
             }
             finally
             {

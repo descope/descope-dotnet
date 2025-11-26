@@ -209,10 +209,18 @@ public class ServiceExample
                     logger.LogInformation("Auth API flow completed successfully");
                     Console.WriteLine("\nAuth API flow completed successfully!");
                 }
+                catch (DescopeException descopeEx)
+                {
+                    logger.LogError(descopeEx, "Error in auth flow");
+                    Console.WriteLine($"Auth flow error: {descopeEx.Message}");
+                    Console.WriteLine($"  - Error Code: {descopeEx.ErrorCode}");
+                    Console.WriteLine($"  - Error Description: {descopeEx.ErrorDescription}");
+                    Console.WriteLine($"  - Error Message: {descopeEx.ErrorMessage}");
+                }
                 catch (Exception authEx)
                 {
                     logger.LogError(authEx, "Error in auth flow");
-                    Console.WriteLine($"Auth flow error: {authEx.Message}");
+                    Console.WriteLine($"Auth flow error (non-Descope): {authEx.Message}");
                 }
                 finally
                 {
