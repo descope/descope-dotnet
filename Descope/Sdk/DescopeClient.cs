@@ -29,7 +29,7 @@ public class DescopeClient : IDescopeClient
         DescopeAuthKiotaClient authKiotaClient,
         string projectId,
         string baseUrl = "",
-        HttpClient? httpClient = null) // todo: not optional
+        HttpClient? httpClient = null) // todo: not optional?
     {
         _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient ?? throw new ArgumentNullException(nameof(mgmtKiotaClient)));
         _authClient = new DescopeAuthClient(authKiotaClient ?? throw new ArgumentNullException(nameof(authKiotaClient)), projectId, baseUrl, httpClient);

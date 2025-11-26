@@ -74,11 +74,14 @@ public class ServiceExample
 
             // Register Descope Client using the extension method
             services.AddDescopeClient(
-                projectId: config.ProjectId,
-                managementKey: config.ManagementKey,
-                httpClientFactoryName: "DescopeClient",
-                baseUrl: baseUrl,
-                isUnsafe: true);
+                new DescopeClientOptions
+                {
+                    ProjectId = config.ProjectId,
+                    ManagementKey = config.ManagementKey,
+                    HttpClientFactoryName = "DescopeClient",
+                    BaseUrl = baseUrl,
+                    IsUnsafe = true
+                });
 
             // Build service provider
             var serviceProvider = services.BuildServiceProvider();

@@ -26,26 +26,15 @@ public class DescopeAuthenticationProvider : IAuthenticationProvider
     private readonly bool _isManagementProvider;
 
     /// <summary>
-    /// Creates a new instance of DescopeAuthenticationProvider for management operations.
+    /// Creates a new instance of DescopeAuthenticationProvider.
     /// </summary>
     /// <param name="projectId">The Descope Project ID.</param>
-    /// <param name="managementKey">The Descope Management Key.</param>
-    public DescopeAuthenticationProvider(string projectId, string managementKey)
+    /// <param name="managementKey">The Descope Management Key (optional). If provided, this is a management provider.</param>
+    public DescopeAuthenticationProvider(string projectId, string? managementKey = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
-        _managementKey = managementKey ?? throw new ArgumentNullException(nameof(managementKey));
-        _isManagementProvider = true;
-    }
-
-    /// <summary>
-    /// Creates a new instance of DescopeAuthenticationProvider for auth operations.
-    /// </summary>
-    /// <param name="projectId">The Descope Project ID.</param>
-    public DescopeAuthenticationProvider(string projectId)
-    {
-        _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
-        _managementKey = null;
-        _isManagementProvider = false;
+        _managementKey = managementKey;
+        _isManagementProvider = !string.IsNullOrWhiteSpace(managementKey);
     }
 
     /// <inheritdoc/>

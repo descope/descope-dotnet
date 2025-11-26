@@ -1,5 +1,6 @@
 using Descope.Mgmt;
 using Descope.Auth;
+using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using System.Net.Http;
@@ -13,52 +14,12 @@ namespace Descope;
 public static class DescopeManagementClientFactory
 {
     /// <summary>
-    /// Creates a new instance of the Descope Client.
-    /// </summary>
-    /// <param name="projectId">The Descope Project ID (required).</param>
-    /// <param name="managementKey">The Descope Management Key (required).</param>
-    /// <param name="baseUrl">The base URL for the Descope API. If null, defaults to "https://api.descope.com".</param>
-    /// <param name="isUnsafe">
-    /// If true, allows unsafe HTTPS calls by accepting any server certificate.
-    /// WARNING: Only use this for development/testing purposes. Default is false.
-    /// </param>
-    /// <returns>A new instance of the Descope Client.</returns>
-    /// <exception cref="ArgumentException">Thrown when required parameters are null or empty.</exception>
-    public static IDescopeClient Create(
-        string projectId,
-        string managementKey,
-        string? baseUrl = null,
-        bool isUnsafe = false)
-    {
-        if (string.IsNullOrWhiteSpace(projectId))
-        {
-            throw new ArgumentException("Project ID is required", nameof(projectId));
-        }
-
-        if (string.IsNullOrWhiteSpace(managementKey))
-        {
-            throw new ArgumentException("Management Key is required", nameof(managementKey));
-        }
-
-        var options = new DescopeManagementClientOptions
-        {
-            ProjectId = projectId,
-            ManagementKey = managementKey,
-            BaseUrl = baseUrl ?? "https://api.descope.com",
-            IsUnsafe = isUnsafe
-        };
-
-        return Create(options);
-    }
-
-    /// <summary>
     /// Creates a new instance of the Descope Client using options.
     /// </summary>
     /// <param name="options">The configuration options for the client.</param>
     /// <returns>A new instance of the Descope Client.</returns>
     /// <exception cref="ArgumentNullException">Thrown when options is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when required options are not set.</exception>
-    public static IDescopeClient Create(DescopeManagementClientOptions options)
+    public static IDescopeClient Create(DescopeClientOptions options)
     {
         if (options == null)
         {
@@ -69,7 +30,7 @@ public static class DescopeManagementClientFactory
 
         // Create separate authentication providers for management and auth
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
-        var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId);
+        var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null);
 
         // Create HttpClient with optional unsafe SSL handling
         HttpClient httpClient;
@@ -113,21 +74,42 @@ public static class DescopeManagementClientFactory
     }
 
     /// <summary>
-    /// Creates a new instance of the Descope Client using a configuration delegate.
+    /// Creates a new instance of the Descope Client for testing purposes using mock request adapters.
+    /// This method allows injecting custom request adapters to avoid making real HTTP calls during testing.
     /// </summary>
-    /// <param name="configureOptions">A delegate to configure the client options.</param>
-    /// <returns>A new instance of the Descope Client.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configureOptions is null.</exception>
-    public static IDescopeClient Create(Action<DescopeManagementClientOptions> configureOptions)
+    /// <param name="authAdapter">The request adapter for auth endpoints.</param>
+    /// <param name="mgmtAdapter">The request adapter for management endpoints.</param>
+    /// <param name="options">The configuration options for the client.</param>
+    /// <returns>A new instance of the Descope Client configured with the provided adapters.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+    /// <exception cref="DescopeException">Thrown when required options are not set.</exception>
+    public static IDescopeClient CreateForTest(
+        IRequestAdapter authAdapter,
+        IRequestAdapter mgmtAdapter,
+        DescopeClientOptions options)
     {
-        if (configureOptions == null)
+        if (authAdapter == null)
         {
-            throw new ArgumentNullException(nameof(configureOptions));
+            throw new ArgumentNullException(nameof(authAdapter));
         }
 
-        var options = new DescopeManagementClientOptions();
-        configureOptions(options);
+        if (mgmtAdapter == null)
+        {
+            throw new ArgumentNullException(nameof(mgmtAdapter));
+        }
 
-        return Create(options);
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        options.Validate();
+
+        // Create the Kiota clients with the provided adapters
+        var authKiotaClient = new DescopeAuthKiotaClient(authAdapter);
+        var mgmtKiotaClient = new DescopeMgmtKiotaClient(mgmtAdapter);
+
+        // Create and return the wrapper client
+        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl);
     }
 }

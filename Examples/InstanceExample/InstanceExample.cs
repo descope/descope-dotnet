@@ -55,10 +55,13 @@ public class InstanceExample
 
             // Create a direct instance of the client using the factory
             var client = DescopeManagementClientFactory.Create(
-                projectId: config.ProjectId,
-                managementKey: config.ManagementKey,
-                baseUrl: baseUrl,
-                isUnsafe: config.Unsafe);
+                new DescopeClientOptions
+                {
+                    ProjectId = config.ProjectId,
+                    ManagementKey = config.ManagementKey,
+                    BaseUrl = baseUrl,
+                    IsUnsafe = config.Unsafe
+                });
 
             Console.WriteLine("Starting user search using instance-based client...");
 

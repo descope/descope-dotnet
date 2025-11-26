@@ -1,9 +1,9 @@
 namespace Descope;
 
 /// <summary>
-/// Configuration options for the Descope Management Client.
+/// Configuration options for the Descope Client.
 /// </summary>
-public class DescopeManagementClientOptions
+public class DescopeClientOptions
 {
     /// <summary>
     /// The Descope Project ID (required).
@@ -11,9 +11,9 @@ public class DescopeManagementClientOptions
     public string ProjectId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The Descope Management Key (required).
+    /// The Descope Management Key (optional).
     /// </summary>
-    public string ManagementKey { get; set; } = string.Empty;
+    public string? ManagementKey { get; set; }
 
     /// <summary>
     /// The base URL for the Descope API.
@@ -42,17 +42,12 @@ public class DescopeManagementClientOptions
     {
         if (string.IsNullOrWhiteSpace(ProjectId))
         {
-            throw new ArgumentException("ProjectId is required", nameof(ProjectId));
-        }
-
-        if (string.IsNullOrWhiteSpace(ManagementKey))
-        {
-            throw new ArgumentException("ManagementKey is required", nameof(ManagementKey));
+            throw new DescopeException("ProjectId is required");
         }
 
         if (string.IsNullOrWhiteSpace(BaseUrl))
         {
-            throw new ArgumentException("BaseUrl cannot be empty", nameof(BaseUrl));
+            throw new DescopeException("BaseUrl cannot be empty");
         }
     }
 }
