@@ -1,6 +1,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Text.Json;
 
 namespace Descope
 {
@@ -185,6 +186,50 @@ namespace Descope
             }
         }
 
+        private static object ConvertJsonElement(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    var dict = new Dictionary<string, object>();
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        dict[property.Name] = ConvertJsonElement(property.Value);
+                    }
+                    return dict;
+                case JsonValueKind.Array:
+                    // Check if all elements are strings - if so, return List<string>
+                    var arrayElements = element.EnumerateArray().ToList();
+                    if (arrayElements.All(e => e.ValueKind == JsonValueKind.String))
+                    {
+                        return arrayElements.Select(e => e.GetString()!).ToList();
+                    }
+                    // Otherwise return List<object>
+                    var list = new List<object>();
+                    foreach (var item in arrayElements)
+                    {
+                        list.Add(ConvertJsonElement(item));
+                    }
+                    return list;
+                case JsonValueKind.String:
+                    return element.GetString() ?? "";
+                case JsonValueKind.Number:
+                    if (element.TryGetInt32(out int intValue))
+                        return intValue;
+                    if (element.TryGetInt64(out long longValue))
+                        return longValue;
+                    return element.GetDouble();
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Null:
+                    return null!;
+                default:
+                    return element.ToString();
+            }
+        }
+
         internal List<string> GetTenants()
         {
             return new List<string>(GetTenantsClaim().Keys);
@@ -192,12 +237,49 @@ namespace Descope
 
         internal object? GetTenantValue(string tenant, string key)
         {
-            return (GetTenantsClaim()[tenant] is Dictionary<string, object> info) ? info[key] : null;
+            var tenants = GetTenantsClaim();
+            if (tenants.TryGetValue(tenant, out var tenantValue) && tenantValue is Dictionary<string, object> info)
+            {
+                return info.TryGetValue(key, out var value) ? value : null;
+            }
+            return null;
         }
 
+        // Gets the 'tenants' claim as a dictionary, lazily parsing it as JSON if necessary and caching the result.
         private Dictionary<string, object> GetTenantsClaim()
         {
-            return Claims["tenants"] as Dictionary<string, object> ?? new Dictionary<string, object>();
+            if (!Claims.ContainsKey("tenants"))
+            {
+                return new Dictionary<string, object>();
+            }
+
+            // If already a dictionary, return it
+            if (Claims["tenants"] is Dictionary<string, object> dict)
+            {
+                return dict;
+            }
+
+            // If it's a string, try to parse it as JSON
+            if (Claims["tenants"] is string tenantsJson && !string.IsNullOrEmpty(tenantsJson))
+            {
+                try
+                {
+                    var jsonElement = JsonSerializer.Deserialize<JsonElement>(tenantsJson);
+                    var tenants = ConvertJsonElement(jsonElement) as Dictionary<string, object>;
+                    if (tenants != null)
+                    {
+                        // Cache the parsed result
+                        Claims["tenants"] = tenants;
+                        return tenants;
+                    }
+                }
+                catch
+                {
+                    // If parsing fails, return empty dictionary
+                }
+            }
+
+            return new Dictionary<string, object>();
         }
     }
 
