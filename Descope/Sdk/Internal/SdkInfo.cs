@@ -6,7 +6,7 @@ namespace Descope;
 /// <summary>
 /// Provides information about the Descope SDK.
 /// </summary>
-public static class SdkInfo
+internal static class SdkInfo
 {
     /// <summary>
     /// Gets the SDK name.

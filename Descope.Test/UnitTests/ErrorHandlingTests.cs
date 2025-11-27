@@ -1,3 +1,4 @@
+using Descope;
 using Descope.Test.Helpers;
 using Xunit;
 

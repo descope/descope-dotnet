@@ -1,4 +1,4 @@
-.PHONY: build generate generate-mgmt generate-auth clean help
+.PHONY: build generate generate-mgmt generate-auth clean test examples help
 
 # Default target
 .DEFAULT_GOAL := build
@@ -10,7 +10,7 @@ MGMT_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/managementservice/pkg
 MGMT_KIOTA_LANG := CSharp
 MGMT_KIOTA_CLASS := DescopeMgmtKiotaClient
 MGMT_KIOTA_NAMESPACE := Descope.Mgmt
-MGMT_KIOTA_OUTPUT := ./Generated/Mgmt
+MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
 MGMT_KIOTA_EXCLUDE_PATHS := /scim/** # SCIM endpoints are not intended for direct SDK use
 
 # Auth API OpenAPI spec file location
@@ -20,7 +20,7 @@ AUTH_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/onetimeservice/pkg/on
 AUTH_KIOTA_LANG := CSharp
 AUTH_KIOTA_CLASS := DescopeAuthKiotaClient
 AUTH_KIOTA_NAMESPACE := Descope.Auth
-AUTH_KIOTA_OUTPUT := ./Generated/Auth
+AUTH_KIOTA_OUTPUT := ./Descope/Generated/Auth
 AUTH_KIOTA_INCLUDE_PATHS := /v1/auth/**
 AUTH_KIOTA_EXCLUDE_PATHS := /v1/auth/validate # not intended for direct SDK use, instead the SDK validates session JWTs internally with cached keys
 
@@ -58,10 +58,23 @@ generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
 
 dotnet-build: ## Build the C# project
 	@echo "Building C# project..."
-	dotnet build
+	cd Descope && dotnet build
 	@echo "Build complete."
+
+test: ## Run all unit tests
+	@echo "Running unit tests..."
+	cd Descope.Test && dotnet test
+	@echo "Tests complete."
+
+examples: ## Run both example applications (TODO: remove after testing)
+	@echo "Running InstanceExample..."
+	cd Examples/InstanceExample && dotnet run
+	@echo ""
+	@echo "Running ServiceExample..."
+	cd Examples/ServiceExample && dotnet run
+	@echo "Examples complete."
 
 clean: ## Clean build artifacts
 	@echo "Cleaning build artifacts..."
-	dotnet clean
+	cd Descope && dotnet clean
 	@echo "Clean complete."

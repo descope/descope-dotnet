@@ -12,7 +12,7 @@ namespace Descope;
 /// HTTP middleware that intercepts error responses and converts them to DescopeException.
 /// This handler parses the error response body for Descope-specific error details.
 /// </summary>
-public class DescopeErrorResponseHandler : DelegatingHandler
+internal class DescopeErrorResponseHandler : DelegatingHandler
 {
     /// <summary>
     /// Sends an HTTP request and handles error responses by converting them to DescopeException.

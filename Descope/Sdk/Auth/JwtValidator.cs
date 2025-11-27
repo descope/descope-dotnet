@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Descope.Sdk.Auth;
+namespace Descope;
 
 /// <summary>
 /// Handles JWT validation using locally cached public keys.
@@ -29,16 +29,16 @@ internal class JwtValidator
     /// </summary>
     /// <param name="jwt">The JWT token to validate.</param>
     /// <returns>A validated Token object or null if validation fails.</returns>
-    public async Task<Token?> ValidateToken(string jwt)
+    public async Task<Token> ValidateToken(string jwt)
     {
-        if (string.IsNullOrEmpty(jwt)) return null;
+        if (string.IsNullOrEmpty(jwt)) throw new DescopeException("JWT cannot be empty");
 
         await FetchKeyIfNeeded();
 
         try
         {
             var token = _jsonWebTokenHandler.ReadJsonWebToken(jwt);
-            if (token == null) return null;
+            if (token == null) throw new DescopeException("Failed to read JWT token");
 
             var result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, new TokenValidationParameters
             {
@@ -58,12 +58,12 @@ internal class JwtValidator
                 ClockSkew = TimeSpan.FromSeconds(5),
             });
 
-            if (result.Exception != null) return null;
-            return result.IsValid ? new Token(token) : null;
+            if (result.Exception != null) throw new DescopeException("JWT validation failed");
+            return result.IsValid ? new Token(token) : throw new DescopeException("JWT validation failed");
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            throw new DescopeException("JWT validation failed", ex);
         }
     }
 

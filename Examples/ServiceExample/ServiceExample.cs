@@ -1,14 +1,10 @@
 using Descope;
-using Descope.Mgmt.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
-using System;
-using System.IO;
-using System.Net.Http;
+using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Configuration model for reading from config.json
@@ -19,6 +15,112 @@ public class Config
     public string ManagementKey { get; set; } = string.Empty;
     public string BaseUrl { get; set; } = string.Empty;
     public bool Unsafe { get; set; }
+}
+
+/// <summary>
+/// Custom HTTP message handler that logs request and response details.
+/// </summary>
+public class HttpLoggingHandler : DelegatingHandler
+{
+    private readonly ILogger<HttpLoggingHandler> _logger;
+
+    public HttpLoggingHandler(ILogger<HttpLoggingHandler> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        // Log request details
+        _logger.LogInformation("=== HTTP Request ===");
+        _logger.LogInformation("Method: {Method}", request.Method);
+        _logger.LogInformation("URI: {Uri}", request.RequestUri);
+
+        // Log request headers
+        _logger.LogInformation("--- Request Headers ---");
+        foreach (var header in request.Headers)
+        {
+            _logger.LogInformation("  {HeaderName}: {HeaderValue}",
+                header.Key,
+                string.Join(", ", header.Value));
+        }
+
+        // Log request body if present
+        if (request.Content != null)
+        {
+            // Log content headers
+            _logger.LogInformation("--- Request Content Headers ---");
+            foreach (var header in request.Content.Headers)
+            {
+                _logger.LogInformation("  {HeaderName}: {HeaderValue}",
+                    header.Key,
+                    string.Join(", ", header.Value));
+            }
+
+            // Log request body
+            var requestBody = await request.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(requestBody))
+            {
+                _logger.LogInformation("--- Request Body ---");
+                // Try to format JSON for better readability
+                try
+                {
+                    var jsonDoc = JsonDocument.Parse(requestBody);
+                    var formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    });
+                    _logger.LogInformation("{RequestBody}", formattedJson);
+                }
+                catch
+                {
+                    // If not JSON, log as-is
+                    _logger.LogInformation("{RequestBody}", requestBody);
+                }
+
+                // Recreate the content since ReadAsStringAsync consumes the stream
+                request.Content = new StringContent(requestBody, Encoding.UTF8,
+                    request.Content.Headers.ContentType?.MediaType ?? "application/json");
+            }
+        }
+
+        _logger.LogInformation("==================");
+
+        // Send the request
+        var response = await base.SendAsync(request, cancellationToken);
+
+        // Log response status
+        _logger.LogInformation("=== HTTP Response ===");
+        _logger.LogInformation("Status Code: {StatusCode} ({StatusCodeNumber})",
+            response.StatusCode,
+            (int)response.StatusCode);
+
+        // Log response headers
+        _logger.LogInformation("--- Response Headers ---");
+        foreach (var header in response.Headers)
+        {
+            _logger.LogInformation("  {HeaderName}: {HeaderValue}",
+                header.Key,
+                string.Join(", ", header.Value));
+        }
+
+        if (response.Content != null)
+        {
+            _logger.LogInformation("--- Response Content Headers ---");
+            foreach (var header in response.Content.Headers)
+            {
+                _logger.LogInformation("  {HeaderName}: {HeaderValue}",
+                    header.Key,
+                    string.Join(", ", header.Value));
+            }
+        }
+
+        _logger.LogInformation("====================");
+
+        return response;
+    }
 }
 
 /// <summary>
@@ -67,6 +169,10 @@ public class ServiceExample
 
             // Configure HttpClient with HttpClientFactory, Polly policies, and custom handlers
             var httpClientBuilder = services.AddHttpClient("DescopeClient");
+
+            // Add our custom logging handler FIRST in the pipeline
+            httpClientBuilder.AddHttpMessageHandler(sp =>
+                new HttpLoggingHandler(sp.GetRequiredService<ILogger<HttpLoggingHandler>>()));
 
             httpClientBuilder
                 .AddPolicyHandler(GetRetryPolicy())
@@ -185,6 +291,22 @@ public class ServiceExample
                     Console.WriteLine($"  - User ID: {authResponse?.User?.UserId}");
                     Console.WriteLine($"  - Email: {authResponse?.User?.Email}");
                     Console.WriteLine($"  - Session JWT: {authResponse?.SessionJwt?.Substring(0, Math.Min(50, authResponse.SessionJwt.Length))}...");
+
+                    // update user email using Auth V1 API
+                    Console.WriteLine("Updating user email using Auth V1 API...");
+                    var newEmail = "updated_" + testLoginId;
+                    // Using the extension method with explicit JWT parameter
+                    var updateEmailResponse = await client.Auth.V1.Magiclink.Update.Email.PostWithJwtAsync(
+                        new Descope.Auth.Models.Onetimev1.UpdateUserEmailMagicLinkRequest
+                        {
+                            LoginId = testLoginId,
+                            Email = newEmail,
+                            RedirectUrl = "https://example.com/email-updated",
+                            AddToLoginIDs = true,
+                            OnMergeUseExisting = true,
+                        },
+                        authResponse!.RefreshJwt!);
+                    Console.WriteLine($"User email update magic link generated: {updateEmailResponse?.MaskedEmail}");
 
                     // Validate the session JWT using Auth V1 API - LOCAL VALIDATION (no HTTP call)
                     logger.LogInformation("Validating session JWT locally");

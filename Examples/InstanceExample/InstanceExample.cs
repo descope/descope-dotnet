@@ -1,9 +1,5 @@
 using Descope;
-using Descope.Mgmt.Models;
-using System;
-using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Configuration model for reading from config.json
@@ -145,9 +141,24 @@ public class InstanceExample
                     });
 
                 Console.WriteLine("Magic link verified successfully!");
-                Console.WriteLine($"  - User ID: {authResponse?.User?.UserId}");
-                Console.WriteLine($"  - Email: {authResponse?.User?.Email}");
-                Console.WriteLine($"  - Session JWT: {authResponse?.SessionJwt?.Substring(0, Math.Min(50, authResponse.SessionJwt.Length))}...");
+                Console.WriteLine($"  - User ID: {authResponse!.User?.UserId}");
+                Console.WriteLine($"  - Email: {authResponse!.User?.Email}");
+                Console.WriteLine($"  - Session JWT: {authResponse!.SessionJwt!.Substring(0, Math.Min(50, authResponse.SessionJwt.Length))}...");
+
+                // update user email using Auth V1 API
+                Console.WriteLine("Updating user email using Auth V1 API...");
+                var newEmail = "updated_" + testLoginId;
+                var updateEmailResponse = await client.Auth.V1.Magiclink.Update.Email.PostWithJwtAsync(
+                    new Descope.Auth.Models.Onetimev1.UpdateUserEmailMagicLinkRequest
+                    {
+                        LoginId = testLoginId,
+                        Email = newEmail,
+                        RedirectUrl = "https://example.com/email-updated",
+                        AddToLoginIDs = true,
+                        OnMergeUseExisting = true,
+                    },
+                    authResponse!.RefreshJwt!);
+                Console.WriteLine($"User email update magic link generated: {updateEmailResponse?.MaskedEmail}");
 
                 // Validate the session JWT using Auth V1 API - LOCAL VALIDATION (no HTTP call)
                 Console.WriteLine("Validating session JWT locally (no HTTP call)...");

@@ -7,7 +7,7 @@ namespace Descope;
 /// Provides HTTP client configuration for Descope SDK.
 /// Configures standard headers required by Descope API.
 /// </summary>
-public static class DescopeHttpClientHandler
+internal static class DescopeHttpHeaders
 {
     /// <summary>
     /// Configures an HttpClient with required Descope headers.

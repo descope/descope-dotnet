@@ -1,6 +1,3 @@
-using Descope.Mgmt;
-using Descope.Auth;
-
 namespace Descope;
 
 /// <summary>

@@ -1,6 +1,5 @@
 using Descope.Mgmt;
 using Descope.Auth;
-using Descope.Sdk.Auth;
 
 namespace Descope;
 
@@ -28,11 +27,11 @@ public class DescopeClient : IDescopeClient
         DescopeMgmtKiotaClient mgmtKiotaClient,
         DescopeAuthKiotaClient authKiotaClient,
         string projectId,
-        string baseUrl = "",
-        HttpClient? httpClient = null) // todo: not optional?
+        string baseUrl,
+        HttpClient httpClient)
     {
-        _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient ?? throw new ArgumentNullException(nameof(mgmtKiotaClient)));
-        _authClient = new DescopeAuthClient(authKiotaClient ?? throw new ArgumentNullException(nameof(authKiotaClient)), projectId, baseUrl, httpClient);
+        _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient);
+        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, httpClient);
         _projectId = projectId;
         _baseUrl = baseUrl;
         _httpClient = httpClient;
@@ -51,62 +50,41 @@ public class DescopeClient : IDescopeClient
         public Mgmt.V2.Mgmt.MgmtRequestBuilder V2 => _mgmtKiotaClient.V2.Mgmt;
     }
 
-    public class DescopeAuthClient
+    // Auth client wrapper, exposes kiota client and token actions that include local JWT validation and additional logic
+    public class DescopeAuthClient : ITokenActions
     {
         private readonly DescopeAuthKiotaClient _authKiotaClient;
-        private readonly JwtValidator? _jwtValidator;
+        private readonly TokenActions _tokenActions;
 
         internal DescopeAuthClient(
             DescopeAuthKiotaClient authKiotaClient,
-            string projectId = "",
-            string baseUrl = "",
-            HttpClient? httpClient = null)
+            string projectId,
+            string baseUrl,
+            HttpClient httpClient)
         {
             _authKiotaClient = authKiotaClient;
-
-            // TODO: httpClient, projectID and baseUrl should not be optional, if any are empty, we should throw an exception
-            // Initialize JWT validator if we have the required components
-            if (!string.IsNullOrEmpty(projectId) && !string.IsNullOrEmpty(baseUrl) && httpClient != null)
-            {
-                _jwtValidator = new JwtValidator(projectId, baseUrl, httpClient);
-            }
+            var jwtValidator = new JwtValidator(projectId, baseUrl, httpClient);
+            _tokenActions = new TokenActions(jwtValidator, authKiotaClient.V1.Auth);
         }
 
         public Auth.V1.Auth.AuthRequestBuilder V1 => _authKiotaClient.V1.Auth;
 
-        /// <summary>
-        /// Validates a session JWT locally using cached keys, loading keys if needed.
-        /// </summary>
-        /// <param name="sessionJwt">The session JWT to validate.</param>
-        /// <returns>A validated Token object.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when JWT validator is not initialized.</exception>
-        /// <exception cref="Exception">Thrown when the session JWT is invalid.</exception>
-        public async Task<Token> ValidateSession(string sessionJwt)
-        {
-            if (_jwtValidator == null)
-            {
-                throw new InvalidOperationException(
-                    "Local JWT validation is not available. Ensure the client was created with projectId, baseUrl, and httpClient.");
-            }
+        // Forward ITokenActions methods to TokenActions implementation
 
-            if (string.IsNullOrEmpty(sessionJwt))
-            {
-                throw new ArgumentException("Session JWT cannot be empty", nameof(sessionJwt));
-            }
+        /// <inheritdoc/>
+        public Task<Token> ValidateSession(string sessionJwt) => _tokenActions.ValidateSession(sessionJwt);
 
-            var token = await _jwtValidator.ValidateToken(sessionJwt);
-            if (token == null)
-            {
-                throw new Exception("Session JWT is invalid");
-            }
+        /// <inheritdoc/>
+        public Task<Token> RefreshSession(string refreshJwt) => _tokenActions.RefreshSession(refreshJwt);
 
-            return token;
-        }
+        /// <inheritdoc/>
+        public Task<Token> ValidateAndRefreshSession(string sessionJwt, string refreshJwt) =>
+            _tokenActions.ValidateAndRefreshSession(sessionJwt, refreshJwt);
 
-        /// <summary>
-        /// Checks if local JWT validation is available.
-        /// </summary>
-        public bool CanValidateLocally => _jwtValidator != null;
+        /// <inheritdoc/>
+        public Task<Token> ExchangeAccessKey(string accessKey, Auth.Models.Onetimev1.AccessKeyLoginOptions? loginOptions = null) =>
+            _tokenActions.ExchangeAccessKey(accessKey, loginOptions);
+
     }
 
     /// <inheritdoc/>

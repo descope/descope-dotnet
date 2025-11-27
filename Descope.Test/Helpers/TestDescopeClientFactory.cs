@@ -1,4 +1,3 @@
-using Descope.Sdk;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
 
@@ -22,7 +21,7 @@ public static class TestDescopeClientFactory
     {
         var mockAdapter = MockRequestAdapter.CreateWithEmptyResponse();
         var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
-        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options);
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
     }
 
     /// <summary>
@@ -37,7 +36,7 @@ public static class TestDescopeClientFactory
     {
         var mockAdapter = MockRequestAdapter.CreateWithResponse(responseObject);
         var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
-        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options);
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
     }
 
     /// <summary>
@@ -59,7 +58,7 @@ public static class TestDescopeClientFactory
     {
         var mockAdapter = MockRequestAdapter.CreateWithAsserter(asserter);
         var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
-        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options);
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
     }
 
 

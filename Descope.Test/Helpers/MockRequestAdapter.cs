@@ -3,6 +3,7 @@ using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Abstractions.Store;
 using Microsoft.Kiota.Serialization.Json;
+using Descope;
 using System.Text;
 
 namespace Descope.Test.Helpers;

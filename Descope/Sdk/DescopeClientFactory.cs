@@ -1,9 +1,7 @@
 using Descope.Mgmt;
 using Descope.Auth;
 using Microsoft.Kiota.Abstractions;
-using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
-using System.Net.Http;
 
 namespace Descope;
 
@@ -58,7 +56,7 @@ public static class DescopeManagementClientFactory
         httpClient = new HttpClient(errorHandler);
 
         // Configure Descope headers
-        DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+        DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
 
         // Create separate request adapters for management and auth
         var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
@@ -94,7 +92,7 @@ public static class DescopeManagementClientFactory
         IRequestAdapter authAdapter,
         IRequestAdapter mgmtAdapter,
         DescopeClientOptions options,
-        HttpClient? httpClient = null)
+        HttpClient httpClient)
     {
         if (authAdapter == null)
         {

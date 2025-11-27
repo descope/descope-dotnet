@@ -1,7 +1,9 @@
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
+using Descope;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,17 +21,12 @@ namespace Descope;
 /// - "password": Used for step-up authentication or certain auth methods
 /// - "jwt": Used when a valid refresh token is required for the operation
 /// </summary>
-public class DescopeAuthenticationProvider : IAuthenticationProvider
+internal class DescopeAuthenticationProvider : IAuthenticationProvider
 {
     private readonly string _projectId;
     private readonly string? _managementKey;
     private readonly bool _isManagementProvider;
 
-    /// <summary>
-    /// Creates a new instance of DescopeAuthenticationProvider.
-    /// </summary>
-    /// <param name="projectId">The Descope Project ID.</param>
-    /// <param name="managementKey">The Descope Management Key (optional). If provided, this is a management provider.</param>
     public DescopeAuthenticationProvider(string projectId, string? managementKey = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
@@ -54,18 +51,17 @@ public class DescopeAuthenticationProvider : IAuthenticationProvider
         }
         else
         {
-            // Auth client: projectID or projectID:password
+            // Auth client: projectID or projectID:password/jwt
             bearer = _projectId;
 
-            // Check for password or current JWT in additional context
-            // The password parameter may be passed from certain auth methods
-            if (additionalAuthenticationContext != null)
+            // First check for DescopeJwtOption in request options
+            var jwtOption = request.RequestOptions?.OfType<DescopeJwtOption>().FirstOrDefault();
+            Dictionary<string, object>? context = jwtOption?.GetContext() ?? additionalAuthenticationContext;
+
+            // Check for password or current JWT in the context
+            if (context != null)
             {
-                if (additionalAuthenticationContext.TryGetValue("password", out var pswd) && pswd is string password && !string.IsNullOrEmpty(password))
-                {
-                    bearer = $"{bearer}:{password}";
-                }
-                else if (additionalAuthenticationContext.TryGetValue("jwt", out var token) && token is string jwt && !string.IsNullOrEmpty(jwt))
+                if (context.TryGetValue("jwt", out var token) && token is string jwt && !string.IsNullOrEmpty(jwt))
                 {
                     bearer = $"{bearer}:{jwt}";
                 }

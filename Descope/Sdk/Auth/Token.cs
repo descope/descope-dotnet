@@ -1,7 +1,7 @@
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Text.Json;
 
-namespace Descope.Sdk.Auth;
+namespace Descope;
 
 /// <summary>
 /// Represents a validated JWT token with convenient access to claims.

@@ -67,7 +67,7 @@ public static class DescopeServiceCollectionExtensions
             var httpClient = httpClientFactory.CreateClient(options.HttpClientFactoryName!);
 
             // Configure Descope headers
-            DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
 
             var adapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
             {
@@ -86,7 +86,7 @@ public static class DescopeServiceCollectionExtensions
             var httpClient = httpClientFactory.CreateClient(options.HttpClientFactoryName!);
 
             // Configure Descope headers
-            DescopeHttpClientHandler.ConfigureHeaders(httpClient, options.ProjectId);
+            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
 
             var adapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
             {
