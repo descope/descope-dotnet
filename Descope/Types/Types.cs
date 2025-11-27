@@ -178,10 +178,83 @@ namespace Descope
             Expiration = jsonWebToken.ValidTo;
             var parts = jsonWebToken.Issuer.Split("/");
             ProjectId = parts.Last();
-            Claims = new Dictionary<string, object>();
-            foreach (var claim in jsonWebToken.Claims)
+            
+            // Decode the JWT payload from the encoded token
+            // JWT format is: header.payload.signature
+            var tokenParts = jsonWebToken.EncodedToken.Split('.');
+            if (tokenParts.Length >= 2)
             {
-                Claims[claim.Type] = claim.Value;
+                // Decode the payload (second part)
+                var payloadJson = Base64UrlDecode(tokenParts[1]);
+                var payload = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(payloadJson);
+                Claims = new Dictionary<string, object>();
+                if (payload != null)
+                {
+                    foreach (var kvp in payload)
+                    {
+                        Claims[kvp.Key] = ConvertJsonElement(kvp.Value);
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to the old behavior if token format is unexpected
+                Claims = new Dictionary<string, object>();
+                foreach (var claim in jsonWebToken.Claims)
+                {
+                    Claims[claim.Type] = claim.Value;
+                }
+            }
+        }
+        
+        private static string Base64UrlDecode(string base64Url)
+        {
+            // Convert base64url to base64
+            var base64 = base64Url.Replace('-', '+').Replace('_', '/');
+            // Add padding if needed
+            switch (base64.Length % 4)
+            {
+                case 2: base64 += "=="; break;
+                case 3: base64 += "="; break;
+            }
+            var bytes = Convert.FromBase64String(base64);
+            return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+        
+        private static object ConvertJsonElement(System.Text.Json.JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case System.Text.Json.JsonValueKind.String:
+                    return element.GetString() ?? string.Empty;
+                case System.Text.Json.JsonValueKind.Number:
+                    if (element.TryGetInt32(out int intValue))
+                        return intValue;
+                    if (element.TryGetInt64(out long longValue))
+                        return longValue;
+                    return element.GetDouble();
+                case System.Text.Json.JsonValueKind.True:
+                    return true;
+                case System.Text.Json.JsonValueKind.False:
+                    return false;
+                case System.Text.Json.JsonValueKind.Array:
+                    var list = new List<object>();
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        list.Add(ConvertJsonElement(item));
+                    }
+                    return list;
+                case System.Text.Json.JsonValueKind.Object:
+                    var dict = new Dictionary<string, object>();
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        dict[property.Name] = ConvertJsonElement(property.Value);
+                    }
+                    return dict;
+                case System.Text.Json.JsonValueKind.Null:
+                    return null!;
+                default:
+                    return element.ToString() ?? string.Empty;
             }
         }
 

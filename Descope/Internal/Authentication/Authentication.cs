@@ -231,14 +231,26 @@ namespace Descope.Internal.Auth
 
         private static List<string> GetAuthorizationClaimItems(Token token, string claim, string? tenant)
         {
+            object? claimValue;
             if (string.IsNullOrEmpty(tenant))
             {
-                if (token.Claims[claim] is List<string> list) return list;
+                claimValue = token.Claims.ContainsKey(claim) ? token.Claims[claim] : null;
             }
             else
             {
-                if (token.GetTenantValue(tenant, claim) is List<string> list) return list;
+                claimValue = token.GetTenantValue(tenant, claim);
             }
+            
+            // Handle both List<string> and List<object> (from JSON deserialization)
+            if (claimValue is List<string> stringList)
+            {
+                return stringList;
+            }
+            else if (claimValue is List<object> objectList)
+            {
+                return objectList.Select(o => o?.ToString() ?? string.Empty).ToList();
+            }
+            
             return new List<string>();
         }
 
