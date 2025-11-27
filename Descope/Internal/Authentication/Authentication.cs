@@ -248,7 +248,12 @@ namespace Descope.Internal.Auth
             }
             else if (claimValue is List<object> objectList)
             {
-                return objectList.Select(o => o?.ToString() ?? string.Empty).ToList();
+                // Convert objects to strings - permissions/roles in JWTs are always strings
+                // but JSON deserialization produces List<object> for arrays
+                return objectList
+                    .Where(o => o != null)
+                    .Select(o => o is string s ? s : o.ToString() ?? string.Empty)
+                    .ToList();
             }
             
             return new List<string>();

@@ -252,8 +252,10 @@ namespace Descope
                     }
                     return dict;
                 case System.Text.Json.JsonValueKind.Null:
+                    // Return null for null JSON values - consuming code should handle null checks
                     return null!;
                 default:
+                    // For any unexpected value types, convert to string
                     return element.ToString() ?? string.Empty;
             }
         }
