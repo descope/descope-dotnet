@@ -66,6 +66,21 @@ test: ## Run all unit tests
 	cd Descope.Test && dotnet test
 	@echo "Tests complete."
 
+cover: ## Run unit tests with coverage report
+	@echo "Checking for ReportGenerator..."
+	@which reportgenerator > /dev/null 2>&1 || { \
+		echo "ReportGenerator not found. Installing..."; \
+		dotnet tool install -g dotnet-reportgenerator-globaltool; \
+	}
+	@echo "Running unit tests with coverage..."
+	cd Descope.Test && dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+	@echo ""
+	@echo "Coverage Summary:"
+	@reportgenerator -reports:"Descope.Test/TestResults/**/coverage.cobertura.xml" -reporttypes:"TextSummary" -targetdir:"." 2>/dev/null || true
+	@cat Summary.txt 2>/dev/null && rm -f Summary.txt || echo "Coverage report not generated"
+	@echo ""
+	@echo "Full coverage report available in Descope.Test/TestResults/"
+
 examples: ## Run both example applications (TODO: remove after testing)
 	@echo "Running InstanceExample..."
 	cd Examples/InstanceExample && dotnet run
