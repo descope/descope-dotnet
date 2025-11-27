@@ -29,4 +29,8 @@
         <ProjectReference Include="..\Descope\Descope.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="appsettingsTest.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

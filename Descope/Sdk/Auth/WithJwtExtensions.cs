@@ -8,7 +8,7 @@ namespace Descope;
 /// These methods provide a cleaner API by making the refresh JWT parameter explicit and mandatory,
 /// preventing accidental omission of required authentication context.
 /// </summary>
-public static class PostWithJwtExtensions
+public static class WithJwtExtensions
 {
     #region Private Helper Methods
 
@@ -408,6 +408,93 @@ public static class PostWithJwtExtensions
         return await requestBuilder.PostAsync(
             request,
             WithJwt(accessKey),
+            cancellationToken);
+    }
+
+    #endregion
+
+    #region Me Extensions
+
+    /// <summary>
+    /// Gets the user details for the current refresh token with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Me request builder.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The user details.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    public static async Task<Descope.Auth.Models.Userv1.ResponseUser?> GetWithJwtAsync(
+        this Descope.Auth.V1.Auth.Me.MeRequestBuilder requestBuilder,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for getting user details");
+        }
+
+        return await requestBuilder.GetAsync(
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
+    #region Logout Extensions
+
+    /// <summary>
+    /// Logs out from the session with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Logout request builder.</param>
+    /// <param name="request">The logout request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The JWT response.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    public static async Task<JWTResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Logout.LogoutRequestBuilder requestBuilder,
+        LogoutRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for logout");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
+    #region Tenant Selection Extensions
+
+    /// <summary>
+    /// Selects a tenant for the current session with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Select request builder.</param>
+    /// <param name="request">The select tenant request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The JWT response with new session tokens for the selected tenant.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    public static async Task<JWTResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Tenant.Select.SelectRequestBuilder requestBuilder,
+        SelectTenantRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for selecting tenant");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
             cancellationToken);
     }
 

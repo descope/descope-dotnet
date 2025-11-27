@@ -11,9 +11,9 @@ public class Token
     private readonly JsonWebToken _jwt;
 
     /// <summary>
-    /// Gets the underlying JSON Web Token.
+    /// Gets the raw JWT string.
     /// </summary>
-    public JsonWebToken Jwt => _jwt;
+    public string Jwt => _jwt.EncodedToken;
 
     /// <summary>
     /// Gets the token's expiration time.
@@ -34,6 +34,14 @@ public class Token
     /// Gets the subject (user ID) from the token.
     /// </summary>
     public string Subject => GetClaimValue("sub") ?? string.Empty;
+
+    // alias for Subject
+    public string Id => Subject;
+
+    /// <summary>
+    /// Gets the current tenant ID (Descope Current Tenant) from the token
+    /// </summary>
+    public string? CurrentTenant => GetClaimValue("dct");
 
     /// <summary>
     /// Gets all claims from the token.
