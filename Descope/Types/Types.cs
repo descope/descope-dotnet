@@ -1,6 +1,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Text.Json;
 
 namespace Descope
 {
@@ -192,12 +193,99 @@ namespace Descope
 
         internal object? GetTenantValue(string tenant, string key)
         {
-            return (GetTenantsClaim()[tenant] is Dictionary<string, object> info) ? info[key] : null;
+            var tenants = GetTenantsClaim();
+            if (tenants.TryGetValue(tenant, out var tenantValue) && tenantValue is Dictionary<string, object> info)
+            {
+                return info.TryGetValue(key, out var value) ? value : null;
+            }
+            return null;
         }
 
+        // Gets the 'tenants' claim as a dictionary, parsing it specifically for the expected structure:
+        // { "tenantId": { "roles": ["role1"], "permissions": ["perm1"] } }
         private Dictionary<string, object> GetTenantsClaim()
         {
-            return Claims["tenants"] as Dictionary<string, object> ?? new Dictionary<string, object>();
+            if (!Claims.ContainsKey("tenants"))
+            {
+                return new Dictionary<string, object>();
+            }
+
+            // If already a dictionary, return it
+            if (Claims["tenants"] is Dictionary<string, object> dict)
+            {
+                return dict;
+            }
+
+            // If it's a string, parse it as JSON with the expected tenant structure
+            if (Claims["tenants"] is string tenantsJson && !string.IsNullOrEmpty(tenantsJson))
+            {
+                try
+                {
+                    var jsonElement = JsonSerializer.Deserialize<JsonElement>(tenantsJson);
+                    var tenants = ParseTenantsJson(jsonElement);
+                    // Cache the parsed result
+                    Claims["tenants"] = tenants;
+                    return tenants;
+                }
+                catch (JsonException ex)
+                {
+                    // If parsing fails, log the exception and return empty dictionary
+                    Console.Error.WriteLine($"Failed to parse tenants JSON: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Log unexpected exceptions
+                    Console.Error.WriteLine($"Unexpected error parsing tenants claim: {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+
+            return new Dictionary<string, object>();
+        }
+
+        // Parses the tenants JSON into the expected structure:
+        // Dictionary<tenantId, Dictionary<"roles"|"permissions", List<string>>>
+        private static Dictionary<string, object> ParseTenantsJson(JsonElement element)
+        {
+            var result = new Dictionary<string, object>();
+
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            foreach (var tenantProperty in element.EnumerateObject())
+            {
+                var tenantId = tenantProperty.Name;
+                var tenantData = new Dictionary<string, object>();
+
+                if (tenantProperty.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in tenantProperty.Value.EnumerateObject())
+                    {
+                        // We expect "roles" and "permissions" to be arrays of strings
+                        if (property.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            var stringList = new List<string>();
+                            foreach (var item in property.Value.EnumerateArray())
+                            {
+                                if (item.ValueKind == JsonValueKind.String)
+                                {
+                                    var str = item.GetString();
+                                    if (str != null)
+                                    {
+                                        stringList.Add(str);
+                                    }
+                                }
+                            }
+                            tenantData[property.Name] = stringList;
+                        }
+                    }
+                }
+
+                result[tenantId] = tenantData;
+            }
+
+            return result;
         }
     }
 
