@@ -186,50 +186,6 @@ namespace Descope
             }
         }
 
-        private static object ConvertJsonElement(JsonElement element)
-        {
-            switch (element.ValueKind)
-            {
-                case JsonValueKind.Object:
-                    var dict = new Dictionary<string, object>();
-                    foreach (var property in element.EnumerateObject())
-                    {
-                        dict[property.Name] = ConvertJsonElement(property.Value);
-                    }
-                    return dict;
-                case JsonValueKind.Array:
-                    // Check if all elements are strings - if so, return List<string>
-                    var arrayElements = element.EnumerateArray().ToList();
-                    if (arrayElements.All(e => e.ValueKind == JsonValueKind.String))
-                    {
-                        return arrayElements.Select(e => e.GetString()!).ToList();
-                    }
-                    // Otherwise return List<object>
-                    var list = new List<object>();
-                    foreach (var item in arrayElements)
-                    {
-                        list.Add(ConvertJsonElement(item));
-                    }
-                    return list;
-                case JsonValueKind.String:
-                    return element.GetString() ?? "";
-                case JsonValueKind.Number:
-                    if (element.TryGetInt32(out int intValue))
-                        return intValue;
-                    if (element.TryGetInt64(out long longValue))
-                        return longValue;
-                    return element.GetDouble();
-                case JsonValueKind.True:
-                    return true;
-                case JsonValueKind.False:
-                    return false;
-                case JsonValueKind.Null:
-                    return null!;
-                default:
-                    return element.ToString();
-            }
-        }
-
         internal List<string> GetTenants()
         {
             return new List<string>(GetTenantsClaim().Keys);
@@ -245,7 +201,8 @@ namespace Descope
             return null;
         }
 
-        // Gets the 'tenants' claim as a dictionary, lazily parsing it as JSON if necessary and caching the result.
+        // Gets the 'tenants' claim as a dictionary, parsing it specifically for the expected structure:
+        // { "tenantId": { "roles": ["role1"], "permissions": ["perm1"] } }
         private Dictionary<string, object> GetTenantsClaim()
         {
             if (!Claims.ContainsKey("tenants"))
@@ -259,19 +216,16 @@ namespace Descope
                 return dict;
             }
 
-            // If it's a string, try to parse it as JSON
+            // If it's a string, parse it as JSON with the expected tenant structure
             if (Claims["tenants"] is string tenantsJson && !string.IsNullOrEmpty(tenantsJson))
             {
                 try
                 {
                     var jsonElement = JsonSerializer.Deserialize<JsonElement>(tenantsJson);
-                    var tenants = ConvertJsonElement(jsonElement) as Dictionary<string, object>;
-                    if (tenants != null)
-                    {
-                        // Cache the parsed result
-                        Claims["tenants"] = tenants;
-                        return tenants;
-                    }
+                    var tenants = ParseTenantsJson(jsonElement);
+                    // Cache the parsed result
+                    Claims["tenants"] = tenants;
+                    return tenants;
                 }
                 catch
                 {
@@ -280,6 +234,52 @@ namespace Descope
             }
 
             return new Dictionary<string, object>();
+        }
+
+        // Parses the tenants JSON into the expected structure:
+        // Dictionary<tenantId, Dictionary<"roles"|"permissions", List<string>>>
+        private static Dictionary<string, object> ParseTenantsJson(JsonElement element)
+        {
+            var result = new Dictionary<string, object>();
+
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            foreach (var tenantProperty in element.EnumerateObject())
+            {
+                var tenantId = tenantProperty.Name;
+                var tenantData = new Dictionary<string, object>();
+
+                if (tenantProperty.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in tenantProperty.Value.EnumerateObject())
+                    {
+                        // We expect "roles" and "permissions" to be arrays of strings
+                        if (property.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            var stringList = new List<string>();
+                            foreach (var item in property.Value.EnumerateArray())
+                            {
+                                if (item.ValueKind == JsonValueKind.String)
+                                {
+                                    var str = item.GetString();
+                                    if (str != null)
+                                    {
+                                        stringList.Add(str);
+                                    }
+                                }
+                            }
+                            tenantData[property.Name] = stringList;
+                        }
+                    }
+                }
+
+                result[tenantId] = tenantData;
+            }
+
+            return result;
         }
     }
 
