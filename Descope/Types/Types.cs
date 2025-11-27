@@ -227,9 +227,15 @@ namespace Descope
                     Claims["tenants"] = tenants;
                     return tenants;
                 }
-                catch
+                catch (JsonException ex)
                 {
-                    // If parsing fails, return empty dictionary
+                    // If parsing fails, log the exception and return empty dictionary
+                    Console.Error.WriteLine($"Failed to parse tenants JSON: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Log unexpected exceptions
+                    Console.Error.WriteLine($"Unexpected error parsing tenants claim: {ex.GetType().Name}: {ex.Message}");
                 }
             }
 
