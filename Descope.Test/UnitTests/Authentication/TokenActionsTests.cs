@@ -2,6 +2,8 @@ using Descope.Test.Helpers;
 using Microsoft.Kiota.Abstractions;
 using System.Net;
 using Xunit;
+using Moq;
+using Moq.Protected;
 
 namespace Descope.Test.UnitTests.Authentication;
 
@@ -228,6 +230,80 @@ public class TokenActionsTests
             await client.Auth.ValidateSession(null!);
         });
 
+    }
+
+    [Fact]
+    public async Task ValidateSession_CalledConsecutively_ShouldFetchPublicKeysOnlyOnce()
+    {
+        // Arrange
+        var requestCount = 0;
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+
+        // Setup the mock to return a valid JWKS response
+        mockHttpHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(() =>
+            {
+                requestCount++;
+
+                // Mock the public keys endpoint response with a valid RSA key
+                var keysResponse = new
+                {
+                    keys = new[]
+                    {
+                        new
+                        {
+                            alg = "RS256",
+                            e = "AQAB",
+                            kid = "test-key",
+                            kty = "RSA",
+                            n = "whatever",
+                            use = "sig"
+                        }
+                    }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(keysResponse);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                };
+            });
+
+        // Create the client with our mock HttpClient
+        var httpClient = new HttpClient(mockHttpHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act
+        // First call - should fetch keys
+        var testJwt = "look ma, a jwt";
+        try
+        {
+            await client.Auth.ValidateSession(testJwt);
+        }
+        catch (DescopeException)
+        {
+            // Expected to fail due to invalid signature, but keys should be cached
+        }
+
+        // Second call - should use cached keys
+        try
+        {
+            await client.Auth.ValidateSession(testJwt);
+        }
+        catch (DescopeException)
+        {
+            // Expected to fail due to invalid signature
+        }
+
+        // Assert
+        // The HTTP client should have been called exactly once to fetch the keys
+        Assert.Equal(1, requestCount);
     }
 
     #endregion

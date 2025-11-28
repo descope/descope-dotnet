@@ -63,6 +63,28 @@ public static class TestDescopeClientFactory
 
 
     /// <summary>
+    /// Creates a mock DescopeClient with a custom HttpClient for testing HTTP-level behavior.
+    /// Use this when you need to test caching, request counting, or other HTTP-level concerns.
+    /// </summary>
+    /// <param name="httpClient">The custom HttpClient to use</param>
+    /// <param name="projectId">Optional project ID (defaults to "test_project_id")</param>
+    /// <param name="baseUrl">Optional base URL (defaults to "https://api.descope.com")</param>
+    /// <returns>A configured IDescopeClient for testing</returns>
+    public static IDescopeClient CreateWithHttpClient(
+        HttpClient httpClient,
+        string? projectId = null,
+        string? baseUrl = null)
+    {
+        var mockAdapter = MockRequestAdapter.CreateWithEmptyResponse();
+        var options = new DescopeClientOptions
+        {
+            ProjectId = projectId ?? DefaultTestProjectId,
+            BaseUrl = baseUrl ?? "https://api.descope.com"
+        };
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, httpClient);
+    }
+
+    /// <summary>
     /// Creates a mock DescopeClient that throws a DescopeException with the specified error details at the HTTP level.
     /// This simulates an actual HTTP error response from the server, including proper error parsing.
     /// Use this to test error handling scenarios and ensure your code properly catches and handles Descope errors.
