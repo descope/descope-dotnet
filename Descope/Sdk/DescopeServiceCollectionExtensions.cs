@@ -38,6 +38,9 @@ public static class DescopeServiceCollectionExtensions
         // Configure HttpClient with optional unsafe SSL handling and error handling
         var httpClientBuilder = services.AddHttpClient(options.HttpClientFactoryName!);
 
+        // Add the open api application response fix handler to the pipeline
+        httpClientBuilder.AddHttpMessageHandler(() => new Internal.OpenApiFixesHandler());
+
         // Add the error response handler to the pipeline
         httpClientBuilder.AddHttpMessageHandler(() => new DescopeErrorResponseHandler());
 

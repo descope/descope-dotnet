@@ -63,6 +63,26 @@ public static class TestDescopeClientFactory
 
 
     /// <summary>
+    /// Creates a mock DescopeClient with request validation.
+    /// Use this when you need to assert on the request for endpoints that return no response body (void).
+    /// The asserter function validates the request and deserialized request body.
+    /// </summary>
+    /// <typeparam name="TRequest">The type of request body object (must be IParsable)</typeparam>
+    /// <param name="asserter">Function to validate the request and deserialized request body</param>
+    /// <param name="projectId">Optional project ID (defaults to "test_project_id")</param>
+    /// <returns>A configured IDescopeClient for testing</returns>
+    public static IDescopeClient CreateWithAsserter<TRequest>(
+        Action<RequestInformation, TRequest?> asserter,
+        string? projectId = null)
+        where TRequest : IParsable, new()
+    {
+        var mockAdapter = MockRequestAdapter.CreateWithAsserter(asserter);
+        var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
+    }
+
+
+    /// <summary>
     /// Creates a mock DescopeClient with a custom HttpClient for testing HTTP-level behavior.
     /// Use this when you need to test caching, request counting, or other HTTP-level concerns.
     /// </summary>

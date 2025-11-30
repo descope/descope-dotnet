@@ -67,6 +67,26 @@ internal class MockRequestAdapter : IRequestAdapter
     }
 
     /// <summary>
+    /// Creates a mock request adapter with request validation for Stream (void) responses.
+    /// Use this when you need to assert on the request for endpoints that return Stream (void).
+    /// The asserter function validates the request and deserialized request body.
+    /// </summary>
+    /// <typeparam name="TRequest">The type of request body object (must be IParsable)</typeparam>
+    /// <param name="asserter">Function to validate the request and deserialized request body</param>
+    /// <returns>A configured MockRequestAdapter</returns>
+    internal static MockRequestAdapter CreateWithAsserter<TRequest>(Action<RequestInformation, TRequest?> asserter)
+        where TRequest : IParsable, new()
+    {
+        return new MockRequestAdapter(async requestInfo =>
+        {
+            ParsableFactory<TRequest> factory = (IParseNode parseNode) => new TRequest();
+            var requestBody = GetRequestBody<TRequest>(requestInfo, factory);
+            asserter(requestInfo, requestBody);
+            return new MemoryStream(); // Return empty stream for Stream responses
+        });
+    }
+
+    /// <summary>
     /// Creates a mock request adapter that throws a DescopeException with the specified error details.
     /// Use this to test error handling scenarios at the adapter level.
     /// Note: For HTTP-level error testing, use TestDescopeClientFactory.CreateWithError instead.
@@ -177,8 +197,14 @@ internal class MockRequestAdapter : IRequestAdapter
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
         CancellationToken cancellationToken = default)
     {
-        // For endpoints that return primitives (e.g., void/empty responses),
-        // we just return the default value for the type
+        // For Stream responses, call the mock handler if present to allow assertions
+        if (_mockResponseHandler != null && typeof(ModelType) == typeof(Stream))
+        {
+            var stream = _mockResponseHandler(requestInfo).GetAwaiter().GetResult();
+            return Task.FromResult((ModelType?)(object?)stream);
+        }
+
+        // For other primitives (e.g., void/empty responses), return the default value
         return Task.FromResult(default(ModelType));
     }
 
