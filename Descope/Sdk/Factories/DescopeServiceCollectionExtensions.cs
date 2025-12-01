@@ -39,7 +39,7 @@ public static class DescopeServiceCollectionExtensions
         var httpClientBuilder = services.AddHttpClient(options.HttpClientFactoryName!);
 
         // Add the open api application response fix handler to the pipeline
-        httpClientBuilder.AddHttpMessageHandler(() => new Internal.OpenApiFixesHandler());
+        httpClientBuilder.AddHttpMessageHandler(() => new Internal.FixRootResponseBodyHandler());
 
         // Add the error response handler to the pipeline
         httpClientBuilder.AddHttpMessageHandler(() => new DescopeErrorResponseHandler());

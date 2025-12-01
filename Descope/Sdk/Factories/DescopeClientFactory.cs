@@ -48,7 +48,7 @@ public static class DescopeManagementClientFactory
         };
 
         // Build the handler pipeline: Base -> OpenAPI Fix -> Error Handler
-        var openApiFixHandler = new Internal.OpenApiFixesHandler
+        var openApiFixHandler = new Internal.FixRootResponseBodyHandler
         {
             InnerHandler = baseHandler
         };
