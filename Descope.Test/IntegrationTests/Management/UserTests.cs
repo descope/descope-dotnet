@@ -141,29 +141,118 @@ namespace Descope.Test.Integration
             string? loginId = null;
             try
             {
-                // Create a user
-                var name = Guid.NewGuid().ToString();
+                // Create a user with initial values
+                var uniqueName = Guid.NewGuid().ToString();
+                var initialEmail = uniqueName + "@test.com";
+                var initialPhone = "+972555555555";
+                var customAttributes = new CreateUserRequest_customAttributes();
+                customAttributes.AdditionalData = new Dictionary<string, object>();
+
                 var createRequest = new CreateUserRequest
                 {
-                    Identifier = name,
-                    Email = name + "@test.com",
+                    Identifier = uniqueName,
+                    Email = initialEmail,
                     VerifiedEmail = true,
-                    GivenName = "a",
+                    Phone = initialPhone,
+                    VerifiedPhone = false,
+                    Name = "Initial Display Name",
+                    GivenName = "Initial Given",
+                    MiddleName = "Initial Middle",
+                    FamilyName = "Initial Family",
+                    Picture = "https://example.com/initial.jpg",
+                    CustomAttributes = customAttributes,
+                    RoleNames = new List<string> { "Tenant Admin" },
+                    SsoAppIds = new List<string> { "descope-default-oidc" }
                 };
-                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
-                Assert.Equal("a", createResult?.User?.GivenName);
-                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
 
-                // Update it
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
+                Assert.NotNull(loginId);
+
+                // Verify initial values
+                Assert.Equal("Initial Given", createResult?.User?.GivenName);
+                Assert.Equal("Initial Middle", createResult?.User?.MiddleName);
+                Assert.Equal("Initial Family", createResult?.User?.FamilyName);
+                Assert.Equal("Initial Display Name", createResult?.User?.Name);
+                Assert.Equal("https://example.com/initial.jpg", createResult?.User?.Picture);
+                Assert.True(createResult?.User?.VerifiedEmail);
+                Assert.False(createResult?.User?.VerifiedPhone);
+
+                // Update user with new values for all updatable fields
+                var updatedEmail = uniqueName + "_updated@test.com";
+                var updatedPhone = "+972555555556";
+                var updateCustomAttributes = new UpdateUserRequest_customAttributes();
+                updateCustomAttributes.AdditionalData = new Dictionary<string, object>();
+
                 var updateRequest = new UpdateUserRequest
                 {
                     Identifier = loginId,
-                    Email = name + "@test.com",
-                    VerifiedEmail = true,
-                    GivenName = "b",
+                    Email = updatedEmail,
+                    VerifiedEmail = false,
+                    Phone = updatedPhone,
+                    VerifiedPhone = true,
+                    Name = "Updated Display Name",
+                    GivenName = "Updated Given",
+                    MiddleName = "Updated Middle",
+                    FamilyName = "Updated Family",
+                    Picture = "https://example.com/updated.jpg",
+                    CustomAttributes = updateCustomAttributes,
+                    RoleNames = new List<string> { "Tenant Admin" },
+                    SsoAppIds = new List<string> { "descope-default-oidc" }
                 };
+
                 var updateResult = await _descopeClient.Mgmt.V1.User.Update.PostAsync(updateRequest);
-                Assert.Equal("b", updateResult?.User?.GivenName);
+
+                // Verify update response
+                Assert.NotNull(updateResult?.User);
+                Assert.Equal("Updated Given", updateResult.User.GivenName);
+                Assert.Equal("Updated Middle", updateResult.User.MiddleName);
+                Assert.Equal("Updated Family", updateResult.User.FamilyName);
+                Assert.Equal("Updated Display Name", updateResult.User.Name);
+                Assert.Equal("https://example.com/updated.jpg", updateResult.User.Picture);
+                Assert.Equal(updatedEmail, updateResult.User.Email);
+                Assert.False(updateResult.User.VerifiedEmail);
+                Assert.Equal(updatedPhone, updateResult.User.Phone);
+                Assert.True(updateResult.User.VerifiedPhone);
+
+                // Reload the user and verify all changes persisted
+                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+
+                Assert.NotNull(loadResult);
+                Assert.NotNull(loadResult.User);
+
+                var user = loadResult.User;
+
+                // Verify all updated fields
+                Assert.Equal("Updated Given", user.GivenName);
+                Assert.Equal("Updated Middle", user.MiddleName);
+                Assert.Equal("Updated Family", user.FamilyName);
+                Assert.Equal("Updated Display Name", user.Name);
+                Assert.Equal("https://example.com/updated.jpg", user.Picture);
+                Assert.Equal(updatedEmail, user.Email);
+                Assert.False(user.VerifiedEmail);
+                Assert.Equal(updatedPhone, user.Phone);
+                Assert.True(user.VerifiedPhone);
+
+                // Verify login IDs
+                Assert.NotNull(user.LoginIds);
+                Assert.Single(user.LoginIds);
+                Assert.Equal(uniqueName, user.LoginIds.First());
+
+                // Verify user ID is still the same
+                Assert.NotNull(user.UserId);
+                Assert.Equal(createResult?.User?.UserId, user.UserId);
+
+                // Verify roles
+                Assert.NotNull(user.RoleNames);
+                Assert.Contains("Tenant Admin", user.RoleNames);
+
+                // Verify SSO apps
+                Assert.NotNull(user.SsoAppIds);
+                Assert.Contains("descope-default-oidc", user.SsoAppIds);
+
+                // Verify custom attributes
+                Assert.NotNull(user.CustomAttributes);
             }
             finally
             {
@@ -171,6 +260,99 @@ namespace Descope.Test.Integration
                 if (!string.IsNullOrEmpty(loginId))
                 {
                     try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task User_UpdateWithTenants()
+        {
+            string? loginId = null;
+            string? tenantId = null;
+            try
+            {
+                // Create a tenant for testing
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+                tenantId = tenantResponse?.Id;
+
+                // Create a user with initial tenant
+                var uniqueName = Guid.NewGuid().ToString();
+                var initialTenant = new AssociatedTenant
+                {
+                    TenantId = tenantId,
+                    RoleNames = new List<string> { "Tenant Admin" }
+                };
+
+                var createRequest = new CreateUserRequest
+                {
+                    Identifier = uniqueName,
+                    Email = uniqueName + "@test.com",
+                    VerifiedEmail = true,
+                    UserTenants = new List<AssociatedTenant> { initialTenant }
+                };
+
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
+                Assert.NotNull(loginId);
+
+                // Verify initial tenant
+                Assert.NotNull(createResult?.User?.UserTenants);
+                Assert.Single(createResult.User.UserTenants);
+                Assert.Equal(tenantId, createResult.User.UserTenants.First().TenantId);
+
+                // Update user tenants (note: cannot include roleNames when userTenants is set)
+                var updatedTenant = new AssociatedTenant
+                {
+                    TenantId = tenantId,
+                    RoleNames = new List<string> { "Tenant Admin" }
+                };
+
+                var updateRequest = new UpdateUserRequest
+                {
+                    Identifier = loginId,
+                    Email = uniqueName + "@test.com",
+                    UserTenants = new List<AssociatedTenant> { updatedTenant }
+                };
+
+                var updateResult = await _descopeClient.Mgmt.V1.User.Update.PostAsync(updateRequest);
+
+                // Verify update response
+                Assert.NotNull(updateResult?.User);
+                Assert.NotNull(updateResult.User.UserTenants);
+                Assert.Single(updateResult.User.UserTenants);
+
+                // Reload the user and verify tenant persisted
+                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+
+                Assert.NotNull(loadResult);
+                Assert.NotNull(loadResult.User);
+
+                var user = loadResult.User;
+
+                // Verify tenants
+                Assert.NotNull(user.UserTenants);
+                Assert.Single(user.UserTenants);
+                var tenant = user.UserTenants.First();
+                Assert.Equal(tenantId, tenant.TenantId);
+                Assert.NotNull(tenant.RoleNames);
+                Assert.Contains("Tenant Admin", tenant.RoleNames);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
