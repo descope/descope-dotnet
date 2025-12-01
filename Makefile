@@ -74,16 +74,16 @@ test: ## Run unit tests for all target frameworks (net6.0, net8.0, net9.0, net10
 	@echo "Running unit tests for all target frameworks..."
 	@echo ""
 	@echo "=== Testing net6.0 ==="
-	@cd Descope.Test && dotnet test --framework net6.0 --logger "console;verbosity=normal" || echo "net6.0 tests FAILED"
+	@cd Descope.Test && dotnet test --framework net6.0 --logger "console;verbosity=normal" || (echo "net6.0 tests FAILED" && exit 1)
 	@echo ""
 	@echo "=== Testing net8.0 ==="
-	@cd Descope.Test && dotnet test --framework net8.0 --logger "console;verbosity=normal" || echo "net8.0 tests FAILED"
+	@cd Descope.Test && dotnet test --framework net8.0 --logger "console;verbosity=normal" || (echo "net8.0 tests FAILED" && exit 1)
 	@echo ""
 	@echo "=== Testing net9.0 ==="
-	@cd Descope.Test && dotnet test --framework net9.0 --logger "console;verbosity=normal" || echo "net9.0 tests FAILED"
+	@cd Descope.Test && dotnet test --framework net9.0 --logger "console;verbosity=normal" || (echo "net9.0 tests FAILED" && exit 1)
 	@echo ""
 	@echo "=== Testing net10.0 ==="
-	@cd Descope.Test && dotnet test --framework net10.0 --logger "console;verbosity=normal" || echo "net10.0 tests FAILED"
+	@cd Descope.Test && dotnet test --framework net10.0 --logger "console;verbosity=normal" || (echo "net10.0 tests FAILED" && exit 1)
 	@echo ""
 	@echo "All framework tests complete."
 
