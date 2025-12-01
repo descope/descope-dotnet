@@ -1,5 +1,5 @@
 {
-  "descriptionHash": "0F9EB7B72781A9BAD20CBA93FAF470FEFA1FA86392B2EB2C395BCFFB4F669C1B612468CFC361145E3E03E503777A00FF4A964FEF3CC0DF6DEF4AA19146E1CF68",
+  "descriptionHash": "957269C311A03ED4FB8A1067FF2DFE152CF41AB92C68A06C333EF9B5D086E2A0DA744A47B091A239686DFCD33843B12D5DC44487C7F0FC9D6E4CCF74D26E786A",
   "descriptionLocation": "../../../../../go/src/github.com/descope/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.28.0",
@@ -30,7 +30,8 @@
   ],
   "includePatterns": [],
   "excludePatterns": [
-    "/scim/**"
+    "/scim/**",
+    "/v1/mgmt/user/history"
   ],
   "disabledValidationRules": []
 }

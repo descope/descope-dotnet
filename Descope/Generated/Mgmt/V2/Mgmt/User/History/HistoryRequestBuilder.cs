@@ -9,28 +9,28 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-namespace Descope.Mgmt.V1.Mgmt.User.History
+namespace Descope.Mgmt.V2.Mgmt.User.History
 {
     /// <summary>
-    /// Builds and executes requests for operations under \v1\mgmt\user\history
+    /// Builds and executes requests for operations under \v2\mgmt\user\history
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     public partial class HistoryRequestBuilder : BaseRequestBuilder
     {
         /// <summary>
-        /// Instantiates a new <see cref="global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder"/> and sets the default values.
+        /// Instantiates a new <see cref="global::Descope.Mgmt.V2.Mgmt.User.History.HistoryRequestBuilder"/> and sets the default values.
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public HistoryRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/user/history", pathParameters)
+        public HistoryRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v2/mgmt/user/history", pathParameters)
         {
         }
         /// <summary>
-        /// Instantiates a new <see cref="global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder"/> and sets the default values.
+        /// Instantiates a new <see cref="global::Descope.Mgmt.V2.Mgmt.User.History.HistoryRequestBuilder"/> and sets the default values.
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public HistoryRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/user/history", rawUrl)
+        public HistoryRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v2/mgmt/user/history", rawUrl)
         {
         }
         /// <summary>
@@ -42,14 +42,14 @@ namespace Descope.Mgmt.V1.Mgmt.User.History
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse?> PostAsync(string body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse?> PostAsync(global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse> PostAsync(string body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse> PostAsync(global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            if(string.IsNullOrEmpty(body)) throw new ArgumentNullException(nameof(body));
+            _ = body ?? throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse>(requestInfo, global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -61,28 +61,28 @@ namespace Descope.Mgmt.V1.Mgmt.User.History
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToPostRequestInformation(string body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToPostRequestInformation(string body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
-            if(string.IsNullOrEmpty(body)) throw new ArgumentNullException(nameof(body));
+            _ = body ?? throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");
-            requestInfo.SetContentFromScalar(RequestAdapter, "application/json", body);
+            requestInfo.SetContentFromParsable(RequestAdapter, "application/json", body);
             return requestInfo;
         }
         /// <summary>
         /// Returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
         /// </summary>
-        /// <returns>A <see cref="global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder"/></returns>
+        /// <returns>A <see cref="global::Descope.Mgmt.V2.Mgmt.User.History.HistoryRequestBuilder"/></returns>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
-        public global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder WithUrl(string rawUrl)
+        public global::Descope.Mgmt.V2.Mgmt.User.History.HistoryRequestBuilder WithUrl(string rawUrl)
         {
-            return new global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder(rawUrl, RequestAdapter);
+            return new global::Descope.Mgmt.V2.Mgmt.User.History.HistoryRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.

@@ -5,7 +5,6 @@ using Descope.Mgmt.V1.Mgmt.User.Create;
 using Descope.Mgmt.V1.Mgmt.User.Customattribute;
 using Descope.Mgmt.V1.Mgmt.User.Customattributes;
 using Descope.Mgmt.V1.Mgmt.User.Delete;
-using Descope.Mgmt.V1.Mgmt.User.History;
 using Descope.Mgmt.V1.Mgmt.User.Import;
 using Descope.Mgmt.V1.Mgmt.User.Logout;
 using Descope.Mgmt.V1.Mgmt.User.Passkeys;
@@ -54,11 +53,6 @@ namespace Descope.Mgmt.V1.Mgmt.User
         public global::Descope.Mgmt.V1.Mgmt.User.Delete.DeleteRequestBuilder DeletePath
         {
             get => new global::Descope.Mgmt.V1.Mgmt.User.Delete.DeleteRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The history property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder History
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.User.History.HistoryRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The import property</summary>
         public global::Descope.Mgmt.V1.Mgmt.User.Import.ImportRequestBuilder Import

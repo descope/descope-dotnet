@@ -11,7 +11,7 @@ MGMT_KIOTA_LANG := CSharp
 MGMT_KIOTA_CLASS := DescopeMgmtKiotaClient
 MGMT_KIOTA_NAMESPACE := Descope.Mgmt
 MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
-MGMT_KIOTA_EXCLUDE_PATHS := /scim/**,/v1/mgmt/user/history # SCIM endpoints are not intended for direct SDK use, v1 user history excluded in favor of v2
+# Exclude paths are defined in the command itself, to allow supporting multiple excludes
 
 # Auth API OpenAPI spec file location
 AUTH_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
@@ -42,7 +42,7 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	fi
 	@echo "Management API OpenAPI spec found: $(MGMT_OPENAPI_SPEC)"
 	@echo "Generating Management API Kiota client files..."
-	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) --exclude-path $(MGMT_KIOTA_EXCLUDE_PATHS) --clean-output
+	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) --exclude-path /scim/** --exclude-path /v1/mgmt/user/history --clean-output
 	@echo "Management API Kiota generation complete."
 
 generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
