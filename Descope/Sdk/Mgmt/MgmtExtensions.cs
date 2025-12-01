@@ -24,7 +24,7 @@ public static class MgmtExtensions
     {
         if (settings == null)
         {
-            throw new ArgumentNullException(nameof(settings), "Settings are required for updating password settings");
+            throw new DescopeException("Settings are required for updating password settings");
         }
 
         var request = new ConfigurePasswordSettingsRequest
@@ -67,7 +67,7 @@ public static class MgmtExtensions
     {
         if (exportedProject == null)
         {
-            throw new ArgumentNullException(nameof(exportedProject), "Exported project is required for importing");
+            throw new DescopeException("Exported project is required for importing");
         }
 
         // Create ImportSnapshotRequest_files and copy AdditionalData from exported files

@@ -14,22 +14,9 @@ namespace Descope.Internal;
 /// - POST /v1/mgmt/group/all (groups)
 /// - POST /v1/mgmt/group/members (groups)
 /// - POST /v1/mgmt/group/member/all (groups)
-/// - GET /scim/v2/ResourceTypes (values)
-/// - GET /scim/v2/Users/{userID} (user)
-/// - POST /scim/v2/Users (user)
-/// - PUT /scim/v2/Users/{userID} (user)
-/// - PATCH /scim/v2/Users/{userID} (user)
 /// OneTime Service:
 /// - GET /v1/auth/me/history (authHistory)
 /// - POST /v1/auth/validate (parsedJWT)
-/// - GET /oauth2/v1/apps/userinfo (userInfoClaims)
-/// - GET /oauth2/v1/apps/{projectId}/userinfo (userInfoClaims)
-/// - POST /oauth2/v1/apps/userinfo (userInfoClaims)
-/// - POST /oauth2/v1/apps/{projectId}/userinfo (userInfoClaims)
-/// - GET /oauth2/v1/userinfo (userInfoClaims)
-/// - GET /{ssoAppId}/oauth2/v1/userinfo (userInfoClaims)
-/// - POST /oauth2/v1/userinfo (userInfoClaims)
-/// - POST /{ssoAppId}/oauth2/v1/userinfo (userInfoClaims)
 /// </summary>
 internal class FixRootResponseBodyHandler : DelegatingHandler
 {
@@ -41,13 +28,8 @@ internal class FixRootResponseBodyHandler : DelegatingHandler
     private static readonly string LoadGroupsEndpoint = "/v1/mgmt/group/all";
     private static readonly string LoadGroupMembersEndpoint = "/v1/mgmt/group/members";
     private static readonly string LoadMemberGroupsEndpoint = "/v1/mgmt/group/member/all";
-    private static readonly string ScimResourceTypesEndpoint = "/scim/v2/ResourceTypes";
-    private static readonly string ScimUsersEndpoint = "/scim/v2/Users";
-
     // OneTime Service endpoints
     private static readonly string MeAuthHistoryEndpoint = "/v1/auth/me/history";
-    private static readonly string ThirdPartyAppUserInfoEndpoint = "/oauth2/v1/apps/userinfo";
-    private static readonly string OidcUserInfoEndpoint = "/oauth2/v1/userinfo";
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
@@ -91,25 +73,10 @@ internal class FixRootResponseBodyHandler : DelegatingHandler
         {
             response = await WrapResponseInField(response, "groups", "id", cancellationToken);
         }
-        else if (requestPath.EndsWith(ScimResourceTypesEndpoint, StringComparison.OrdinalIgnoreCase))
-        {
-            response = await WrapResponseInField(response, "values", "id", cancellationToken);
-        }
-        else if (requestPath.IndexOf(ScimUsersEndpoint, StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-            // Handles GET /scim/v2/Users/{userID}, POST /scim/v2/Users, PUT /scim/v2/Users/{userID}, PATCH /scim/v2/Users/{userID}
-            response = await WrapResponseInField(response, "user", "id", cancellationToken);
-        }
         // OneTime Service endpoints
         else if (requestPath.EndsWith(MeAuthHistoryEndpoint, StringComparison.OrdinalIgnoreCase))
         {
             response = await WrapResponseInField(response, "authHistory", "city", cancellationToken);
-        }
-        else if (requestPath.IndexOf(ThirdPartyAppUserInfoEndpoint, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                 requestPath.IndexOf(OidcUserInfoEndpoint, StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-            // Handles all userinfo endpoints that use userInfoClaims
-            response = await WrapResponseInField(response, "userInfoClaims", "sub", cancellationToken);
         }
 
         return response;

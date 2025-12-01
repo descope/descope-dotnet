@@ -11,7 +11,7 @@ MGMT_KIOTA_LANG := CSharp
 MGMT_KIOTA_CLASS := DescopeMgmtKiotaClient
 MGMT_KIOTA_NAMESPACE := Descope.Mgmt
 MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
-MGMT_KIOTA_EXCLUDE_PATHS := /scim/** # SCIM endpoints are not intended for direct SDK use
+MGMT_KIOTA_EXCLUDE_PATHS := /scim/**,/v1/mgmt/user/history # SCIM endpoints are not intended for direct SDK use, v1 user history excluded in favor of v2
 
 # Auth API OpenAPI spec file location
 AUTH_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml

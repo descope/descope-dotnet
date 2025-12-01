@@ -37,7 +37,7 @@ public class MgmtExtensionsTests
         var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<DescopeException>(async () =>
         {
             await descopeClient.Mgmt.V1.Password.Settings.PostWithSettingsResponseAsync(null!);
         });
@@ -190,7 +190,7 @@ public class MgmtExtensionsTests
         var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<DescopeException>(async () =>
         {
             await descopeClient.Mgmt.V1.Project.Import.PostWithExportedProjectAsync(null!);
         });
