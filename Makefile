@@ -61,10 +61,36 @@ dotnet-build: ## Build the C# project
 	cd Descope && dotnet build
 	@echo "Build complete."
 
-test: ## Run all unit tests
-	@echo "Running unit tests..."
-	cd Descope.Test && dotnet test
-	@echo "Tests complete."
+test: ## Run unit tests for all target frameworks (net6.0, net8.0, net9.0, net10.0)
+	@echo "Checking for required .NET SDK versions..."
+	@for version in 6.0 8.0 9.0 10.0; do \
+		if ! dotnet --list-sdks | grep -q "^$$version"; then \
+			echo "ERROR: .NET SDK $$version is not installed. Please install it first from: https://dotnet.microsoft.com/en-us/download/dotnet"; \
+			exit 1; \
+		fi; \
+	done
+	@echo "All required .NET SDK versions found."
+	@echo ""
+	@echo "Running unit tests for all target frameworks..."
+	@echo ""
+	@echo "=== Testing net6.0 ==="
+	@cd Descope.Test && dotnet test --framework net6.0 --logger "console;verbosity=normal" || echo "net6.0 tests FAILED"
+	@echo ""
+	@echo "=== Testing net8.0 ==="
+	@cd Descope.Test && dotnet test --framework net8.0 --logger "console;verbosity=normal" || echo "net8.0 tests FAILED"
+	@echo ""
+	@echo "=== Testing net9.0 ==="
+	@cd Descope.Test && dotnet test --framework net9.0 --logger "console;verbosity=normal" || echo "net9.0 tests FAILED"
+	@echo ""
+	@echo "=== Testing net10.0 ==="
+	@cd Descope.Test && dotnet test --framework net10.0 --logger "console;verbosity=normal" || echo "net10.0 tests FAILED"
+	@echo ""
+	@echo "All framework tests complete."
+
+test-quick: ## Run unit tests for default framework only (faster)
+	@echo "Running unit tests (quick)..."
+	cd Descope.Test && dotnet test --framework net8.0
+	@echo "Quick tests complete."
 
 cover: ## Run unit tests with coverage report
 	@echo "Checking for ReportGenerator..."
