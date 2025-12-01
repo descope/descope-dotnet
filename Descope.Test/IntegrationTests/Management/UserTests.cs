@@ -725,10 +725,7 @@ namespace Descope.Test.Integration
                 };
                 await _descopeClient.Mgmt.V1.User.Password.Set.PostAsync(setPasswordRequest);
 
-                var loadResult = await _descopeClient.Mgmt.V1.User.GetAsync(requestConfiguration =>
-                {
-                    requestConfiguration.QueryParameters.Identifier = loginId;
-                });
+                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
                 Assert.True(loadResult?.User?.Password);
 
                 // Expire password
@@ -947,6 +944,168 @@ namespace Descope.Test.Integration
             var exception = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.NotNull(exception);
             Assert.NotEmpty(exception.Message);
+        }
+
+        [Fact]
+        public async Task User_LoadUser_ShouldDeserializeAllFields()
+        {
+            string? loginId = null;
+            string? tenantId = null;
+            try
+            {
+                // Create a tenant for testing
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+                tenantId = tenantResponse?.Id;
+
+                // Create a comprehensive user with all possible fields
+                var uniqueName = Guid.NewGuid().ToString();
+                var userEmail = uniqueName + "@test.com";
+                var userPhone = "+972555555555";
+                var customAttributes = new CreateUserRequest_customAttributes();
+                customAttributes.AdditionalData = new Dictionary<string, object>
+                {
+                    // Note: custom attributes require the attribute to exist in the project
+                    // { "customKey", "customValue" }
+                };
+
+                var userTenant = new AssociatedTenant
+                {
+                    TenantId = tenantId,
+                    RoleNames = new List<string> { "Tenant Admin" }
+                };
+
+                var createRequest = new CreateUserRequest
+                {
+                    Identifier = uniqueName,
+                    Email = userEmail,
+                    VerifiedEmail = true,
+                    Phone = userPhone,
+                    VerifiedPhone = true,
+                    Name = "Display Name",
+                    GivenName = "Given",
+                    MiddleName = "Middle",
+                    FamilyName = "Family",
+                    Picture = "https://example.com/picture.jpg",
+                    CustomAttributes = customAttributes,
+                    UserTenants = new List<AssociatedTenant> { userTenant },
+                    RoleNames = new List<string> { "Tenant Admin" },
+                    SsoAppIds = new List<string> { "descope-default-oidc" }
+                };
+
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
+                Assert.NotNull(loginId);
+
+                // Load the user and verify all fields are correctly deserialized
+                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+
+                Assert.NotNull(loadResult);
+                Assert.NotNull(loadResult.User);
+
+                var user = loadResult.User;
+
+                // Verify login IDs
+                Assert.NotNull(user.LoginIds);
+                Assert.Single(user.LoginIds);
+                Assert.Equal(uniqueName, user.LoginIds.First());
+
+                // Verify user ID
+                Assert.NotNull(user.UserId);
+                Assert.NotEmpty(user.UserId);
+
+                // Verify email fields
+                Assert.Equal(userEmail, user.Email);
+                Assert.True(user.VerifiedEmail);
+
+                // Verify phone fields
+                Assert.Equal(userPhone, user.Phone);
+                Assert.True(user.VerifiedPhone);
+
+                // Verify name fields
+                Assert.Equal("Display Name", user.Name);
+                Assert.Equal("Given", user.GivenName);
+                Assert.Equal("Middle", user.MiddleName);
+                Assert.Equal("Family", user.FamilyName);
+
+                // Verify picture
+                Assert.Equal("https://example.com/picture.jpg", user.Picture);
+
+                // Verify status
+                Assert.Equal(EnumValues.UserStatus.Invited, user.Status);
+
+                // Verify test user flag
+                Assert.False(user.Test);
+
+                // Verify custom attributes (if any were set)
+                Assert.NotNull(user.CustomAttributes);
+
+                // Verify tenants
+                Assert.NotNull(user.UserTenants);
+                Assert.Single(user.UserTenants);
+                var tenant = user.UserTenants.First();
+                Assert.Equal(tenantId, tenant.TenantId);
+                Assert.NotNull(tenant.RoleNames);
+                Assert.Contains("Tenant Admin", tenant.RoleNames);
+
+                // Verify roles
+                Assert.NotNull(user.RoleNames);
+                Assert.Contains("Tenant Admin", user.RoleNames);
+
+                // Verify SSO apps
+                Assert.NotNull(user.SsoAppIds);
+                Assert.Contains("descope-default-oidc", user.SsoAppIds);
+
+                // Verify created time
+                Assert.NotEqual(0, user.CreatedTime);
+
+                // Verify TOTP flag
+                Assert.False(user.TOTP);
+
+                // Verify SAML flag
+                Assert.False(user.SAML);
+
+                // Verify OAuth provider info
+                Assert.NotNull(user.OAuth);
+
+                // Verify password flag
+                Assert.False(user.Password);
+
+                // Verify WebAuthn flag
+                Assert.False(user.Webauthn);
+
+                // Verify push flag
+                Assert.False(user.Push);
+
+                // Verify SCIM flag
+                Assert.False(user.SCIM);
+
+                // Verify external IDs
+                Assert.NotNull(user.ExternalIds);
+                Assert.Single(user.ExternalIds);
+                Assert.Equal(uniqueName, user.ExternalIds.First());
+
+                // Verify permissions collection
+                Assert.NotNull(user.Permissions);
+                Assert.NotEmpty(user.Permissions);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    catch { }
+                }
+            }
         }
     }
 }

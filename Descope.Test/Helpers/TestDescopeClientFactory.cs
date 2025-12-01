@@ -81,6 +81,42 @@ public static class TestDescopeClientFactory
         return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
     }
 
+    /// <summary>
+    /// Creates a mock DescopeClient with request validation for requests without a request body.
+    /// Use this for GET operations that don't have a request body but return a response.
+    /// The asserter function validates the request and returns the response.
+    /// </summary>
+    /// <typeparam name="TResponse">The type of response object (must be IParsable)</typeparam>
+    /// <param name="asserter">Function to validate the request and return the response</param>
+    /// <param name="projectId">Optional project ID (defaults to "test_project_id")</param>
+    /// <returns>A configured IDescopeClient for testing</returns>
+    public static IDescopeClient CreateWithAsserter<TResponse>(
+        Func<RequestInformation, TResponse> asserter,
+        string? projectId = null)
+        where TResponse : IParsable, new()
+    {
+        var mockAdapter = MockRequestAdapter.CreateWithAsserter(asserter);
+        var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
+    }
+
+    /// <summary>
+    /// Creates a mock DescopeClient with request validation for Stream (void) responses without a request body.
+    /// Use this for DELETE or GET operations that return Stream (void) but don't have a request body.
+    /// The asserter function validates the request.
+    /// </summary>
+    /// <param name="asserter">Function to validate the request</param>
+    /// <param name="projectId">Optional project ID (defaults to "test_project_id")</param>
+    /// <returns>A configured IDescopeClient for testing</returns>
+    public static IDescopeClient CreateWithStreamAsserter(
+        Action<RequestInformation> asserter,
+        string? projectId = null)
+    {
+        var mockAdapter = MockRequestAdapter.CreateWithAsserter(asserter);
+        var options = new DescopeClientOptions { ProjectId = projectId ?? DefaultTestProjectId };
+        return DescopeManagementClientFactory.CreateForTest(mockAdapter, mockAdapter, options, new HttpClient());
+    }
+
 
     /// <summary>
     /// Creates a mock DescopeClient with a custom HttpClient for testing HTTP-level behavior.

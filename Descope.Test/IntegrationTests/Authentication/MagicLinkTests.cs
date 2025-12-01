@@ -239,10 +239,7 @@ namespace Descope.Test.Integration
 
 
                 // Sanity check - user should exist now
-                var loadedUser = await _descopeClient.Mgmt.V1.User.GetAsync(config =>
-                {
-                    config.QueryParameters.UserId = user!.User!.UserId!;
-                });
+                var loadedUser = await _descopeClient.Mgmt.V1.User.LoadAsync(user!.User!.UserId!);
                 Assert.Equal(user!.User!.UserId, loadedUser!.User!.UserId);
 
                 // Send sign-in magic link

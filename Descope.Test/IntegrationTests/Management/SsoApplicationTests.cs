@@ -31,10 +31,7 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.NotNull(loadResponse.App.Id);
@@ -89,10 +86,7 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.Equal(appId, loadResponse.App.Id);
@@ -155,10 +149,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Idp.App.Oidc.Update.PostAsync(updateRequest);
 
                 // Load and verify the update
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.Equal(updateRequest.Name, loadResponse.App.Name);
@@ -222,10 +213,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Idp.App.Saml.Update.PostAsync(updateRequest);
 
                 // Load and verify the update
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.Equal(updateRequest.Name, loadResponse.App.Name);
@@ -406,10 +394,7 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify JWT Bearer settings
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.NotNull(loadResponse.App.OidcSettings);
@@ -481,10 +466,7 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify attribute mapping
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(appId!);
                 Assert.NotNull(loadResponse);
                 Assert.NotNull(loadResponse.App);
                 Assert.NotNull(loadResponse.App.SamlSettings);

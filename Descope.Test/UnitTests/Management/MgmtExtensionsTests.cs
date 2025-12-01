@@ -26,6 +26,59 @@ namespace Descope.Test.UnitTests.Management;
 /// </summary>
 public class MgmtExtensionsTests
 {
+    /// <summary>
+    /// Tests that LoadWithTenantIdAsync for Password Settings correctly passes the tenant ID.
+    /// </summary>
+    [Fact]
+    public async Task PasswordSettings_LoadWithTenantIdAsync_PassesTenantIdCorrectly()
+    {
+        // Arrange
+        var testTenantId = "test-tenant-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<GetPasswordSettingsResponse>(
+            requestInfo =>
+            {
+                // Assert that the tenant ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("tenantId", "The tenant ID should be in query parameters");
+                requestInfo.QueryParameters["tenantId"].Should().Be(testTenantId, "The tenant ID should match");
+                return new GetPasswordSettingsResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync(testTenantId);
+    }
+
+    /// <summary>
+    /// Tests that LoadWithTenantIdAsync for Password Settings throws when tenant ID is null.
+    /// </summary>
+    [Fact]
+    public async Task PasswordSettings_LoadWithTenantIdAsync_ThrowsDescopeException_WhenTenantIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadWithTenantIdAsync for Password Settings throws when tenant ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task PasswordSettings_LoadWithTenantIdAsync_ThrowsDescopeException_WhenTenantIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync("");
+        });
+    }
 
     /// <summary>
     /// Tests that PostWithSettingsResponseAsync throws ArgumentNullException when settings is null.
@@ -193,6 +246,384 @@ public class MgmtExtensionsTests
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
             await descopeClient.Mgmt.V1.Project.Import.PostWithExportedProjectAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadUserAsync correctly passes the identifier to the request.
+    /// </summary>
+    [Fact]
+    public async Task LoadUserAsync_PassesIdentifierCorrectly()
+    {
+        // Arrange
+        var testIdentifier = "test-user@example.com";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<UserResponse>(
+            requestInfo =>
+            {
+                // Assert that the identifier is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("identifier", "The identifier should be in query parameters");
+                requestInfo.QueryParameters["identifier"].Should().Be(testIdentifier, "The identifier should match");
+                return new UserResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.User.LoadAsync(testIdentifier);
+    }
+
+    /// <summary>
+    /// Tests that LoadUserAsync throws DescopeException when identifier is null.
+    /// </summary>
+    [Fact]
+    public async Task LoadUserAsync_ThrowsDescopeException_WhenIdentifierIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.User.LoadAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadUserAsync throws DescopeException when identifier is empty.
+    /// </summary>
+    [Fact]
+    public async Task LoadUserAsync_ThrowsDescopeException_WhenIdentifierIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.User.LoadAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for AccessKey correctly passes the ID to the request.
+    /// </summary>
+    [Fact]
+    public async Task AccessKey_LoadAsync_PassesIdCorrectly()
+    {
+        // Arrange
+        var testId = "test-access-key-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<AccessKeyResponse>(
+            requestInfo =>
+            {
+                // Assert that the ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("id", "The ID should be in query parameters");
+                requestInfo.QueryParameters["id"].Should().Be(testId, "The ID should match");
+                return new AccessKeyResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Accesskey.LoadAsync(testId);
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for AccessKey throws DescopeException when ID is null.
+    /// </summary>
+    [Fact]
+    public async Task AccessKey_LoadAsync_ThrowsDescopeException_WhenIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Accesskey.LoadAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for AccessKey throws DescopeException when ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task AccessKey_LoadAsync_ThrowsDescopeException_WhenIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Accesskey.LoadAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Application correctly returns the application.
+    /// </summary>
+    [Fact]
+    public async Task SsoApp_LoadAsync_PassesIdCorrectly()
+    {
+        // Arrange
+        var testId = "test-sso-app-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<LoadSSOApplicationResponse>(
+            requestInfo =>
+            {
+                // Assert that the ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("id", "The ID should be in query parameters");
+                requestInfo.QueryParameters["id"].Should().Be(testId, "The ID should match");
+                return new LoadSSOApplicationResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(testId);
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Application throws when ID is null.
+    /// </summary>
+    [Fact]
+    public async Task SsoApp_LoadAsync_ThrowsDescopeException_WhenIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Application throws when ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task SsoApp_LoadAsync_ThrowsDescopeException_WhenIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Settings correctly returns the settings.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_LoadAsync_PassesTenantIdCorrectly()
+    {
+        // Arrange
+        var testTenantId = "test-tenant-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<LoadSSOSettingsResponse>(
+            requestInfo =>
+            {
+                // Assert that the tenant ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("tenantId", "The tenant ID should be in query parameters");
+                requestInfo.QueryParameters["tenantId"].Should().Be(testTenantId, "The tenant ID should match");
+                return new LoadSSOSettingsResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(testTenantId);
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Settings throws when tenant ID is null.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_LoadAsync_ThrowsDescopeException_WhenTenantIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for SSO Settings throws when tenant ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_LoadAsync_ThrowsDescopeException_WhenTenantIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for Third Party Application correctly returns the application.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadAsync_PassesIdCorrectly()
+    {
+        // Arrange
+        var testId = "test-app-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<LoadThirdPartyApplicationResponse>(
+            requestInfo =>
+            {
+                // Assert that the ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("id", "The ID should be in query parameters");
+                requestInfo.QueryParameters["id"].Should().Be(testId, "The ID should match");
+                return new LoadThirdPartyApplicationResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync(testId);
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for Third Party Application throws when ID is null.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadAsync_ThrowsDescopeException_WhenIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadAsync for Third Party Application throws when ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadAsync_ThrowsDescopeException_WhenIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadWithClientIdAsync for Third Party Application correctly returns the application.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadWithClientIdAsync_PassesClientIdCorrectly()
+    {
+        // Arrange
+        var testClientId = "test-client-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<LoadThirdPartyApplicationResponse>(
+            requestInfo =>
+            {
+                // Assert that the client ID is passed correctly in the query parameters
+                requestInfo.QueryParameters.Should().ContainKey("clientId", "The client ID should be in query parameters");
+                requestInfo.QueryParameters["clientId"].Should().Be(testClientId, "The client ID should match");
+                return new LoadThirdPartyApplicationResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync(testClientId);
+    }
+
+    /// <summary>
+    /// Tests that LoadWithClientIdAsync for Third Party Application throws when client ID is null.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadWithClientIdAsync_ThrowsDescopeException_WhenClientIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that LoadWithClientIdAsync for Third Party Application throws when client ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyApp_LoadWithClientIdAsync_ThrowsDescopeException_WhenClientIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync("");
+        });
+    }
+
+    /// <summary>
+    /// Tests that DeleteWithTenantIdAsync for SSO Settings correctly passes the tenant ID.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_DeleteWithTenantIdAsync_PassesTenantIdCorrectly()
+    {
+        // Arrange
+        var testTenantId = "test-tenant-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithStreamAsserter(requestInfo =>
+        {
+            // Assert that the tenant ID is passed correctly in the query parameters
+            requestInfo.QueryParameters.Should().ContainKey("tenantId", "The tenant ID should be in query parameters");
+            requestInfo.QueryParameters["tenantId"].Should().Be(testTenantId, "The tenant ID should match");
+        });
+
+        // Act
+        await descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync(testTenantId);
+
+        // No explicit assertion needed - the asserter will throw if parameters are incorrect
+    }
+
+    /// <summary>
+    /// Tests that DeleteWithTenantIdAsync for SSO Settings throws when tenant ID is null.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_DeleteWithTenantIdAsync_ThrowsDescopeException_WhenTenantIdIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that DeleteWithTenantIdAsync for SSO Settings throws when tenant ID is empty.
+    /// </summary>
+    [Fact]
+    public async Task SsoSettings_DeleteWithTenantIdAsync_ThrowsDescopeException_WhenTenantIdIsEmpty()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync("");
         });
     }
 

@@ -87,6 +87,38 @@ internal class MockRequestAdapter : IRequestAdapter
     }
 
     /// <summary>
+    /// Creates a mock request adapter with request validation for Stream (void) responses without request body.
+    /// Use this for DELETE or GET operations that return Stream (void) but don't have a request body.
+    /// </summary>
+    /// <param name="asserter">Function to validate the request</param>
+    /// <returns>A configured MockRequestAdapter</returns>
+    internal static MockRequestAdapter CreateWithAsserter(Action<RequestInformation> asserter)
+    {
+        return new MockRequestAdapter(async requestInfo =>
+        {
+            asserter(requestInfo);
+            return new MemoryStream(); // Return empty stream for Stream responses
+        });
+    }
+
+    /// <summary>
+    /// Creates a mock request adapter with request validation for requests without a request body.
+    /// Use this for GET operations that don't have a request body but return a response.
+    /// </summary>
+    /// <typeparam name="TResponse">The type of response object (must be IParsable)</typeparam>
+    /// <param name="asserter">Function to validate the request and return the response</param>
+    /// <returns>A configured MockRequestAdapter</returns>
+    internal static MockRequestAdapter CreateWithAsserter<TResponse>(Func<RequestInformation, TResponse> asserter)
+        where TResponse : IParsable
+    {
+        return new MockRequestAdapter(async requestInfo =>
+        {
+            var responseObject = asserter(requestInfo);
+            return await SerializeToStreamAsync(responseObject);
+        });
+    }
+
+    /// <summary>
     /// Creates a mock request adapter that throws a DescopeException with the specified error details.
     /// Use this to test error handling scenarios at the adapter level.
     /// Note: For HTTP-level error testing, use TestDescopeClientFactory.CreateWithError instead.

@@ -29,10 +29,7 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load the application using the endpoint with response_body: "app"
-                var loadResponse = await _descopeClient.Mgmt.V1.Thirdparty.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.Id = appId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync(appId!);
 
                 // Verify the response structure - the "app" field should be directly accessible
                 Assert.NotNull(loadResponse);
@@ -77,10 +74,7 @@ namespace Descope.Test.Integration
                 var clientId = createResponse.ClientId;
 
                 // Load by clientId
-                var loadResponse = await _descopeClient.Mgmt.V1.Thirdparty.App.Load.GetAsync(config =>
-                {
-                    config.QueryParameters.ClientId = clientId;
-                });
+                var loadResponse = await _descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync(clientId!);
 
                 // Verify the response structure
                 Assert.NotNull(loadResponse);

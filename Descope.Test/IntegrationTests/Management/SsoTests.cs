@@ -56,10 +56,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Saml.PostAsync(configureSamlRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetAsync(config =>
-                {
-                    config.QueryParameters.TenantId = tenantId;
-                });
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.IdpUrl, loadedSetting?.Saml?.IdpSSOUrl);
@@ -72,14 +69,8 @@ namespace Descope.Test.Integration
                 Assert.Equal("domain1.com", loadedSetting?.Tenant?.Domains?.First());
 
                 // Delete the settings
-                await _descopeClient.Mgmt.V1.Sso.Settings.DeleteAsync(config =>
-                {
-                    config.QueryParameters.TenantId = tenantId;
-                });
-                loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetAsync(config =>
-                {
-                    config.QueryParameters.TenantId = tenantId;
-                });
+                await _descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync(tenantId!);
+                loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
                 Assert.Empty(loadedSetting?.Saml?.IdpSSOUrl ?? "");
             }
             finally
@@ -144,10 +135,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Saml.Metadata.PostAsync(configureSamlByMetadataRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetAsync(config =>
-                {
-                    config.QueryParameters.TenantId = tenantId;
-                });
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.IdpMetadataUrl, loadedSetting?.Saml?.IdpMetadataUrl);
@@ -216,10 +204,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Oidc.PostAsync(configureOidcRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetAsync(config =>
-                {
-                    config.QueryParameters.TenantId = tenantId;
-                });
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.Name, loadedSetting?.Oidc?.Name);
