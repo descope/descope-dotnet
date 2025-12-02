@@ -60,7 +60,7 @@ public static class MgmtExtensions
     /// <param name="tenantId">The tenant ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>GetPasswordSettingsResponse containing the password settings information</returns>
-    public static async Task<GetPasswordSettingsResponse?> LoadWithTenantIdAsync(
+    public static async Task<GetPasswordSettingsResponse?> GetWithTenantIdAsync(
         this Descope.Mgmt.V1.Mgmt.Password.Settings.SettingsRequestBuilder requestBuilder,
         string tenantId,
         CancellationToken cancellationToken = default)
@@ -120,7 +120,7 @@ public static class MgmtExtensions
     /// <param name="identifier">The user identifier (login ID, email, phone, or user ID)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>UserResponse containing the user information</returns>
-    public static async Task<UserResponse?> LoadAsync(
+    public static async Task<UserResponse?> GetWithIdentifierAsync(
         this Descope.Mgmt.V1.Mgmt.User.UserRequestBuilder requestBuilder,
         string identifier,
         CancellationToken cancellationToken = default)
@@ -144,7 +144,7 @@ public static class MgmtExtensions
     /// <param name="id">The access key ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>AccessKeyResponse containing the access key information</returns>
-    public static async Task<AccessKeyResponse?> LoadAsync(
+    public static async Task<AccessKeyResponse?> GetWithIdAsync(
         this Descope.Mgmt.V1.Mgmt.Accesskey.AccesskeyRequestBuilder requestBuilder,
         string id,
         CancellationToken cancellationToken = default)
@@ -168,7 +168,7 @@ public static class MgmtExtensions
     /// <param name="id">The SSO application ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>LoadSSOApplicationResponse containing the SSO application information</returns>
-    public static async Task<LoadSSOApplicationResponse?> LoadAsync(
+    public static async Task<LoadSSOApplicationResponse?> GetWithIdAsync(
         this Descope.Mgmt.V1.Mgmt.Sso.Idp.App.Load.LoadRequestBuilder requestBuilder,
         string id,
         CancellationToken cancellationToken = default)
@@ -192,7 +192,7 @@ public static class MgmtExtensions
     /// <param name="tenantId">The tenant ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>LoadSSOSettingsResponse containing the SSO settings information</returns>
-    public static async Task<LoadSSOSettingsResponse?> LoadAsync(
+    public static async Task<LoadSSOSettingsResponse?> GetWithTenantIdAsync(
         this Descope.Mgmt.V2.Mgmt.Sso.Settings.SettingsRequestBuilder requestBuilder,
         string tenantId,
         CancellationToken cancellationToken = default)
@@ -216,7 +216,7 @@ public static class MgmtExtensions
     /// <param name="id">The third-party application ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>LoadThirdPartyApplicationResponse containing the third-party application information</returns>
-    public static async Task<LoadThirdPartyApplicationResponse?> LoadWithAppIdAsync(
+    public static async Task<LoadThirdPartyApplicationResponse?> GetWithIdAsync(
         this Descope.Mgmt.V1.Mgmt.Thirdparty.App.Load.LoadRequestBuilder requestBuilder,
         string id,
         CancellationToken cancellationToken = default)
@@ -240,7 +240,7 @@ public static class MgmtExtensions
     /// <param name="clientId">The third-party application client ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>LoadThirdPartyApplicationResponse containing the third-party application information</returns>
-    public static async Task<LoadThirdPartyApplicationResponse?> LoadWithClientIdAsync(
+    public static async Task<LoadThirdPartyApplicationResponse?> GetWithClientIdAsync(
         this Descope.Mgmt.V1.Mgmt.Thirdparty.App.Load.LoadRequestBuilder requestBuilder,
         string clientId,
         CancellationToken cancellationToken = default)
@@ -277,6 +277,30 @@ public static class MgmtExtensions
         return await requestBuilder.DeleteAsync(requestConfiguration =>
         {
             requestConfiguration.QueryParameters.TenantId = tenantId;
+        }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads a tenant by ID.
+    /// This is a convenience method that simplifies the common pattern of loading a tenant by its ID.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant request builder</param>
+    /// <param name="id">The tenant ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>LoadTenantResponse containing the tenant information</returns>
+    public static async Task<LoadTenantResponse?> GetWithIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.TenantRequestBuilder requestBuilder,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new DescopeException("ID is required for loading a tenant");
+        }
+
+        return await requestBuilder.GetAsync(requestConfiguration =>
+        {
+            requestConfiguration.QueryParameters.Id = id;
         }, cancellationToken: cancellationToken);
     }
 }

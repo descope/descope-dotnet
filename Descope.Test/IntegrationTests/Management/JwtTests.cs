@@ -32,7 +32,7 @@ namespace Descope.Test.Integration
                 Assert.NotNull(updatedJwt);
 
                 // Make sure the session is valid and has the custom claims
-                var token = await _descopeClient.Auth.ValidateSession(updatedJwt!);
+                var token = await _descopeClient.Auth.ValidateSessionAsync(updatedJwt!);
                 Assert.Contains("a", token.Claims.Keys);
                 Assert.Equal("b", token.Claims["a"].ToString());
             }
@@ -96,7 +96,7 @@ namespace Descope.Test.Integration
                 Assert.NotNull(jwt);
 
                 // Validate the impersonation data
-                var token = await _descopeClient.Auth.ValidateSession(jwt!);
+                var token = await _descopeClient.Auth.ValidateSessionAsync(jwt!);
                 Assert.Equal(userId2, token.Id);
                 Assert.Contains(userId1!, token.Claims["act"].ToString()!);
             }

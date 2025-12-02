@@ -8,7 +8,7 @@ namespace Descope;
 /// These methods provide a cleaner API by making the refresh JWT parameter explicit and mandatory,
 /// preventing accidental omission of required authentication context.
 /// </summary>
-public static class WithJwtExtensions
+public static class AuthExtensions
 {
     #region Private Helper Methods
 
@@ -495,6 +495,118 @@ public static class WithJwtExtensions
         return await requestBuilder.PostAsync(
             request,
             WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
+    #region Auth History Extensions
+
+    /// <summary>
+    /// Gets the user authentication history for the current refresh token with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The History request builder.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The auth history response containing authentication events.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var history = await client.Auth.V1.Me.History.GetWithJwtAsync(refreshToken);
+    /// </code>
+    /// </example>
+    public static async Task<MeAuthHistoryResponse?> GetWithJwtAsync(
+        this Descope.Auth.V1.Auth.Me.History.HistoryRequestBuilder requestBuilder,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for this operation.");
+        }
+
+        return await requestBuilder.GetAsync(
+            WithJwt(refreshJwt),
+            cancellationToken
+        );
+    }
+
+    #endregion
+
+    #region SSO Authorize Extensions
+
+    /// <summary>
+    /// Initiates SSO authentication flow with comprehensive query parameters.
+    /// Creates a redirect URL for SSO authentication based on tenant configuration (SAML/OIDC).
+    /// </summary>
+    /// <param name="requestBuilder">The Authorize request builder.</param>
+    /// <param name="request">The login options request.</param>
+    /// <param name="tenant">The tenant ID (required for SSO authentication).</param>
+    /// <param name="redirectUrl">The URL to redirect to after authentication.</param>
+    /// <param name="prompt">Optional OIDC prompt parameter (e.g., "login", "consent", "none").</param>
+    /// <param name="loginHint">Optional login hint sent to the IdP (e.g., pre-fill username).</param>
+    /// <param name="forceAuthn">Optional flag to force re-authentication even if user has active session.</param>
+    /// <param name="test">Optional flag to enable test mode.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The SAML redirect response containing the SSO redirect URL.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when tenant is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var response = await client.Auth.V1.Sso.Authorize.PostWithQueryParamsAsync(
+    ///     new LoginOptions(),
+    ///     tenant: "my-tenant-id",
+    ///     redirectUrl: "https://myapp.com/callback",
+    ///     test: true
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task<Auth.Models.Onetimev1.SAMLRedirectResponse?> PostWithQueryParamsAsync(
+        this Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder requestBuilder,
+        Auth.Models.Onetimev1.LoginOptions request,
+        string tenant,
+        string? redirectUrl = null,
+        string[]? prompt = null,
+        string? loginHint = null,
+        bool? forceAuthn = null,
+        bool? test = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(tenant))
+        {
+            throw new ArgumentNullException(nameof(tenant), "Tenant is required for SSO authorization.");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            requestConfiguration =>
+            {
+                requestConfiguration.QueryParameters.Tenant = tenant;
+
+                if (!string.IsNullOrEmpty(redirectUrl))
+                {
+                    requestConfiguration.QueryParameters.RedirectUrl = redirectUrl;
+                }
+
+                if (prompt != null && prompt.Length > 0)
+                {
+                    requestConfiguration.QueryParameters.Prompt = prompt;
+                }
+
+                if (!string.IsNullOrEmpty(loginHint))
+                {
+                    requestConfiguration.QueryParameters.LoginHint = loginHint;
+                }
+
+                if (forceAuthn.HasValue)
+                {
+                    requestConfiguration.QueryParameters.ForceAuthn = forceAuthn.Value;
+                }
+
+                if (test.HasValue)
+                {
+                    requestConfiguration.QueryParameters.Test = test.Value;
+                }
+            },
             cancellationToken);
     }
 

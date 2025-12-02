@@ -216,7 +216,7 @@ namespace Descope.Test.Integration
                 Assert.True(updateResult.User.VerifiedPhone);
 
                 // Reload the user and verify all changes persisted
-                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+                var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
 
                 Assert.NotNull(loadResult);
                 Assert.NotNull(loadResult.User);
@@ -327,7 +327,7 @@ namespace Descope.Test.Integration
                 Assert.Single(updateResult.User.UserTenants);
 
                 // Reload the user and verify tenant persisted
-                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+                var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
 
                 Assert.NotNull(loadResult);
                 Assert.NotNull(loadResult.User);
@@ -907,7 +907,7 @@ namespace Descope.Test.Integration
                 };
                 await _descopeClient.Mgmt.V1.User.Password.Set.PostAsync(setPasswordRequest);
 
-                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+                var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
                 Assert.True(loadResult?.User?.Password);
 
                 // Expire password
@@ -1183,7 +1183,7 @@ namespace Descope.Test.Integration
                 Assert.NotNull(loginId);
 
                 // Load the user and verify all fields are correctly deserialized
-                var loadResult = await _descopeClient.Mgmt.V1.User.LoadAsync(loginId!);
+                var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
 
                 Assert.NotNull(loadResult);
                 Assert.NotNull(loadResult.User);

@@ -12,7 +12,7 @@ public interface ITokenActions
     /// <returns>A validated Token object.</returns>
     /// <exception cref="InvalidOperationException">Thrown when JWT validator is not initialized.</exception>
     /// <exception cref="Exception">Thrown when the session JWT is invalid.</exception>
-    Task<Token> ValidateSession(string sessionJwt);
+    Task<Token> ValidateSessionAsync(string sessionJwt);
 
     /// <summary>
     /// Refreshes a session using a refresh JWT. Validates the refresh JWT locally,
@@ -23,7 +23,7 @@ public interface ITokenActions
     /// <exception cref="ArgumentException">Thrown when refreshJwt is empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when JWT validator is not initialized.</exception>
     /// <exception cref="Exception">Thrown when the refresh JWT is invalid or refresh fails.</exception>
-    Task<Token> RefreshSession(string refreshJwt);
+    Task<Token> RefreshSessionAsync(string refreshJwt);
 
     /// <summary>
     /// Validates and refreshes a session. First attempts to validate the session JWT,

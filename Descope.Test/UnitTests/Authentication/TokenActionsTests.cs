@@ -56,7 +56,7 @@ public class TokenActionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await client.Auth.RefreshSession("");
+            await client.Auth.RefreshSessionAsync("");
         });
 
     }
@@ -70,7 +70,7 @@ public class TokenActionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await client.Auth.RefreshSession(null!);
+            await client.Auth.RefreshSessionAsync(null!);
         });
     }
 
@@ -214,7 +214,7 @@ public class TokenActionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await client.Auth.ValidateSession("");
+            await client.Auth.ValidateSessionAsync("");
         });
     }
 
@@ -227,7 +227,7 @@ public class TokenActionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await client.Auth.ValidateSession(null!);
+            await client.Auth.ValidateSessionAsync(null!);
         });
 
     }
@@ -284,7 +284,7 @@ public class TokenActionsTests
         var testJwt = "look ma, a jwt";
         try
         {
-            await client.Auth.ValidateSession(testJwt);
+            await client.Auth.ValidateSessionAsync(testJwt);
         }
         catch (DescopeException)
         {
@@ -294,7 +294,7 @@ public class TokenActionsTests
         // Second call - should use cached keys
         try
         {
-            await client.Auth.ValidateSession(testJwt);
+            await client.Auth.ValidateSessionAsync(testJwt);
         }
         catch (DescopeException)
         {

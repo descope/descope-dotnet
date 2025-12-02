@@ -129,7 +129,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Accesskey.Deactivate.PostAsync(deactivateRequest);
 
                 // Reload the key to verify status
-                var loadedKey = await _descopeClient.Mgmt.V1.Accesskey.LoadAsync(id!);
+                var loadedKey = await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(id!);
                 Assert.Equal("inactive", loadedKey?.Key?.Status);
 
                 // Activate
@@ -137,7 +137,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Accesskey.Activate.PostAsync(activateRequest);
 
                 // Reload the key to verify status
-                loadedKey = await _descopeClient.Mgmt.V1.Accesskey.LoadAsync(id!);
+                loadedKey = await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(id!);
                 Assert.Equal("active", loadedKey?.Key?.Status);
             }
             finally
@@ -177,7 +177,7 @@ namespace Descope.Test.Integration
         public async Task AccessKey_Load_MissingId()
         {
             // Test that loading with an empty ID throws an appropriate error
-            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.LoadAsync("");
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync("");
             var result = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Contains("ID is required", result.Message);
         }

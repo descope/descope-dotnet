@@ -178,7 +178,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(testLoginId, authResponse.User?.Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt!);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -239,7 +239,7 @@ namespace Descope.Test.Integration
 
 
                 // Sanity check - user should exist now
-                var loadedUser = await _descopeClient.Mgmt.V1.User.LoadAsync(user!.User!.UserId!);
+                var loadedUser = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(user!.User!.UserId!);
                 Assert.Equal(user!.User!.UserId, loadedUser!.User!.UserId);
 
                 // Send sign-in magic link
@@ -272,7 +272,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(testLoginId, searchResultVerify.Users![0].Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt!);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -337,7 +337,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(searchResultVerify.Users[0].Name, authResponse.User.Name);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt!);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -393,7 +393,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(testLoginId, searchResultVerify.Users![0].Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt!);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -492,7 +492,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(testLoginId, authResponse.User?.Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt!);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 

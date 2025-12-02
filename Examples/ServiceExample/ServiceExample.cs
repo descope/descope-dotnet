@@ -311,7 +311,7 @@ public class ServiceExample
                     // Validate the session JWT using Auth V1 API - LOCAL VALIDATION (no HTTP call)
                     logger.LogInformation("Validating session JWT locally");
                     Console.WriteLine("Validating session JWT locally (no HTTP call)...");
-                    var validatedToken = await client.Auth.ValidateSession(authResponse!.SessionJwt!);
+                    var validatedToken = await client.Auth.ValidateSessionAsync(authResponse!.SessionJwt!);
                     logger.LogInformation("Session JWT validated successfully");
                     Console.WriteLine("Session JWT validated successfully!");
                     Console.WriteLine($"  - Subject (User ID): {validatedToken.Subject}");

@@ -19,7 +19,7 @@ namespace Descope.Test.Integration
                 loginId = testUser.User.User?.LoginIds?.FirstOrDefault();
 
                 // Make sure the session is valid
-                var token = await _descopeClient.Auth.ValidateSession(testUser.AuthInfo.SessionJwt!);
+                var token = await _descopeClient.Auth.ValidateSessionAsync(testUser.AuthInfo.SessionJwt!);
                 Assert.NotNull(token.Jwt);
                 Assert.Equal(testUser.AuthInfo.SessionJwt, token.Jwt);
                 Assert.NotEmpty(token.Id);
@@ -27,7 +27,7 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(token.ProjectId);
 
                 // Refresh and see we got a new token
-                var refreshedToken = await _descopeClient.Auth.RefreshSession(testUser.AuthInfo.RefreshJwt!);
+                var refreshedToken = await _descopeClient.Auth.RefreshSessionAsync(testUser.AuthInfo.RefreshJwt!);
                 Assert.NotNull(refreshedToken.RefreshExpiration);
                 Assert.Equal(token.Id, refreshedToken.Id);
                 Assert.Equal(token.Subject, refreshedToken.Subject);
@@ -66,6 +66,7 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(token.Subject);
                 Assert.NotEmpty(token.Id);
                 Assert.NotEmpty(token.ProjectId);
+                Assert.Equal(IntegrationTestSetup.ProjectId, token.ProjectId);
                 Assert.NotEmpty(token.Jwt);
             }
             finally
@@ -134,7 +135,7 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(session.SessionJwt!);
                 Assert.NotEmpty(session.RefreshJwt!);
 
-                var token = await _descopeClient.Auth.ValidateSession(session.SessionJwt!);
+                var token = await _descopeClient.Auth.ValidateSessionAsync(session.SessionJwt!);
                 Assert.NotEmpty(token.Id);
                 Assert.NotEmpty(token.ProjectId);
                 Assert.NotEmpty(token.Jwt);

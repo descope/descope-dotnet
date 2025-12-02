@@ -7,6 +7,7 @@ namespace Descope.Test.Integration
 {
     internal class IntegrationTestSetup
     {
+        internal static string? ProjectId { get; private set; }
         internal static IDescopeClient InitDescopeClient()
         {
             // Read configuration from appsettingsTest.json
@@ -15,14 +16,14 @@ namespace Descope.Test.Integration
             var config = System.Text.Json.JsonDocument.Parse(json);
             var appSettings = config.RootElement.GetProperty("AppSettings");
 
-            var projectId = appSettings.GetProperty("ProjectId").GetString() ?? throw new ApplicationException("Can't run tests without a project ID");
+            ProjectId = appSettings.GetProperty("ProjectId").GetString() ?? throw new ApplicationException("Can't run tests without a project ID");
             var managementKey = appSettings.GetProperty("ManagementKey").GetString() ?? throw new ApplicationException("Can't run tests without a management key");
             var baseUrl = appSettings.TryGetProperty("BaseURL", out var baseUrlElement) ? baseUrlElement.GetString() : null;
             var isUnsafe = appSettings.TryGetProperty("Unsafe", out var unsafeElement) && bool.Parse(unsafeElement.GetString() ?? "false");
 
             var options = new DescopeClientOptions
             {
-                ProjectId = projectId,
+                ProjectId = ProjectId,
                 ManagementKey = managementKey,
                 BaseUrl = baseUrl ?? "https://api.descope.com",
                 IsUnsafe = isUnsafe,
@@ -62,6 +63,17 @@ namespace Descope.Test.Integration
             };
 
             var authInfo = await descopeClient.Auth.V1.Otp.Verify.Sms.PostAsync(verifyRequest);
+
+            // Verify that authInfo is valid for a signed-in user
+            if (authInfo == null || string.IsNullOrEmpty(authInfo.SessionJwt))
+            {
+                throw new ApplicationException("Failed to sign in test user");
+            }
+            var token = await descopeClient.Auth.ValidateSessionAsync(authInfo.SessionJwt);
+            if (token == null || string.IsNullOrEmpty(token.Jwt) || token.Subject != user?.User?.UserId)
+            {
+                throw new ApplicationException("Failed to validate signed-in test user session");
+            }
 
             return new SignedInTestUser(user!, authInfo!);
         }

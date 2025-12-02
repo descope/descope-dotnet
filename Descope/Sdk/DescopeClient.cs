@@ -72,18 +72,18 @@ public class DescopeClient : IDescopeClient
         // Forward ITokenActions methods to TokenActions implementation
 
         /// <inheritdoc/>
-        public Task<Token> ValidateSession(string sessionJwt) => _tokenActions.ValidateSession(sessionJwt);
+        public async Task<Token> ValidateSessionAsync(string sessionJwt) => await _tokenActions.ValidateSessionAsync(sessionJwt);
 
         /// <inheritdoc/>
-        public Task<Token> RefreshSession(string refreshJwt) => _tokenActions.RefreshSession(refreshJwt);
+        public async Task<Token> RefreshSessionAsync(string refreshJwt) => await _tokenActions.RefreshSessionAsync(refreshJwt);
 
         /// <inheritdoc/>
-        public Task<Token> ValidateAndRefreshSession(string sessionJwt, string refreshJwt) =>
-            _tokenActions.ValidateAndRefreshSession(sessionJwt, refreshJwt);
+        public async Task<Token> ValidateAndRefreshSession(string sessionJwt, string refreshJwt) =>
+            await _tokenActions.ValidateAndRefreshSession(sessionJwt, refreshJwt);
 
         /// <inheritdoc/>
-        public Task<Token> ExchangeAccessKey(string accessKey, Auth.Models.Onetimev1.AccessKeyLoginOptions? loginOptions = null) =>
-            _tokenActions.ExchangeAccessKey(accessKey, loginOptions);
+        public async Task<Token> ExchangeAccessKey(string accessKey, Auth.Models.Onetimev1.AccessKeyLoginOptions? loginOptions = null) =>
+            await _tokenActions.ExchangeAccessKey(accessKey, loginOptions);
 
     }
 

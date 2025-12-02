@@ -19,7 +19,7 @@ internal class TokenActions : ITokenActions
     }
 
     /// <inheritdoc/>
-    public async Task<Token> ValidateSession(string sessionJwt)
+    public async Task<Token> ValidateSessionAsync(string sessionJwt)
     {
         if (string.IsNullOrEmpty(sessionJwt))
         {
@@ -30,7 +30,7 @@ internal class TokenActions : ITokenActions
     }
 
     /// <inheritdoc/>
-    public async Task<Token> RefreshSession(string refreshJwt)
+    public async Task<Token> RefreshSessionAsync(string refreshJwt)
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
@@ -69,7 +69,7 @@ internal class TokenActions : ITokenActions
         {
             try
             {
-                return await ValidateSession(sessionJwt);
+                return await ValidateSessionAsync(sessionJwt);
             }
             catch
             {
@@ -83,7 +83,7 @@ internal class TokenActions : ITokenActions
             throw new DescopeException("Cannot refresh session with empty refresh JWT");
         }
 
-        return await RefreshSession(refreshJwt);
+        return await RefreshSessionAsync(refreshJwt);
     }
 
     /// <inheritdoc/>

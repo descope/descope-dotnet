@@ -45,7 +45,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync(testTenantId);
+        await descopeClient.Mgmt.V1.Password.Settings.GetWithTenantIdAsync(testTenantId);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync(null!);
+            await descopeClient.Mgmt.V1.Password.Settings.GetWithTenantIdAsync(null!);
         });
     }
 
@@ -76,7 +76,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync("");
+            await descopeClient.Mgmt.V1.Password.Settings.GetWithTenantIdAsync("");
         });
     }
 
@@ -268,7 +268,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.User.LoadAsync(testIdentifier);
+        await descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(testIdentifier);
     }
 
     /// <summary>
@@ -283,7 +283,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.User.LoadAsync(null!);
+            await descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(null!);
         });
     }
 
@@ -299,7 +299,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.User.LoadAsync("");
+            await descopeClient.Mgmt.V1.User.GetWithIdentifierAsync("");
         });
     }
 
@@ -322,7 +322,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.Accesskey.LoadAsync(testId);
+        await descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(testId);
     }
 
     /// <summary>
@@ -337,7 +337,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Accesskey.LoadAsync(null!);
+            await descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(null!);
         });
     }
 
@@ -353,7 +353,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Accesskey.LoadAsync("");
+            await descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync("");
         });
     }
 
@@ -376,7 +376,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(testId);
+        await descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(testId);
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync(null!);
+            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(null!);
         });
     }
 
@@ -407,7 +407,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.LoadAsync("");
+            await descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync("");
         });
     }
 
@@ -430,7 +430,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(testTenantId);
+        await descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(testTenantId);
     }
 
     /// <summary>
@@ -445,7 +445,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(null!);
+            await descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(null!);
         });
     }
 
@@ -461,7 +461,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V2.Sso.Settings.LoadAsync("");
+            await descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync("");
         });
     }
 
@@ -484,7 +484,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync(testId);
+        await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithIdAsync(testId);
     }
 
     /// <summary>
@@ -499,7 +499,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync(null!);
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithIdAsync(null!);
         });
     }
 
@@ -515,7 +515,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithAppIdAsync("");
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithIdAsync("");
         });
     }
 
@@ -538,7 +538,7 @@ public class MgmtExtensionsTests
             });
 
         // Act
-        await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync(testClientId);
+        await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithClientIdAsync(testClientId);
     }
 
     /// <summary>
@@ -553,7 +553,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync(null!);
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithClientIdAsync(null!);
         });
     }
 
@@ -569,7 +569,7 @@ public class MgmtExtensionsTests
         // Act & Assert
         await Assert.ThrowsAsync<DescopeException>(async () =>
         {
-            await descopeClient.Mgmt.V1.Thirdparty.App.Load.LoadWithClientIdAsync("");
+            await descopeClient.Mgmt.V1.Thirdparty.App.Load.GetWithClientIdAsync("");
         });
     }
 

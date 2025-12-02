@@ -35,7 +35,7 @@ namespace Descope.Test.Integration
                 var projectSettings = await _descopeClient.Mgmt.V1.Password.Settings.GetAsync();
                 Assert.Equal(6, projectSettings?.MinLength);
 
-                var tenantSettings = await _descopeClient.Mgmt.V1.Password.Settings.LoadWithTenantIdAsync(tenantId!);
+                var tenantSettings = await _descopeClient.Mgmt.V1.Password.Settings.GetWithTenantIdAsync(tenantId!);
                 Assert.Equal(7, tenantSettings?.MinLength);
             }
             finally

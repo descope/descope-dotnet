@@ -1,5 +1,6 @@
 using Xunit;
 using Descope.Mgmt.Models.Managementv1;
+using Descope.Auth.Models.Onetimev1;
 
 namespace Descope.Test.Integration
 {
@@ -56,7 +57,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Saml.PostAsync(configureSamlRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.IdpUrl, loadedSetting?.Saml?.IdpSSOUrl);
@@ -70,7 +71,7 @@ namespace Descope.Test.Integration
 
                 // Delete the settings
                 await _descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync(tenantId!);
-                loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
+                loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(tenantId!);
                 Assert.Empty(loadedSetting?.Saml?.IdpSSOUrl ?? "");
             }
             finally
@@ -135,7 +136,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Saml.Metadata.PostAsync(configureSamlByMetadataRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.IdpMetadataUrl, loadedSetting?.Saml?.IdpMetadataUrl);
@@ -204,7 +205,7 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Sso.Oidc.PostAsync(configureOidcRequest);
 
                 // Load settings
-                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.LoadAsync(tenantId!);
+                var loadedSetting = await _descopeClient.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync(tenantId!);
 
                 // Make sure the settings match
                 Assert.Equal(settings.Name, loadedSetting?.Oidc?.Name);
@@ -224,6 +225,63 @@ namespace Descope.Test.Integration
                 if (!string.IsNullOrEmpty(roleName))
                 {
                     try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = roleName }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Sso_AuthorizeEndpoint()
+        {
+            string? tenantId = null;
+            try
+            {
+                // Create a tenant
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+                tenantId = tenantResponse?.Id;
+
+                // Configure SSO settings (OIDC - doesn't require certificate like SAML)
+                var settings = new SSOOIDCSettings
+                {
+                    Name = "Test OIDC",
+                    ClientId = "test-client-id",
+                    ClientSecret = "test-client-secret",
+                    AuthUrl = "https://testauth.example.com/authorize",
+                    TokenUrl = "https://testauth.example.com/token",
+                    JWKsUrl = "https://testauth.example.com/.well-known/jwks.json",
+                    UserAttrMapping = new OAuthUserDataClaimsMapping { }
+                };
+                var configureOidcRequest = new ConfigureSSOOIDCSettingsRequest
+                {
+                    TenantId = tenantId,
+                    Settings = settings,
+                    Domains = new List<string> { "test-domain.com" }
+                };
+
+                await _descopeClient.Mgmt.V1.Sso.Oidc.PostAsync(configureOidcRequest);
+
+                // Call the Auth SSO Authorize endpoint with test=true using the extension method
+                var loginOptions = new LoginOptions();
+                var authorizeResponse = await _descopeClient.Auth.V1.Sso.Authorize.PostWithQueryParamsAsync(
+                    loginOptions,
+                    tenant: tenantId!,
+                    redirectUrl: "https://myredirect.com",
+                    test: true);
+
+                // Verify the response contains a redirect URL
+                Assert.NotNull(authorizeResponse);
+                Assert.NotEmpty(authorizeResponse.Url ?? "");
+                Assert.Contains("https://", authorizeResponse.Url ?? "");
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }

@@ -16,7 +16,7 @@ internal static class SdkInfo
     /// <summary>
     /// Gets the SDK version.
     /// </summary>
-    public static string Version { get; } = Assembly.GetAssembly(typeof(IDescopeClient))?.GetName()?.Version?.ToString() ?? "Unknown";
+    public static string Version { get; } = Assembly.GetAssembly(typeof(IDescopeClient))?.GetName()?.Version?.ToString() ?? "1.0.0";
 
     /// <summary>
     /// Gets the .NET runtime version.

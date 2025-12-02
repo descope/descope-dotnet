@@ -90,39 +90,5 @@ namespace Descope.Test.Integration
                 catch { }
             }
         }
-
-        [Fact(Skip = "Skipping due to lack of mgmt key permissions")]
-        public async Task Project_CloneAndDelete()
-        {
-            string? clonedProjectId = null;
-            try
-            {
-                // Clone the current project
-                var name = Guid.NewGuid().ToString().Split("-").First();
-                var cloneRequest = new CloneProjectRequest
-                {
-                    Name = name,
-                    Environment = ""
-                };
-                var result = await _descopeClient.Mgmt.V1.Project.Clone.PostAsync(cloneRequest);
-                Assert.NotNull(result);
-                clonedProjectId = result?.ProjectId;
-                Assert.NotEmpty(clonedProjectId!);
-            }
-            finally
-            {
-                // Delete cloned project
-                if (!string.IsNullOrEmpty(clonedProjectId))
-                {
-                    try
-                    {
-                        // Note: Delete endpoint doesn't take a request body - it deletes the current project
-                        // This is why this test is skipped - we can't delete a different project
-                        // await _descopeClient.Mgmt.V1.Project.DeletePath.PostAsync();
-                    }
-                    catch { }
-                }
-            }
-        }
     }
 }

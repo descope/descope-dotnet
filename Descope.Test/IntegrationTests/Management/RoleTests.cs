@@ -79,6 +79,14 @@ namespace Descope.Test.Integration
                 role = foundRolesResponse?.Roles?.Find(r => r.Name == name);
                 Assert.Null(role);
                 name = null;
+
+                // Load all and make sure only updated role is there
+                var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                Assert.NotNull(loadedRolesResponse?.Roles);
+                role = loadedRolesResponse?.Roles?.Find(r => r.Name == updatedName);
+                Assert.NotNull(role);
+                role = loadedRolesResponse?.Roles?.Find(r => r.Name == name);
+                Assert.Null(role);
             }
             finally
             {

@@ -49,10 +49,7 @@ namespace Descope.Test.Integration
                 Assert.NotNull(grandchildTenantId);
 
                 // Load parent and verify successors
-                var loadedParent = await _descopeClient.Mgmt.V1.Tenant.GetAsync(requestConfiguration =>
-                {
-                    requestConfiguration.QueryParameters.Id = parentTenantId;
-                });
+                var loadedParent = await _descopeClient.Mgmt.V1.Tenant.GetWithIdAsync(parentTenantId!);
                 Assert.NotNull(loadedParent);
                 Assert.NotNull(loadedParent.Tenant);
                 Assert.Equal(parentName, loadedParent.Tenant.Name);
@@ -76,10 +73,7 @@ namespace Descope.Test.Integration
                 Assert.Contains(grandchildTenantId, loadedChild.Successors);
 
                 // Load third tenant
-                var loadedGrandchild = await _descopeClient.Mgmt.V1.Tenant.GetAsync(requestConfiguration =>
-                {
-                    requestConfiguration.QueryParameters.Id = grandchildTenantId;
-                });
+                var loadedGrandchild = await _descopeClient.Mgmt.V1.Tenant.GetWithIdAsync(grandchildTenantId!);
                 Assert.NotNull(loadedGrandchild);
                 Assert.NotNull(loadedGrandchild.Tenant);
                 Assert.Equal(grandchildName, loadedGrandchild.Tenant.Name);
