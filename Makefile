@@ -32,7 +32,7 @@ help: ## Show this help message
 
 build: generate dotnet-build ## Regenerate Kiota files and rebuild C# DLLs (default)
 
-generate: generate-mgmt generate-auth ## Regenerate all Kiota client files
+generate: generate-mgmt generate-auth post-process-obsolete ## Regenerate all Kiota client files
 
 generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	@echo "Checking for Management API OpenAPI spec file..."
@@ -114,6 +114,24 @@ examples: ## Run both example applications (TODO: remove after testing)
 	@echo "Running ServiceExample..."
 	cd Examples/ServiceExample && dotnet run
 	@echo "Examples complete."
+
+post-process-obsolete: ## Apply post-processing obsolete annotations to Kiota generated method we want to mark as obsolete
+	@echo "Applying post-processing annotations from Obsolete.csv..."
+	@if [ ! -f "Obsolete.csv" ]; then \
+		echo "ERROR: Obsolete.csv not found, cannot perform post-processing"; \
+		exit 1; \
+	fi
+	@tail -n +2 Obsolete.csv | while IFS=, read -r filepath method replacement; do \
+		if [ -f "$$filepath" ]; then \
+			echo "Processing $$filepath: marking $$method as obsolete (use $$replacement)..."; \
+			awk -v method="$$method" -v replacement="$$replacement" \
+				'/'"$$method"'/ { print "        [Obsolete(\"Use " replacement " instead\")]"; } {print}' \
+				"$$filepath" > "$$filepath.tmp" && mv "$$filepath.tmp" "$$filepath"; \
+		else \
+			echo "ERROR: File not found: $$filepath" && exit 1; \
+		fi; \
+	done
+	@echo "Post-processing complete."
 
 clean: ## Clean build artifacts
 	@echo "Cleaning build artifacts..."

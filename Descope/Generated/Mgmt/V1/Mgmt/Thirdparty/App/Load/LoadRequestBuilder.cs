@@ -41,10 +41,12 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.App.Load
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use GetWithIdAsync or GetWithClientIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.LoadThirdPartyApplicationResponse?> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.App.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use GetWithIdAsync or GetWithClientIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.LoadThirdPartyApplicationResponse> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.App.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

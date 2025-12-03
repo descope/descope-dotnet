@@ -47,10 +47,12 @@ namespace Descope.Mgmt.V2.Mgmt.Sso.Settings
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use GetWithTenantIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.LoadSSOSettingsResponse?> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V2.Mgmt.Sso.Settings.SettingsRequestBuilder.SettingsRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use GetWithTenantIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.LoadSSOSettingsResponse> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V2.Mgmt.Sso.Settings.SettingsRequestBuilder.SettingsRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

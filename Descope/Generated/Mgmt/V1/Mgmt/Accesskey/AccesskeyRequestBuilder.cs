@@ -83,10 +83,12 @@ namespace Descope.Mgmt.V1.Mgmt.Accesskey
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use GetWithIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.AccessKeyResponse?> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Accesskey.AccesskeyRequestBuilder.AccesskeyRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use GetWithIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.AccessKeyResponse> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Accesskey.AccesskeyRequestBuilder.AccesskeyRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

@@ -47,10 +47,12 @@ namespace Descope.Mgmt.V1.Mgmt.Sso.Settings
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use DeleteWithTenantIdAsync instead")]
         public async Task<Stream?> DeleteAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Sso.Settings.SettingsRequestBuilder.SettingsRequestBuilderDeleteQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use DeleteWithTenantIdAsync instead")]
         public async Task<Stream> DeleteAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Sso.Settings.SettingsRequestBuilder.SettingsRequestBuilderDeleteQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

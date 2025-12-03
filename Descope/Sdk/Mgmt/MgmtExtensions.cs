@@ -9,6 +9,7 @@ namespace Descope;
 /// </summary>
 public static class MgmtExtensions
 {
+#pragma warning disable CS0618 // Type or member is obsolete - Allow calling "internally" deprecated Kiota methods
     /// <summary>
     /// Updates password settings by accepting a GetPasswordSettingsResponse and converting it to a ConfigurePasswordSettingsRequest.
     /// This allows for easier modification of existing settings by retrieving current settings and updating specific fields.
@@ -303,4 +304,5 @@ public static class MgmtExtensions
             requestConfiguration.QueryParameters.Id = id;
         }, cancellationToken: cancellationToken);
     }
+#pragma warning restore CS0618
 }

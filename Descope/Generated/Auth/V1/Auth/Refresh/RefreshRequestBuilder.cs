@@ -58,10 +58,12 @@ namespace Descope.Auth.V1.Auth.Refresh
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use PostWithJwtAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.JWTResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.RefreshSessionRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use PostWithJwtAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.JWTResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.RefreshSessionRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

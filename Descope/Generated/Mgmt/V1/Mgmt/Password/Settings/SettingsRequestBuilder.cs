@@ -41,10 +41,12 @@ namespace Descope.Mgmt.V1.Mgmt.Password.Settings
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use GetWithTenantIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.GetPasswordSettingsResponse?> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Password.Settings.SettingsRequestBuilder.SettingsRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use GetWithTenantIdAsync instead")]
         public async Task<global::Descope.Mgmt.Models.Managementv1.GetPasswordSettingsResponse> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Password.Settings.SettingsRequestBuilder.SettingsRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
@@ -60,10 +62,12 @@ namespace Descope.Mgmt.V1.Mgmt.Password.Settings
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use PostWithSettingsResponseAsync instead")]
         public async Task<Stream?> PostAsync(global::Descope.Mgmt.Models.Managementv1.ConfigurePasswordSettingsRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use PostWithSettingsResponseAsync instead")]
         public async Task<Stream> PostAsync(global::Descope.Mgmt.Models.Managementv1.ConfigurePasswordSettingsRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

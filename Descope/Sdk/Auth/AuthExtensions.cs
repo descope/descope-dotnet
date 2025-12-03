@@ -10,6 +10,8 @@ namespace Descope;
 /// </summary>
 public static class AuthExtensions
 {
+
+#pragma warning disable CS0618 // Type or member is obsolete - Allow calling "internally" deprecated Kiota methods
     #region Private Helper Methods
 
     /// <summary>
@@ -611,4 +613,5 @@ public static class AuthExtensions
     }
 
     #endregion
+#pragma warning restore CS0618
 }

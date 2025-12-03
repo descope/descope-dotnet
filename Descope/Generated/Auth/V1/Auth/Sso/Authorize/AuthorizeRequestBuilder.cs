@@ -42,10 +42,12 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use PostWithQueryParamsAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use PostWithQueryParamsAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif

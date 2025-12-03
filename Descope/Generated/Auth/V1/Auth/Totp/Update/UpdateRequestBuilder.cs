@@ -42,10 +42,12 @@ namespace Descope.Auth.V1.Auth.Totp.Update
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
+        [Obsolete("Use PostWithJwtAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.TOTPResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.TOTPUpdateRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
+        [Obsolete("Use PostWithJwtAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.TOTPResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.TOTPUpdateRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
