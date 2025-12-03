@@ -24,7 +24,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(jwt))
         {
-            throw new ArgumentException("JWT cannot be empty", nameof(jwt));
+            throw new DescopeException("JWT cannot be empty");
         }
 
         return requestConfiguration =>
@@ -45,7 +45,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The update email response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     /// <example>
     /// <code>
     /// var response = await client.Auth.V1.Magiclink.Update.Email.PostWithJwtAsync(
@@ -62,7 +62,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user email");
+            throw new DescopeException("Refresh JWT is required for updating user email");
         }
 
         return await requestBuilder.PostAsync(
@@ -79,7 +79,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The update phone response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<PhoneMagicLinkResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Magiclink.Update.Phone.Sms.SmsRequestBuilder requestBuilder,
         UpdateUserPhoneMagicLinkRequest request,
@@ -88,7 +88,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user phone");
+            throw new DescopeException("Refresh JWT is required for updating user phone");
         }
 
         return await requestBuilder.PostAsync(
@@ -105,7 +105,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The update phone response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<PhoneMagicLinkResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Magiclink.Update.Phone.Whatsapp.WhatsappRequestBuilder requestBuilder,
         UpdateUserPhoneMagicLinkRequest request,
@@ -114,7 +114,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user phone");
+            throw new DescopeException("Refresh JWT is required for updating user phone");
         }
 
         return await requestBuilder.PostAsync(
@@ -135,7 +135,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The enchanted link response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<EnchantedLinkResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Enchantedlink.Update.Email.EmailRequestBuilder requestBuilder,
         UpdateUserEmailEnchantedLinkRequest request,
@@ -144,7 +144,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user email");
+            throw new DescopeException("Refresh JWT is required for updating user email");
         }
 
         return await requestBuilder.PostAsync(
@@ -165,7 +165,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The email operation response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<EmailOperationResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Otp.Update.Email.EmailRequestBuilder requestBuilder,
         UpdateUserEmailOTPRequest request,
@@ -174,7 +174,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user email");
+            throw new DescopeException("Refresh JWT is required for updating user email");
         }
 
         return await requestBuilder.PostAsync(
@@ -191,7 +191,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The phone operation response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<PhoneOperationResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Otp.Update.Phone.Sms.SmsRequestBuilder requestBuilder,
         UpdateUserPhoneOTPRequest request,
@@ -200,7 +200,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user phone");
+            throw new DescopeException("Refresh JWT is required for updating user phone");
         }
 
         return await requestBuilder.PostAsync(
@@ -217,7 +217,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The phone operation response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<PhoneOperationResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Otp.Update.Phone.Voice.VoiceRequestBuilder requestBuilder,
         UpdateUserPhoneOTPRequest request,
@@ -226,7 +226,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user phone");
+            throw new DescopeException("Refresh JWT is required for updating user phone");
         }
 
         return await requestBuilder.PostAsync(
@@ -243,7 +243,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The phone operation response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<PhoneOperationResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Otp.Update.Phone.Whatsapp.WhatsappRequestBuilder requestBuilder,
         UpdateUserPhoneOTPRequest request,
@@ -252,7 +252,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user phone");
+            throw new DescopeException("Refresh JWT is required for updating user phone");
         }
 
         return await requestBuilder.PostAsync(
@@ -273,7 +273,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A stream response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<Stream?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Password.Update.UpdateRequestBuilder requestBuilder,
         PasswordUpdateRequest request,
@@ -282,7 +282,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating user password");
+            throw new DescopeException("Refresh JWT is required for updating user password");
         }
 
         return await requestBuilder.PostAsync(
@@ -304,7 +304,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The TOTP response containing QR code and provisioning URL.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<TOTPResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Totp.Update.UpdateRequestBuilder requestBuilder,
         TOTPUpdateRequest request,
@@ -313,7 +313,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating TOTP");
+            throw new DescopeException("Refresh JWT is required for updating TOTP");
         }
 
         return await requestBuilder.PostAsync(
@@ -335,7 +335,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The WebAuthn start response containing transaction ID and options.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<WebauthnStartResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Webauthn.Update.Start.StartRequestBuilder requestBuilder,
         WebauthnAddDeviceStartRequest request,
@@ -344,7 +344,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for updating WebAuthn device");
+            throw new DescopeException("Refresh JWT is required for updating WebAuthn device");
         }
 
         return await requestBuilder.PostAsync(
@@ -365,7 +365,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The JWT response containing new session tokens.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<JWTResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Refresh.RefreshRequestBuilder requestBuilder,
         RefreshSessionRequest request,
@@ -374,7 +374,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for refreshing session");
+            throw new DescopeException("Refresh JWT is required for refreshing session");
         }
 
         return await requestBuilder.PostAsync(
@@ -395,7 +395,7 @@ public static class AuthExtensions
     /// <param name="accessKey">The access key (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The exchange access key response containing session tokens.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when accessKey is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when accessKey is null or empty.</exception>
     public static async Task<ExchangeAccessKeyResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Accesskey.Exchange.ExchangeRequestBuilder requestBuilder,
         ExchangeAccessKeyRequest request,
@@ -404,7 +404,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(accessKey))
         {
-            throw new ArgumentNullException(nameof(accessKey), "Access key is required for exchange");
+            throw new DescopeException("Access key is required for exchange");
         }
 
         return await requestBuilder.PostAsync(
@@ -424,7 +424,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The user details.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<Descope.Auth.Models.Userv1.ResponseUser?> GetWithJwtAsync(
         this Descope.Auth.V1.Auth.Me.MeRequestBuilder requestBuilder,
         string refreshJwt,
@@ -432,7 +432,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for getting user details");
+            throw new DescopeException("Refresh JWT is required for getting user details");
         }
 
         return await requestBuilder.GetAsync(
@@ -452,7 +452,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The JWT response.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<JWTResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Logout.LogoutRequestBuilder requestBuilder,
         LogoutRequest request,
@@ -461,7 +461,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for logout");
+            throw new DescopeException("Refresh JWT is required for logout");
         }
 
         return await requestBuilder.PostAsync(
@@ -482,7 +482,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The JWT response with new session tokens for the selected tenant.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     public static async Task<JWTResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Tenant.Select.SelectRequestBuilder requestBuilder,
         SelectTenantRequest request,
@@ -491,7 +491,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for selecting tenant");
+            throw new DescopeException("Refresh JWT is required for selecting tenant");
         }
 
         return await requestBuilder.PostAsync(
@@ -511,7 +511,7 @@ public static class AuthExtensions
     /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The auth history response containing authentication events.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when refreshJwt is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
     /// <example>
     /// <code>
     /// var history = await client.Auth.V1.Me.History.GetWithJwtAsync(refreshToken);
@@ -524,7 +524,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(refreshJwt))
         {
-            throw new ArgumentNullException(nameof(refreshJwt), "Refresh JWT is required for this operation.");
+            throw new DescopeException("Refresh JWT is required for this operation.");
         }
 
         return await requestBuilder.GetAsync(
@@ -551,7 +551,7 @@ public static class AuthExtensions
     /// <param name="test">Optional flag to enable test mode.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The SAML redirect response containing the SSO redirect URL.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when tenant is null or empty.</exception>
+    /// <exception cref="DescopeException">Thrown when tenant is null or empty.</exception>
     /// <example>
     /// <code>
     /// var response = await client.Auth.V1.Sso.Authorize.PostWithQueryParamsAsync(
@@ -575,7 +575,7 @@ public static class AuthExtensions
     {
         if (string.IsNullOrEmpty(tenant))
         {
-            throw new ArgumentNullException(nameof(tenant), "Tenant is required for SSO authorization.");
+            throw new DescopeException("Tenant is required for SSO authorization.");
         }
 
         return await requestBuilder.PostAsync(
