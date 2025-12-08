@@ -903,7 +903,7 @@ namespace Descope.Test.Integration
                 var setPasswordRequest = new SetUserPasswordRequest
                 {
                     Identifier = loginId,
-                    Password = "abCD123#$abCD123#$"
+                    Password = "abCD123#$abCD123#$",
                 };
                 await _descopeClient.Mgmt.V1.User.Password.Set.PostAsync(setPasswordRequest);
 

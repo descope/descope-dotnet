@@ -59,7 +59,7 @@ namespace Descope.Test.Integration
             var verifyRequest = new OTPVerifyCodeRequest
             {
                 LoginId = loginId,
-                Code = generatedOtp?.Code ?? throw new ApplicationException("Failed to generate OTP code")
+                Code = generatedOtp?.Code ?? throw new ApplicationException("Failed to generate OTP code"),
             };
 
             var authInfo = await descopeClient.Auth.V1.Otp.Verify.Sms.PostAsync(verifyRequest);

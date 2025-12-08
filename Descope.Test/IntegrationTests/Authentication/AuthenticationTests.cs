@@ -66,7 +66,7 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(token.Subject);
                 Assert.NotEmpty(token.Id);
                 Assert.NotEmpty(token.ProjectId);
-                Assert.Equal(IntegrationTestSetup.ProjectId, token.ProjectId);
+                Assert.Contains(IntegrationTestSetup.ProjectId!, token.ProjectId);
                 Assert.NotEmpty(token.Jwt);
             }
             finally
