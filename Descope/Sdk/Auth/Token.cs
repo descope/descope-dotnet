@@ -136,7 +136,7 @@ public class Token
     /// <returns>True if all permissions are present, false otherwise.</returns>
     public bool ValidatePermissions(List<string> permissions, string? tenant = null)
     {
-        if (!string.IsNullOrEmpty(tenant) && !GetTenants().Contains(tenant))
+        if (tenant != null && tenant.Length > 0 && !GetTenants().Contains(tenant))
         {
             return false;
         }
@@ -153,7 +153,7 @@ public class Token
     /// <returns>The list of matched permissions.</returns>
     public List<string> GetMatchedPermissions(List<string> permissions, string? tenant = null)
     {
-        if (!string.IsNullOrEmpty(tenant) && !GetTenants().Contains(tenant))
+        if (tenant != null && tenant.Length > 0 && !GetTenants().Contains(tenant))
         {
             return new List<string>();
         }
@@ -170,7 +170,7 @@ public class Token
     /// <returns>True if all roles are present, false otherwise.</returns>
     public bool ValidateRoles(List<string> roles, string? tenant = null)
     {
-        if (!string.IsNullOrEmpty(tenant) && !GetTenants().Contains(tenant))
+        if (tenant != null && tenant.Length > 0 && !GetTenants().Contains(tenant))
         {
             return false;
         }
@@ -187,7 +187,7 @@ public class Token
     /// <returns>The list of matched roles.</returns>
     public List<string> GetMatchedRoles(List<string> roles, string? tenant = null)
     {
-        if (!string.IsNullOrEmpty(tenant) && !GetTenants().Contains(tenant))
+        if (tenant != null && tenant.Length > 0 && !GetTenants().Contains(tenant))
         {
             return new List<string>();
         }
@@ -198,7 +198,7 @@ public class Token
 
     private List<string> GetAuthorizationClaimItems(string claim, string? tenant)
     {
-        if (string.IsNullOrEmpty(tenant))
+        if (tenant == null || tenant.Length == 0)
         {
             var claimValue = _jwt.GetClaim(claim)?.Value;
             if (claimValue != null)
