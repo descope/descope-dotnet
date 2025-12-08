@@ -141,7 +141,7 @@ namespace Descope.Test.Integration
                 Assert.Equal("a", createResult.GivenName);
                 loginId = createResult.LoginIds.First();
 
-                // Update it
+                // Patch it
                 var patchResult = await _descopeClient.Management.User.Patch(loginId, new UserRequest()
                 {
                     Email = name + "@test.com",
