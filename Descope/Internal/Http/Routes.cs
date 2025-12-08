@@ -77,6 +77,7 @@
         public const string UserLoad = "/v1/mgmt/user";
         public const string UserSearch = "/v2/mgmt/user/search";
         public const string UserUpdate = "/v1/mgmt/user/update";
+        public const string UserPatch = "/v1/mgmt/user/patch";
         public const string UserUpdateStatus = "/v1/mgmt/user/update/status";
         public const string UserUpdateEmail = "/v1/mgmt/user/update/email";
         public const string UserUpdatePhone = "/v1/mgmt/user/update/phone";
