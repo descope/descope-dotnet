@@ -335,7 +335,6 @@ namespace Descope.Internal.Management
             return body;
         }
 
-
         private static List<Dictionary<string, object>> MakeAssociatedTenantList(List<AssociatedTenant> tenants)
         {
             tenants ??= new List<AssociatedTenant>();
