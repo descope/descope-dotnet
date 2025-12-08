@@ -128,6 +128,18 @@ namespace Descope
         Task<UserResponse> Update(string loginId, UserRequest? request = null);
 
         /// <summary>
+        /// Patch (partially update) an existing user.
+        /// <para>
+        /// Similar to <c>Update</c>, but only the provided fields will be updated.
+        /// Other fields will remain unchanged.
+        /// </para>
+        /// </summary>
+        /// <param name="loginId">The login ID of the user to patch</param>
+        /// <param name="request">The information to update</param>
+        /// <returns>The patched user</returns>
+        Task<UserResponse> Patch(string loginId, UserRequest? request = null);
+
+        /// <summary>
         /// Activate an existing user.
         /// </summary>
         /// <param name="loginId">The login ID of the user to activate</param>

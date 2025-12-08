@@ -152,6 +152,44 @@ namespace Descope.Test.Integration
         }
 
         [Fact]
+
+         public async Task User_Patch()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a user
+                var name = Guid.NewGuid().ToString();
+                var createResult = await _descopeClient.Management.User.Create(loginId: name, new UserRequest()
+                {
+                    Email = name + "@test.com",
+                    VerifiedEmail = true,
+                    GivenName = "a",
+                });
+                Assert.Equal("a", createResult.GivenName);
+                loginId = createResult.LoginIds.First();
+
+                // Patch it
+                var patchResult = await _descopeClient.Management.User.Patch(loginId, new UserRequest()
+                {
+                    Email = name + "@test.com",
+                    VerifiedEmail = true,
+                    GivenName = "b",
+                });
+                Assert.Equal("b", patchResult.GivenName);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
         public async Task User_Activate()
         {
             string? loginId = null;

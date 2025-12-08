@@ -39,6 +39,14 @@ namespace Descope.Internal.Management
             return result.User;
         }
 
+        public async Task<UserResponse> Patch(string loginId, UserRequest? request)
+        {
+            request ??= new UserRequest();
+            var body = MakeUpdateUserRequestBody(loginId, request);
+            var result = await _httpClient.Patch<WrappedUserResponse>(Routes.UserPatch, _managementKey, body);
+            return result.User;
+        }
+
         public async Task<UserResponse> Activate(string loginId)
         {
             var result = await updateStatus(loginId, "enabled");
