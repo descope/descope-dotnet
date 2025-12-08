@@ -41,7 +41,7 @@ namespace Descope.Internal.Management
         public async Task<UserResponse> Patch(string loginId, UserRequest? request)
         {
             request ??= new UserRequest();
-            var body = MakePatchUserRequestBody(loginId, request);
+            var body = MakeUpdateUserRequestBody(loginId, request);
             var result = await _httpClient.Patch<WrappedUserResponse>(Routes.UserPatch, _managementKey, body);
             return result.User;
         }
@@ -335,31 +335,6 @@ namespace Descope.Internal.Management
             return body;
         }
 
-        private static Dictionary<string, object> MakePatchUserRequestBody(string loginId, UserRequest request)
-        {
-            var body = new Dictionary<string, object>
-            {
-                {"loginId", loginId}
-            };
-            // Only include fields that are explicitly set (non-null/non-empty)
-            if (!string.IsNullOrEmpty(request.Email)) body["email"] = request.Email;
-            if (!string.IsNullOrEmpty(request.Phone)) body["phone"] = request.Phone;
-            if (!string.IsNullOrEmpty(request.Name)) body["displayName"] = request.Name;
-            if (!string.IsNullOrEmpty(request.GivenName)) body["givenName"] = request.GivenName;
-            if (!string.IsNullOrEmpty(request.MiddleName)) body["middleName"] = request.MiddleName;
-            if (!string.IsNullOrEmpty(request.FamilyName)) body["familyName"] = request.FamilyName;
-            if (request.RoleNames != null && request.RoleNames.Count > 0) body["roleNames"] = request.RoleNames;
-            if (request.UserTenants != null && request.UserTenants.Count > 0) body["userTenants"] = MakeAssociatedTenantList(request.UserTenants);
-            if (request.CustomAttributes != null && request.CustomAttributes.Count > 0) body["customAttributes"] = request.CustomAttributes;
-            if (!string.IsNullOrEmpty(request.Picture)) body["picture"] = request.Picture;
-            if (request.AdditionalLoginIds != null && request.AdditionalLoginIds.Count > 0) body["additionalLoginIds"] = request.AdditionalLoginIds;
-            if (request.SsoAppIds != null && request.SsoAppIds.Count > 0) body["ssoAppIDs"] = request.SsoAppIds;
-            // Only include verified flags if they are explicitly set to true
-            // Note: We can't distinguish between "not set" and "set to false" with bool,
-            // so we'll include them if the request has them, but this might need adjustment
-            // based on actual API behavior
-            return body;
-        }
 
         private static List<Dictionary<string, object>> MakeAssociatedTenantList(List<AssociatedTenant> tenants)
         {
