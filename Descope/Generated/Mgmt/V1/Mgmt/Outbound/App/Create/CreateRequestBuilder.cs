@@ -2,6 +2,7 @@
 #pragma warning disable CS0618
 using Descope.Mgmt.Models.Managementv1;
 using Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bydcrpreset;
+using Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bytemplate;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Abstractions;
@@ -22,6 +23,11 @@ namespace Descope.Mgmt.V1.Mgmt.Outbound.App.Create
         public global::Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bydcrpreset.BydcrpresetRequestBuilder Bydcrpreset
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bydcrpreset.BydcrpresetRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The bytemplate property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bytemplate.BytemplateRequestBuilder Bytemplate
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.Create.Bytemplate.BytemplateRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Mgmt.V1.Mgmt.Outbound.App.Create.CreateRequestBuilder"/> and sets the default values.

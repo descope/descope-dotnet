@@ -22,7 +22,7 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public LoadRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/thirdparty/apps/load", pathParameters)
+        public LoadRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/thirdparty/apps/load{?limit*,page*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,7 +30,7 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public LoadRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/thirdparty/apps/load", rawUrl)
+        public LoadRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/mgmt/thirdparty/apps/load{?limit*,page*}", rawUrl)
         {
         }
         /// <summary>
@@ -41,11 +41,11 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse?> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse?> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse> GetAsync(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             var requestInfo = ToGetRequestInformation(requestConfiguration);
@@ -58,11 +58,11 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>> requestConfiguration = default)
         {
 #endif
             var requestInfo = new RequestInformation(Method.GET, UrlTemplate, PathParameters);
@@ -80,11 +80,22 @@ namespace Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load
             return new global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
+        /// Loads all project third party applications, using a valid management key.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class LoadRequestBuilderGetQueryParameters 
+        {
+            [QueryParameter("limit")]
+            public int? Limit { get; set; }
+            [QueryParameter("page")]
+            public int? Page { get; set; }
+        }
+        /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.
         /// </summary>
         [Obsolete("This class is deprecated. Please use the generic RequestConfiguration class generated by the generator.")]
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-        public partial class LoadRequestBuilderGetRequestConfiguration : RequestConfiguration<DefaultQueryParameters>
+        public partial class LoadRequestBuilderGetRequestConfiguration : RequestConfiguration<global::Descope.Mgmt.V1.Mgmt.Thirdparty.Apps.Load.LoadRequestBuilder.LoadRequestBuilderGetQueryParameters>
         {
         }
     }

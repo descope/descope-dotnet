@@ -90,6 +90,8 @@ namespace Descope.Mgmt.Models.Userv1
 #else
         public global::Descope.Mgmt.Models.Userv1.ResponseUser_OAuth OAuth { get; set; }
 #endif
+        /// <summary>The OIDC property</summary>
+        public bool? OIDC { get; set; }
         /// <summary>The password property</summary>
         public bool? Password { get; set; }
         /// <summary>The permissions property</summary>
@@ -208,6 +210,7 @@ namespace Descope.Mgmt.Models.Userv1
                 { "middleName", n => { MiddleName = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "OAuth", n => { OAuth = n.GetObjectValue<global::Descope.Mgmt.Models.Userv1.ResponseUser_OAuth>(global::Descope.Mgmt.Models.Userv1.ResponseUser_OAuth.CreateFromDiscriminatorValue); } },
+                { "OIDC", n => { OIDC = n.GetBoolValue(); } },
                 { "password", n => { Password = n.GetBoolValue(); } },
                 { "permissions", n => { Permissions = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "phone", n => { Phone = n.GetStringValue(); } },
@@ -245,6 +248,7 @@ namespace Descope.Mgmt.Models.Userv1
             writer.WriteStringValue("middleName", MiddleName);
             writer.WriteStringValue("name", Name);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Userv1.ResponseUser_OAuth>("OAuth", OAuth);
+            writer.WriteBoolValue("OIDC", OIDC);
             writer.WriteBoolValue("password", Password);
             writer.WriteCollectionOfPrimitiveValues<string>("permissions", Permissions);
             writer.WriteStringValue("phone", Phone);

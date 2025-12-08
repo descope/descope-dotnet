@@ -9,69 +9,67 @@ namespace Descope.Mgmt.Models.Managementv1
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class UserAuthHistory : IAdditionalDataHolder, IParsable
+    public partial class UpdateManagementKeyRequest : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The city property</summary>
+        /// <summary>The description property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? City { get; set; }
+        public string? Description { get; set; }
 #nullable restore
 #else
-        public string City { get; set; }
+        public string Description { get; set; }
 #endif
-        /// <summary>The country property</summary>
+        /// <summary>The id property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Country { get; set; }
+        public string? Id { get; set; }
 #nullable restore
 #else
-        public string Country { get; set; }
+        public string Id { get; set; }
 #endif
-        /// <summary>The ip property</summary>
+        /// <summary>The name property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Ip { get; set; }
+        public string? Name { get; set; }
 #nullable restore
 #else
-        public string Ip { get; set; }
+        public string Name { get; set; }
 #endif
-        /// <summary>The loginTime property</summary>
-        public int? LoginTime { get; set; }
-        /// <summary>The selectedTenant property</summary>
+        /// <summary>The permittedIps property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? SelectedTenant { get; set; }
+        public List<string>? PermittedIps { get; set; }
 #nullable restore
 #else
-        public string SelectedTenant { get; set; }
+        public List<string> PermittedIps { get; set; }
 #endif
-        /// <summary>The userId property</summary>
+        /// <summary>The status property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? UserId { get; set; }
+        public string? Status { get; set; }
 #nullable restore
 #else
-        public string UserId { get; set; }
+        public string Status { get; set; }
 #endif
         /// <summary>
-        /// Instantiates a new <see cref="global::Descope.Mgmt.Models.Managementv1.UserAuthHistory"/> and sets the default values.
+        /// Instantiates a new <see cref="global::Descope.Mgmt.Models.Managementv1.UpdateManagementKeyRequest"/> and sets the default values.
         /// </summary>
-        public UserAuthHistory()
+        public UpdateManagementKeyRequest()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::Descope.Mgmt.Models.Managementv1.UserAuthHistory"/></returns>
+        /// <returns>A <see cref="global::Descope.Mgmt.Models.Managementv1.UpdateManagementKeyRequest"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::Descope.Mgmt.Models.Managementv1.UserAuthHistory CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::Descope.Mgmt.Models.Managementv1.UpdateManagementKeyRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
-            return new global::Descope.Mgmt.Models.Managementv1.UserAuthHistory();
+            return new global::Descope.Mgmt.Models.Managementv1.UpdateManagementKeyRequest();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -81,12 +79,11 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "city", n => { City = n.GetStringValue(); } },
-                { "country", n => { Country = n.GetStringValue(); } },
-                { "ip", n => { Ip = n.GetStringValue(); } },
-                { "loginTime", n => { LoginTime = n.GetIntValue(); } },
-                { "selectedTenant", n => { SelectedTenant = n.GetStringValue(); } },
-                { "userId", n => { UserId = n.GetStringValue(); } },
+                { "description", n => { Description = n.GetStringValue(); } },
+                { "id", n => { Id = n.GetStringValue(); } },
+                { "name", n => { Name = n.GetStringValue(); } },
+                { "permittedIps", n => { PermittedIps = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "status", n => { Status = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -96,12 +93,11 @@ namespace Descope.Mgmt.Models.Managementv1
         public virtual void Serialize(ISerializationWriter writer)
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
-            writer.WriteStringValue("city", City);
-            writer.WriteStringValue("country", Country);
-            writer.WriteStringValue("ip", Ip);
-            writer.WriteIntValue("loginTime", LoginTime);
-            writer.WriteStringValue("selectedTenant", SelectedTenant);
-            writer.WriteStringValue("userId", UserId);
+            writer.WriteStringValue("description", Description);
+            writer.WriteStringValue("id", Id);
+            writer.WriteStringValue("name", Name);
+            writer.WriteCollectionOfPrimitiveValues<string>("permittedIps", PermittedIps);
+            writer.WriteStringValue("status", Status);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

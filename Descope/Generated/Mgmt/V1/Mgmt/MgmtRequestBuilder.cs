@@ -14,6 +14,7 @@ using Descope.Mgmt.V1.Mgmt.Inboundapp;
 using Descope.Mgmt.V1.Mgmt.Infra;
 using Descope.Mgmt.V1.Mgmt.Jwt;
 using Descope.Mgmt.V1.Mgmt.Localization;
+using Descope.Mgmt.V1.Mgmt.Managementkey;
 using Descope.Mgmt.V1.Mgmt.Mcp;
 using Descope.Mgmt.V1.Mgmt.Outbound;
 using Descope.Mgmt.V1.Mgmt.Password;
@@ -29,6 +30,7 @@ using Descope.Mgmt.V1.Mgmt.Theme;
 using Descope.Mgmt.V1.Mgmt.Thirdparty;
 using Descope.Mgmt.V1.Mgmt.Token;
 using Descope.Mgmt.V1.Mgmt.User;
+using Descope.Mgmt.V1.Mgmt.Users;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
 using System.Collections.Generic;
@@ -113,6 +115,11 @@ namespace Descope.Mgmt.V1.Mgmt
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Localization.LocalizationRequestBuilder(PathParameters, RequestAdapter);
         }
+        /// <summary>The managementkey property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.Managementkey.ManagementkeyRequestBuilder Managementkey
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.Managementkey.ManagementkeyRequestBuilder(PathParameters, RequestAdapter);
+        }
         /// <summary>The mcp property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Mcp.McpRequestBuilder Mcp
         {
@@ -187,6 +194,11 @@ namespace Descope.Mgmt.V1.Mgmt
         public global::Descope.Mgmt.V1.Mgmt.User.UserRequestBuilder User
         {
             get => new global::Descope.Mgmt.V1.Mgmt.User.UserRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The users property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.Users.UsersRequestBuilder Users
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.Users.UsersRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Mgmt.V1.Mgmt.MgmtRequestBuilder"/> and sets the default values.
