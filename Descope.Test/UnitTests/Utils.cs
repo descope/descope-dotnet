@@ -42,6 +42,13 @@ namespace Descope.Test.Unit
         public Func<string, string?, object?, Dictionary<string, string?>?, object?>? PostAssert { get; set; }
         public object? PostResponse { get; set; }
 
+        // Patch
+        public bool PatchFailure { get; set; }
+        public Exception? PatchError { get; set; }
+        public int PatchCount { get; set; }
+        public Func<string, string?, object?, Dictionary<string, string?>?, object?>? PatchAssert { get; set; }
+        public object? PatchResponse { get; set; }
+
         // IHttpClient Properties
         public DescopeConfig DescopeConfig { get; set; }
 
@@ -80,6 +87,15 @@ namespace Descope.Test.Unit
             if (PostError != null) throw PostError;
             if (PostFailure) throw new Exception();
             return Utils.Convert<TResponse>(PostResponse);
+        }
+
+        public async Task<TResponse> Patch<TResponse>(string resource, string? pswd = null, object? body = null, Dictionary<string, string?>? queryParams = null)
+        {
+            PatchCount++;
+            PatchAssert?.Invoke(resource, pswd, body, queryParams);
+            if (PatchError != null) throw PatchError;
+            if (PatchFailure) throw new Exception();
+            return Utils.Convert<TResponse>(PatchResponse);
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
