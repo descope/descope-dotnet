@@ -170,6 +170,51 @@ namespace Descope
     }
 
     /// <summary>
+    /// Authenticate a user using Magic Link.
+    /// </summary>
+    public interface IMagicLink
+    {
+        /// <summary>
+        /// Authenticates an existing user using a magic link sent via email or SMS/WhatsApp.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="loginOptions">Optional login options</param>
+        /// <param name="refreshJwt">Optional refresh JWT for stepup or MFA</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignIn(DeliveryMethod deliveryMethod, string loginId, string? uri = null, LoginOptions? loginOptions = null, string? refreshJwt = null);
+
+        /// <summary>
+        /// Creates a new user and sends a magic link for authentication via email or SMS/WhatsApp.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="signUpDetails">Optional user details for signup</param>
+        /// <param name="signUpOptions">Optional signup options</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignUp(DeliveryMethod deliveryMethod, string loginId, string? uri = null, SignUpDetails? signUpDetails = null, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
+        /// Authenticates a user using a magic link, signing them up if they don't exist.
+        /// </summary>
+        /// <param name="deliveryMethod">The delivery method (Email, SMS, or WhatsApp)</param>
+        /// <param name="loginId">The user's login ID (email or phone number)</param>
+        /// <param name="uri">Optional URL to redirect to after clicking the magic link</param>
+        /// <param name="signUpOptions">Optional signup options</param>
+        /// <returns>The masked address where the magic link was sent</returns>
+        Task<string> SignUpOrIn(DeliveryMethod deliveryMethod, string loginId, string? uri = null, SignUpOptions? signUpOptions = null);
+
+        /// <summary>
+        /// Verify a magic link token on the server and return the resulting auth/session info.
+        /// </summary>
+        /// <param name="token">The magic link token to verify</param>
+        /// <returns>Authentication response with session information</returns>
+        Task<AuthenticationResponse> Verify(string token);
+    }
+
+    /// <summary>
     /// Authenticate a user using a SSO.
     /// <para>
     /// Use the Descope console to configure your SSO details in order for this method to work properly.
@@ -219,6 +264,11 @@ namespace Descope
         /// Authenticate a user using an enchanted link.
         /// </summary>
         public IEnchantedLink EnchantedLink { get; }
+
+        /// <summary>
+        /// Authenticate a user using magic link.
+        /// </summary>
+        public IMagicLink MagicLink { get; }
 
         /// <summary>
         /// Authenticate a user using SSO.
@@ -326,5 +376,30 @@ namespace Descope
         /// <param name="refreshJwt">A valid refresh JWT</param>
         /// <returns>The current session user details</returns>
         Task<UserResponse> Me(string refreshJwt);
+
+        /// <summary>
+        /// Send a password reset email to a user.
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="redirectUrl">Optional redirect URL after password reset</param>
+        /// <param name="templateOptions">Optional email template options</param>
+        Task SendPasswordReset(string loginId, string? redirectUrl = null, Dictionary<string, string>? templateOptions = null);
+
+        /// <summary>
+        /// Replace a user's password (old → new).
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="oldPassword">The user's current password</param>
+        /// <param name="newPassword">The new password to set</param>
+        /// <returns>Authentication response with new session</returns>
+        Task<AuthenticationResponse> ReplaceUserPassword(string loginId, string oldPassword, string newPassword);
+
+        /// <summary>
+        /// Update an authenticated user's password without the old password.
+        /// </summary>
+        /// <param name="loginId">The login ID of the user</param>
+        /// <param name="newPassword">The new password to set</param>
+        /// <param name="refreshJwt">Valid user refresh JWT</param>
+        Task UpdateUserPassword(string loginId, string newPassword, string refreshJwt);
     }
 }

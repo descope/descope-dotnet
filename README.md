@@ -27,6 +27,9 @@ These sections show how to use the SDK to perform various authentication/authori
 1. [OTP](#otp-authentication)
 2. [OAuth](#oauth)
 3. [SSO](#sso-saml--oidc)
+4. [Enchanted Link](#enchanted-link-authentication)
+5. [Password Authentication](#password-authentication)
+6. [Magic Link](#magic-link-authentication)
 
 ## Management Functions
 
@@ -81,7 +84,7 @@ try
 }
 catch
 {
-    // handle error
+    // handle errors
 }
 ```
 
@@ -177,6 +180,185 @@ catch
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### Enchanted Link Authentication
+
+Send a user an enchanted link using email. An email address must be provided accordingly.
+
+The user can either `sign up`, `sign in` or `sign up or in`
+
+```cs
+var loginId = "email@company.com"; // email becomes the loginId for the user from here on and also used for delivery
+var uri = "http://auth.company.com/api/verify_enchantedlink";
+var signUpDetails = new SignUpDetails {
+    Name = "Joe Person",
+    Phone = "+15555555555",
+    Email = "email@company.com"
+};
+
+var signUpOptions = new SignUpOptions {
+    CustomClaims = new Dictionary<string, object> { { "claim", "Value1" } },
+    TemplateOptions = new Dictionary<string, string> { { "option", "Value1" } }
+};
+
+try {
+    var resp = await descopeClient.Authentication.EnchantedLink.SignUp(loginId, uri, signUpDetails, signUpOptions);
+} catch (DescopeException ex) {
+    // handle errors 
+}
+```
+When the user clicks the enchanted link, you will need to verify the token:
+```cs
+// Args:
+//   token:  URL parameter containing the enchanted link token, for example, https://auth.company.com/api/verify_enchantedlink?t=token.
+var token = "xxxx";
+
+try {
+    await descopeClient.Authentication.EnchantedLink.Verify(token);
+} catch (DescopeException ex) {
+    // handle errors 
+}
+```
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### Password Authentication
+
+You can authenticate users using passwords along with password reset functionality.
+
+#### Send Password Reset Email
+
+Send a password reset email to a user:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var redirectUrl = "https://myapp.com/password-reset"; // Optional
+    var templateOptions = new Dictionary<string, string> 
+    { 
+        { "company", "ACME Corp" } 
+    }; // Optional
+    
+    await descopeClient.Auth.SendPasswordReset(loginId, redirectUrl, templateOptions);
+    // Email sent successfully
+}
+catch (DescopeException e)
+{
+    // Handle error
+}
+```
+
+#### Replace User Password (Authenticated)
+
+Allow an authenticated user to replace their own password:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var oldPassword = "currentPassword123";
+    var newPassword = "newSecurePassword456";
+    
+    var authResponse = await descopeClient.Auth.ReplaceUserPassword(loginId, oldPassword, newPassword);
+    // User authenticated with new password
+    var sessionJwt = authResponse.SessionJwt;
+    var refreshJwt = authResponse.RefreshJwt;
+}
+catch (DescopeException e)
+{
+    // Handle error - invalid old password, etc.
+}
+```
+
+#### Admin Password Update
+
+Allow an admin to update a user's password without requiring the old password:
+
+```cs
+try
+{
+    var loginId = "user@example.com";
+    var newPassword = "adminSetPassword789";
+    var adminRefreshJwt = "admin_refresh_jwt_here"; // Must have admin privileges
+    
+    await descopeClient.Auth.UpdateUserPassword(loginId, newPassword, adminRefreshJwt);
+    // Password updated successfully
+}
+catch (DescopeException e)
+{
+    // Handle error - insufficient permissions, invalid JWT, etc.
+}
+```
+
+### Magic Link Authentication
+Send a user a magic link using any supported delivery method (`Email`, `Sms`, `Whatsapp`). Provide an email address for `Email` or a phone number for `Sms` / `Whatsapp`.
+
+The user can either `sign up`, `sign in` or `sign up or in`.
+
+```cs
+// SIGN UP (create a new user and send a magic link)
+var loginId = "user@example.com"; // For email delivery, the email is also used as loginId
+var redirectUrl = "https://my-app.com/handle-magic-link"; // Where the user will be redirected with ?t=<token>
+var signUpDetails = new SignUpDetails {
+    Name = "Jane Example",
+    Email = loginId,
+};
+var signUpOptions = new SignUpOptions {
+    CustomClaims = new Dictionary<string, object> { { "claim", "Value1" } },
+    TemplateOptions = new Dictionary<string, string> { { "option", "Value1" } }
+};
+try {
+    // Returns a masked destination (e.g. t***@example.com)
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignUp(DeliveryMethod.Email, loginId, redirectUrl, signUpDetails, signUpOptions);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// SIGN IN (existing user)
+try {
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignIn(DeliveryMethod.Email, loginId, redirectUrl);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// SIGN UP OR IN (create if needed, otherwise sign in) via SMS
+var phoneLoginId = "+15555555555"; // phone number for SMS
+try {
+    var maskedPhone = await descopeClient.Auth.MagicLink.SignUpOrIn(DeliveryMethod.Sms, phoneLoginId, redirectUrl);
+} catch (DescopeException e) {
+    // handle errors
+}
+
+// You can optionally pass LoginOptions on SignIn (e.g. for step-up / custom claims)
+var loginOptions = new LoginOptions {
+    CustomClaims = new Dictionary<string, object> { { "tier", "gold" } }
+};
+try {
+    var maskedEmail = await descopeClient.Auth.MagicLink.SignIn(DeliveryMethod.Email, loginId, redirectUrl, loginOptions: loginOptions);
+} catch (DescopeException e) {
+    // handle errors
+}
+```
+
+When the user clicks the magic link, they'll be redirected to the `redirectUrl` with a `t` query parameter containing the magic link token (e.g. `https://my-app.com/handle-magic-link?t=<token>`). Verify that token on the server side:
+
+#### Verify Magic Link Token
+
+```cs
+try
+{
+    var token = "magic_link_token_from_url_parameter";
+    var authResponse = await descopeClient.Auth.MagicLink.Verify(token);
+    // User authenticated via magic link
+    var sessionJwt = authResponse.SessionJwt;
+    var refreshJwt = authResponse.RefreshJwt;
+    var user = authResponse.User;
+}
+catch (DescopeException e)
+{
+    // Handle error - invalid or expired token
+}
+```
 
 ### Session Validation
 
@@ -410,11 +592,13 @@ try
         {
             Email = "user1@something.com",
             VerifiedEmail = true,
+            Status = UserStatus.Enabled, // Set user status: Enabled, Disabled, or Invited
         },
         new(loginId: "user2@something.com")
         {
             Email = "user2@something.com",
             VerifiedEmail = false,
+            Status = UserStatus.Invited, // Optional: if not set, defaults to project settings
         }
     };
     var result = await descopeClient.Management.User.CreateBatch(batchUsers);
@@ -422,6 +606,7 @@ try
     // Import users from another service by calling CreateBatch with each user's password hash
     var user = new BatchUser("desmond@descope.com")
     {
+        Status = UserStatus.Enabled, // Set the user status
         Password = new BatchUserPassword
         {
             Hashed = new BatchUserPasswordHashed

@@ -10,11 +10,13 @@ namespace Descope.Internal.Auth
         public IOtp Otp { get => _otp; }
         public IOAuth OAuth { get => _oauth; }
         public IEnchantedLink EnchantedLink { get => _enchantedLink; }
+        public IMagicLink MagicLink { get => _magicLink; }
         public ISsoAuth Sso { get => _sso; }
 
         private readonly Otp _otp;
         private readonly OAuth _oauth;
         private readonly EnchantedLink _enchantedLink;
+        private readonly MagicLink _magicLink;
         private readonly Sso _sso;
 
         private readonly IHttpClient _httpClient;
@@ -30,6 +32,7 @@ namespace Descope.Internal.Auth
             _otp = new Otp(httpClient);
             _oauth = new OAuth(httpClient);
             _enchantedLink = new EnchantedLink(httpClient);
+            _magicLink = new MagicLink(httpClient);
             _sso = new Sso(httpClient);
         }
 
@@ -127,6 +130,32 @@ namespace Descope.Internal.Auth
             return await _httpClient.Get<UserResponse>(Routes.AuthMe, refreshJwt);
         }
 
+        public async Task SendPasswordReset(string loginId, string? redirectUrl = null, Dictionary<string, string>? templateOptions = null)
+        {
+            if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
+            var body = new { loginId, redirectUrl, templateOptions };
+            await _httpClient.Post<object>(Routes.PasswordReset, null, body);
+        }
+
+        public async Task<AuthenticationResponse> ReplaceUserPassword(string loginId, string oldPassword, string newPassword)
+        {
+            if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
+            if (string.IsNullOrEmpty(oldPassword)) throw new DescopeException("oldPassword missing");
+            if (string.IsNullOrEmpty(newPassword)) throw new DescopeException("newPassword missing");
+            var body = new { loginId, oldPassword, newPassword };
+            return await _httpClient.Post<AuthenticationResponse>(Routes.PasswordReplace, null, body);
+        }
+
+        public async Task UpdateUserPassword(string loginId, string newPassword, string refreshJwt)
+        {
+            if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
+            if (string.IsNullOrEmpty(newPassword)) throw new DescopeException("newPassword missing");
+            if (string.IsNullOrEmpty(refreshJwt)) throw new DescopeException("refreshJwt missing");
+            _ = await ValidateToken(refreshJwt) ?? throw new DescopeException("invalid refreshJwt");
+            var body = new { loginId, newPassword };
+            await _httpClient.Post<object>(Routes.PasswordUpdate, refreshJwt, body);
+        }
+
         #region Internal
 
         private async Task<Token?> ValidateToken(string jwt)
@@ -153,7 +182,7 @@ namespace Descope.Internal.Auth
 
         private async Task FetchKeyIfNeeded()
         {
-            if (!_securityKeys.IsNullOrEmpty()) return;
+            if (_securityKeys != null && _securityKeys.Count > 0) return;
 
             var response = await _httpClient.Get<JwtKeyResponse>(Routes.AuthKeys + $"{_httpClient.DescopeConfig.ProjectId}");
             foreach (var key in response.Keys)
