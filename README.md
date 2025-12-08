@@ -32,16 +32,34 @@ These sections show how to use the SDK to perform various authentication/authori
 
 These sections show how to use the SDK to perform API management functions. Before using any of them, you will need to create a Management Key. The instructions for this can be found under [Setup](#setup-1).
 
-1. [Manage Tenants](#manage-tenants)
-2. [Manage Users](#manage-users)
-3. [Manage Access Keys](#manage-access-keys)
-4. [Manage SSO Settings](#manage-sso-setting)
-5. [Manage SSO Applications](#manage-sso-applications)
-6. [Manage Password Settings](#manage-password-settings)
-7. [Manage and Manipulate JWTs](#manage-and-manipulate-jwts)
-8. [Manage Permissions](#manage-permissions)
-9. [Manage Roles](#manage-roles)
-10. [Manage Project](#manage-project)
+- [Descope SDK for .NET](#descope-sdk-for-net)
+  - [Requirements](#requirements)
+  - [Setup](#setup)
+  - [Authentication Functions](#authentication-functions)
+  - [Management Functions](#management-functions)
+    - [OTP Authentication](#otp-authentication)
+    - [OAuth](#oauth)
+    - [SSO (SAML / OIDC)](#sso-saml--oidc)
+    - [Session Validation](#session-validation)
+    - [Roles \& Permission Validation](#roles--permission-validation)
+    - [Tenant selection](#tenant-selection)
+    - [Logging Out](#logging-out)
+  - [Management Functions](#management-functions-1)
+    - [Setup](#setup-1)
+    - [Manage Tenants](#manage-tenants)
+    - [Manage Users](#manage-users)
+      - [Set or Expire User Password](#set-or-expire-user-password)
+    - [Manage Access Keys](#manage-access-keys)
+    - [Manage SSO Setting](#manage-sso-setting)
+    - [Manage SSO Applications](#manage-sso-applications)
+    - [Manage Password Settings](#manage-password-settings)
+    - [Manage and Manipulate JWTs](#manage-and-manipulate-jwts)
+    - [Manage Permissions](#manage-permissions)
+    - [Manage Roles](#manage-roles)
+    - [Manage Project](#manage-project)
+  - [Learn More](#learn-more)
+  - [Contact Us](#contact-us)
+  - [License](#license)
 
 ---
 
@@ -444,6 +462,15 @@ try
             new(tenantId:"tenant-ID2"),
         },
         SsoAppIds = new List<string> { "appId3" },
+    });
+
+    // Patch will modify certain fields on the user but will not override all fields, keeps existing fields the same.
+    await descopeClient.Management.User.Patch(loginId: "desmond@descope.com", new UserRequest()
+    {
+        Email = "desmond@descope.com",
+        Name = "Desmond Copeland",
+        GivenName = "Desmond",
+        FamilyName = "Copeland",
     });
 
     // Update loginId of a user, or remove a login ID (last login ID cannot be removed)
