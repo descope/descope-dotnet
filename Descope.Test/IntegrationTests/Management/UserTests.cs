@@ -40,23 +40,39 @@ namespace Descope.Test.Integration
                 // Prepare batch info
                 var user1 = Guid.NewGuid().ToString();
                 var user2 = Guid.NewGuid().ToString();
+                var user3 = Guid.NewGuid().ToString();
+                var user4 = Guid.NewGuid().ToString();
                 var batchUsers = new List<BatchUser>()
                 {
                     new(loginId: user1)
                     {
                         Email = user1 + "@test.com",
                         VerifiedEmail = true,
+                        Status = UserStatus.Enabled,
                     },
                     new(loginId: user2)
                     {
                         Email = user2 + "@test.com",
                         VerifiedEmail = false,
+                        Status = UserStatus.Disabled,
+                    },
+                    new(loginId: user3)
+                    {
+                        Email = user3 + "@test.com",
+                        VerifiedEmail = true,
+                        Status = UserStatus.Invited,
+                    },
+                    new(loginId: user4)
+                    {
+                        Email = user4 + "@test.com",
+                        VerifiedEmail = true,
+                        // No Status set - testing backwards compatibility
                     }
                 };
 
                 // Create batch and check
                 var result = await _descopeClient.Management.User.CreateBatch(batchUsers);
-                Assert.True(result.CreatedUsers.Count == 2);
+                Assert.True(result.CreatedUsers.Count == 4);
                 loginIds = new List<string>();
                 foreach (var createdUser in result.CreatedUsers)
                 {
@@ -65,10 +81,22 @@ namespace Descope.Test.Integration
                     if (loginId == user1)
                     {
                         Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("enabled", createdUser.Status);
                     }
                     else if (loginId == user2)
                     {
                         Assert.False(createdUser.VerifiedEmail);
+                        Assert.Equal("disabled", createdUser.Status);
+                    }
+                    else if (loginId == user3)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        Assert.Equal("invited", createdUser.Status);
+                    }
+                    else if (loginId == user4)
+                    {
+                        Assert.True(createdUser.VerifiedEmail);
+                        // User4 has no Status set - should get default behavior, no need to assert on it
                     }
                 }
             }
@@ -599,18 +627,56 @@ namespace Descope.Test.Integration
         public async Task User_DeleteAndSearch()
         {
             string? loginId = null;
+            string? tenantId = null;
+            string? roleName = null;
             try
             {
+                // Create a tenant and role
+                tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions(Guid.NewGuid().ToString()));
+                roleName = "Tenant Admin";
+                await _descopeClient.Management.Role.Create(roleName, tenantId: tenantId);
+
                 // Create a user
                 var name = Guid.NewGuid().ToString();
                 var createResult = await _descopeClient.Management.User.Create(loginId: name, new UserRequest()
                 {
                     Phone = "+972111111111",
                     VerifiedPhone = true,
+                    UserTenants = new List<AssociatedTenant> {
+                        new(tenantId) { RoleNames = new List<string> { roleName } }
+                    },
                 });
                 loginId = createResult.LoginIds.First();
 
-                // Search for it
+                // Check serialization of TenantRoleNames
+                var searchOptions = new SearchUserOptions()
+                {
+                    TenantRoleNames = new Dictionary<string, List<string>>
+                    {
+                        { tenantId, new List<string> { roleName } }
+                    },
+                    Limit = 1
+                };
+
+                var transformed = Internal.Management.User.MapToValuesObject(searchOptions.TenantRoleNames);
+                Assert.True(transformed.ContainsKey(tenantId));
+                var valuesObj = transformed[tenantId] as Dictionary<string, object>;
+                Assert.NotNull(valuesObj);
+                Assert.True(valuesObj.ContainsKey("values"));
+                Assert.Equal(new List<string> { roleName }, valuesObj["values"] as List<string>);
+
+                // Search for the user by TenantRoleNames
+                var usersByRoleAndTenant = await _descopeClient.Management.User.SearchAll(new SearchUserOptions()
+                {
+                    TenantRoleNames = new Dictionary<string, List<string>>
+                    {
+                        { tenantId, new List<string> { roleName } }
+                    },
+                    Limit = 1
+                });
+                Assert.Contains(usersByRoleAndTenant, u => u.LoginIds.Contains(loginId));
+
+                // Search for user by name
                 var users = await _descopeClient.Management.User.SearchAll(new SearchUserOptions() { Text = name, Limit = 1 });
                 Assert.Single(users);
                 await _descopeClient.Management.User.Delete(loginId);
@@ -669,6 +735,22 @@ namespace Descope.Test.Integration
                     catch { }
                 }
             }
+        }
+
+
+        [Fact]
+        public async Task User_GenerateEmbeddedLink_WithNonExistingUser_ShouldFail()
+        {
+            // Use a non-existing login ID
+            var nonExistingLoginId = Guid.NewGuid().ToString() + "@nonexisting.com";
+
+            // Try to generate embedded link for non-existing user
+            async Task Act() => await _descopeClient.Management.User.GenerateEmbeddedLink(nonExistingLoginId);
+
+            // Should throw an exception for non-existing user
+            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
+            Assert.NotNull(exception);
+            Assert.NotEmpty(exception.Message);
         }
 
     }

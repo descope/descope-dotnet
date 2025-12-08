@@ -37,6 +37,7 @@ namespace Descope.Internal
             _client.AddDefaultHeader("x-descope-sdk-name", SdkInfo.Name);
             _client.AddDefaultHeader("x-descope-sdk-version", SdkInfo.Version);
             _client.AddDefaultHeader("x-descope-sdk-dotnet-version", SdkInfo.DotNetVersion);
+            _client.AddDefaultHeader("x-descope-project-id", descopeConfig.ProjectId);
         }
 
         public async Task<TResponse> Get<TResponse>(string resource, string? pswd = null, Dictionary<string, string?>? queryParams = null)

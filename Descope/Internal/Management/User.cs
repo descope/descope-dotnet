@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Descope.Internal.Management
 {
@@ -231,7 +232,20 @@ namespace Descope.Internal.Management
         public async Task<List<UserResponse>> SearchAll(SearchUserOptions? options)
         {
             options ??= new SearchUserOptions();
-            var result = await _httpClient.Post<WrappedUsersResponse>(Routes.UserSearch, _managementKey, options);
+
+            var json = JsonSerializer.Serialize(options);
+            var body = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new Dictionary<string, object>();
+
+            if (options.TenantRoleIds != null && options.TenantRoleIds.Count > 0)
+            {
+                body["tenantRoleIds"] = MapToValuesObject(options.TenantRoleIds);
+            }
+            if (options.TenantRoleNames != null && options.TenantRoleNames.Count > 0)
+            {
+                body["tenantRoleNames"] = MapToValuesObject(options.TenantRoleNames);
+            }
+
+            var result = await _httpClient.Post<WrappedUsersResponse>(Routes.UserSearch, _managementKey, body);
             return result.Users;
         }
 
@@ -256,11 +270,23 @@ namespace Descope.Internal.Management
             return await _httpClient.Post<UserTestEnchantedLinkResponse>(Routes.UserTestsGenerateEnchantedLink, _managementKey, request);
         }
 
-        public async Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims)
+        public async Task<string> GenerateEmbeddedLink(string loginId, Dictionary<string, object>? customClaims, int? timeout)
         {
             if (string.IsNullOrEmpty(loginId)) throw new DescopeException("loginId missing");
             customClaims ??= new Dictionary<string, object>();
-            var body = new { loginId, customClaims };
+
+            var body = new Dictionary<string, object>
+            {
+                { "loginId", loginId },
+                { "customClaims", customClaims }
+            };
+
+            // Only add timeout field if it's not null and greater than 0
+            if (timeout.HasValue && timeout.Value > 0)
+            {
+                body["timeout"] = timeout.Value;
+            }
+
             var result = await _httpClient.Post<GenerateEmbeddedLinkResponse>(Routes.UserTestsGenerateEmbeddedLink, _managementKey, body);
             return result.Token;
         }
@@ -297,6 +323,10 @@ namespace Descope.Internal.Management
                 if (user.Password?.Hashed != null)
                 {
                     dict["hashedPassword"] = user.Password.Hashed;
+                }
+                if (user.Status.HasValue)
+                {
+                    dict["status"] = user.Status.Value.ToStringValue();
                 }
                 userList.Add(dict);
             }
@@ -343,8 +373,21 @@ namespace Descope.Internal.Management
                 var dict = new Dictionary<string, object> { { "tenantId", tenant.TenantId } };
                 if (tenant.RoleNames != null) dict["roleNames"] = tenant.RoleNames;
                 list.Add(dict);
-            };
+            }
             return list;
+        }
+
+        internal static Dictionary<string, object> MapToValuesObject(Dictionary<string, List<string>> inputMap)
+        {
+            var result = new Dictionary<string, object>();
+            if (inputMap != null)
+            {
+                foreach (var kvp in inputMap)
+                {
+                    result[kvp.Key] = new Dictionary<string, object> { { "values", kvp.Value } };
+                }
+            }
+            return result;
         }
 
         #endregion Internal
@@ -375,11 +418,6 @@ namespace Descope.Internal.Management
     internal class GenerateEmbeddedLinkResponse
     {
         [JsonPropertyName("token")]
-        internal string Token { get; set; }
-
-        internal GenerateEmbeddedLinkResponse(string token)
-        {
-            Token = token;
-        }
+        public string Token { get; set; } = string.Empty;
     }
 }
