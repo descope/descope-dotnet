@@ -46,7 +46,6 @@ namespace Descope.Internal.Management
             return result.User;
         }
 
-
         public async Task<UserResponse> Activate(string loginId)
         {
             var result = await updateStatus(loginId, "enabled");
