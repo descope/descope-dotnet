@@ -631,6 +631,16 @@ try
         SsoAppIds = new List<string> { "appId3" },
     });
 
+    // Patch will modify certain fields on the user but will not override all fields, keeps existing fields the same.
+    await descopeClient.Management.User.Patch(loginId: "desmond@descope.com", new UserRequest()
+    {
+        Email = "desmond@descope.com",
+        Name = "Desmond Copeland",
+        GivenName = "Desmond",
+        FamilyName = "Copeland",
+    });
+
+
     // Update loginId of a user, or remove a login ID (last login ID cannot be removed)
     await descopeClient.Management.User.UpdateLoginIs("desmond@descope.com", "bane@descope.com");
 
