@@ -8,7 +8,8 @@ namespace Descope.Test.Integration
     internal class IntegrationTestSetup
     {
         internal static string? ProjectId { get; private set; }
-        internal static IDescopeClient InitDescopeClient()
+
+        internal static DescopeClientOptions GetDescopeClientOptions()
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
             var configuration = new ConfigurationBuilder()
@@ -22,7 +23,7 @@ namespace Descope.Test.Integration
             var baseUrl = configuration["AppSettings:BaseURL"];
             var isUnsafe = bool.Parse(configuration["AppSettings:Unsafe"] ?? "false");
 
-            var options = new DescopeClientOptions
+            return new DescopeClientOptions
             {
                 ProjectId = ProjectId,
                 ManagementKey = managementKey,
@@ -30,7 +31,11 @@ namespace Descope.Test.Integration
                 BaseUrl = baseUrl ?? "https://api.descope.com",
                 IsUnsafe = isUnsafe,
             };
+        }
 
+        internal static IDescopeClient InitDescopeClient()
+        {
+            var options = GetDescopeClientOptions();
             return DescopeManagementClientFactory.Create(options);
         }
 
