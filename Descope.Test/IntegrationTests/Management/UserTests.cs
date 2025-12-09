@@ -266,6 +266,130 @@ namespace Descope.Test.Integration
         }
 
         [Fact]
+        public async Task User_Patch()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a user with initial values
+                var uniqueName = Guid.NewGuid().ToString();
+                var initialEmail = uniqueName + "@test.com";
+                var initialPhone = "+972555555555";
+                var customAttributes = new CreateUserRequest_customAttributes();
+                customAttributes.AdditionalData = new Dictionary<string, object>();
+
+                var createRequest = new CreateUserRequest
+                {
+                    Identifier = uniqueName,
+                    Email = initialEmail,
+                    VerifiedEmail = true,
+                    Phone = initialPhone,
+                    VerifiedPhone = false,
+                    Name = "Initial Display Name",
+                    GivenName = "Initial Given",
+                    MiddleName = "Initial Middle",
+                    FamilyName = "Initial Family",
+                    Picture = "https://example.com/initial.jpg",
+                    CustomAttributes = customAttributes,
+                    RoleNames = new List<string> { "Tenant Admin" },
+                    SsoAppIds = new List<string> { "descope-default-oidc" }
+                };
+
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
+                Assert.NotNull(loginId);
+
+                // Verify initial values
+                Assert.Equal("Initial Given", createResult?.User?.GivenName);
+                Assert.Equal("Initial Middle", createResult?.User?.MiddleName);
+                Assert.Equal("Initial Family", createResult?.User?.FamilyName);
+                Assert.Equal("Initial Display Name", createResult?.User?.Name);
+                Assert.Equal("https://example.com/initial.jpg", createResult?.User?.Picture);
+                Assert.True(createResult?.User?.VerifiedEmail);
+                Assert.False(createResult?.User?.VerifiedPhone);
+
+                // Patch user with partial update (only update some fields)
+                var updatedEmail = uniqueName + "_updated@test.com";
+                var patchCustomAttributes = new PatchUserRequest_customAttributes();
+                patchCustomAttributes.AdditionalData = new Dictionary<string, object>();
+
+                var patchRequest = new PatchUserRequest
+                {
+                    Identifier = loginId,
+                    Email = updatedEmail,
+                    VerifiedEmail = true, // Keep verified to maintain valid user state
+                    GivenName = "Patched Given",
+                    Picture = "https://example.com/patched.jpg",
+                    CustomAttributes = patchCustomAttributes
+                };
+
+                var patchResult = await _descopeClient.Mgmt.V1.User.PatchPath.PatchAsync(patchRequest);
+
+                // Verify patch response - updated fields
+                Assert.NotNull(patchResult?.User);
+                Assert.Equal("Patched Given", patchResult.User.GivenName);
+                Assert.Equal("https://example.com/patched.jpg", patchResult.User.Picture);
+                Assert.Equal(updatedEmail, patchResult.User.Email);
+                Assert.True(patchResult.User.VerifiedEmail);
+
+                // Verify patch response - unchanged fields should remain
+                Assert.Equal("Initial Middle", patchResult.User.MiddleName);
+                Assert.Equal("Initial Family", patchResult.User.FamilyName);
+                Assert.Equal(initialPhone, patchResult.User.Phone);
+                Assert.False(patchResult.User.VerifiedPhone);
+
+                // Reload the user and verify all changes persisted
+                var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
+
+                Assert.NotNull(loadResult);
+                Assert.NotNull(loadResult.User);
+
+                var user = loadResult.User;
+
+                // Verify patched fields
+                Assert.Equal("Patched Given", user.GivenName);
+                Assert.Equal("https://example.com/patched.jpg", user.Picture);
+                Assert.Equal(updatedEmail, user.Email);
+                Assert.True(user.VerifiedEmail);
+
+                // Verify unchanged fields
+                Assert.Equal("Initial Middle", user.MiddleName);
+                Assert.Equal("Initial Family", user.FamilyName);
+                Assert.Equal(initialPhone, user.Phone);
+                Assert.False(user.VerifiedPhone);
+
+                // Verify login IDs
+                Assert.NotNull(user.LoginIds);
+                Assert.Single(user.LoginIds);
+                Assert.Equal(uniqueName, user.LoginIds.First());
+
+                // Verify user ID is still the same
+                Assert.NotNull(user.UserId);
+                Assert.Equal(createResult?.User?.UserId, user.UserId);
+
+                // Verify roles (should be unchanged)
+                Assert.NotNull(user.RoleNames);
+                Assert.Contains("Tenant Admin", user.RoleNames);
+
+                // Verify SSO apps (should be unchanged)
+                Assert.NotNull(user.SsoAppIds);
+                Assert.Contains("descope-default-oidc", user.SsoAppIds);
+
+                // Verify custom attributes
+                Assert.NotNull(user.CustomAttributes);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
         public async Task User_UpdateWithTenants()
         {
             string? loginId = null;
