@@ -7,6 +7,29 @@ namespace Descope.Test.Integration
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
+        private async Task RetryUntilSuccessAsync(Func<Task> assertion, int timeoutSeconds = 3)
+        {
+            var endTime = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+            Exception? lastException = null;
+
+            while (DateTime.UtcNow < endTime)
+            {
+                try
+                {
+                    await assertion();
+                    return; // Success!
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    await Task.Delay(100); // Wait 100ms before retry
+                }
+            }
+
+            // If we get here, all retries failed
+            throw lastException ?? new TimeoutException($"Assertion failed after {timeoutSeconds} seconds");
+        }
+
         [Fact]
         public async Task Role_CreateAndLoad()
         {
@@ -63,30 +86,39 @@ namespace Descope.Test.Integration
                 });
 
                 // Search for updated role
-                var foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                await RetryUntilSuccessAsync(async () =>
                 {
-                    RoleNames = new List<string> { updatedName }
+                    var foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                    {
+                        RoleNames = new List<string> { updatedName }
+                    });
+                    var role = foundRolesResponse?.Roles?.Find(r => r.Name == updatedName);
+                    Assert.NotNull(role);
+                    Assert.True(string.IsNullOrEmpty(role.Description));
                 });
-                var role = foundRolesResponse?.Roles?.Find(r => r.Name == updatedName);
-                Assert.NotNull(role);
-                Assert.True(string.IsNullOrEmpty(role.Description));
 
                 // Search for old name - should not be found
-                foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                await RetryUntilSuccessAsync(async () =>
                 {
-                    RoleNames = new List<string> { name }
+                    var foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                    {
+                        RoleNames = new List<string> { name }
+                    });
+                    var role = foundRolesResponse?.Roles?.Find(r => r.Name == name);
+                    Assert.Null(role);
                 });
-                role = foundRolesResponse?.Roles?.Find(r => r.Name == name);
-                Assert.Null(role);
                 name = null;
 
                 // Load all and make sure only updated role is there
-                var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
-                Assert.NotNull(loadedRolesResponse?.Roles);
-                role = loadedRolesResponse?.Roles?.Find(r => r.Name == updatedName);
-                Assert.NotNull(role);
-                role = loadedRolesResponse?.Roles?.Find(r => r.Name == name);
-                Assert.Null(role);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                    Assert.NotNull(loadedRolesResponse?.Roles);
+                    var role = loadedRolesResponse?.Roles?.Find(r => r.Name == updatedName);
+                    Assert.NotNull(role);
+                    role = loadedRolesResponse?.Roles?.Find(r => r.Name == name);
+                    Assert.Null(role);
+                });
             }
             finally
             {
