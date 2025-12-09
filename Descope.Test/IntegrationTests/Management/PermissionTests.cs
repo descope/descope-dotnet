@@ -3,7 +3,8 @@ using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class PermissionTests
+    [Collection("Integration Tests")]
+    public class PermissionTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 

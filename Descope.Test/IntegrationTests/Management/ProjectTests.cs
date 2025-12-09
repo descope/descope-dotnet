@@ -4,7 +4,8 @@ using Xunit.Abstractions;
 
 namespace Descope.Test.Integration
 {
-    public class ProjectTests
+    [Collection("Integration Tests")]
+    public class ProjectTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
         private readonly ITestOutputHelper _output;

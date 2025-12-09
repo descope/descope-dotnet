@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Descope.Test.Integration
 {
-    public class ServiceDITests
+    [Collection("Integration Tests")]
+    public class ServiceDITests : RateLimitedIntegrationTest
     {
         private IDescopeClient InitDescopeClientWithDI()
         {

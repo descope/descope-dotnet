@@ -4,7 +4,8 @@ using Descope.Auth.Models.Onetimev1;
 
 namespace Descope.Test.Integration
 {
-    public class AuthenticationTests
+    [Collection("Integration Tests")]
+    public class AuthenticationTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
