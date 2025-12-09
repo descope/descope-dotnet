@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := build
 
 # Management API OpenAPI spec file location
-MGMT_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml
+MGMT_OPENAPI_SPEC := $(GODESCOPE)/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml
 
 # Management API Kiota generation parameters
 MGMT_KIOTA_LANG := CSharp
@@ -14,7 +14,7 @@ MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
 # Exclude paths are defined in the command itself, to allow supporting multiple excludes
 
 # Auth API OpenAPI spec file location
-AUTH_OPENAPI_SPEC := $(HOME)/dev/go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
+AUTH_OPENAPI_SPEC := $(GODESCOPE)/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
 
 # Auth API Kiota generation parameters
 AUTH_KIOTA_LANG := CSharp
@@ -32,7 +32,15 @@ help: ## Show this help message
 
 build: generate dotnet-build ## Regenerate Kiota files and rebuild C# DLLs (default)
 
-generate: generate-mgmt generate-auth post-process-obsolete ## Regenerate all Kiota client files
+generate: check-kiota generate-mgmt generate-auth post-process-obsolete ## Regenerate all Kiota client files
+
+check-kiota: ## Check if Kiota is installed, install if not found
+	@echo "Checking for Kiota..."
+	@which kiota > /dev/null 2>&1 || { \
+		echo "Kiota not found. Installing..."; \
+		dotnet tool install --global Microsoft.OpenApi.Kiota; \
+	}
+	@echo "Kiota is available."
 
 generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	@echo "Checking for Management API OpenAPI spec file..."
