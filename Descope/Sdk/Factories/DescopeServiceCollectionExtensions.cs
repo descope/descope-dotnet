@@ -73,7 +73,7 @@ public static class DescopeServiceCollectionExtensions
             var mgmtClient = new DescopeMgmtKiotaClient(mgmtAdapter);
 
             // Create auth Kiota client
-            var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null);
+            var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
             DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
             var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
             {

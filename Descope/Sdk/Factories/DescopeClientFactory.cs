@@ -28,7 +28,7 @@ public static class DescopeManagementClientFactory
 
         // Create separate authentication providers for management and auth
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
-        var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null);
+        var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
 
         // Create HttpClient with optional unsafe SSL handling and error handling
         HttpClient httpClient;

@@ -21,7 +21,7 @@ Descope/Generated/Auth/V1/Auth/Password/Update/UpdateRequestBuilder.cs,PostAsync
 Descope/Generated/Auth/V1/Auth/Totp/Update/UpdateRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Webauthn/Update/Start/StartRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Refresh/RefreshRequestBuilder.cs,PostAsync,PostWithJwtAsync
-Descope/Generated/Auth/V1/Auth/Accesskey/Exchange/ExchangeRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Accesskey/Exchange/ExchangeRequestBuilder.cs,PostAsync,PostWithKeyAsync
 Descope/Generated/Auth/V1/Auth/Me/MeRequestBuilder.cs,GetAsync,GetWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Logout/LogoutRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Tenant/Select/SelectRequestBuilder.cs,PostAsync,PostWithJwtAsync

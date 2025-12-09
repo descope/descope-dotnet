@@ -95,7 +95,7 @@ internal class TokenActions : ITokenActions
         }
 
         // Call the access key exchange API with the access key in the authorization context
-        var response = await _authRequestBuilder.Accesskey.Exchange.PostWithJwtAsync(
+        var response = await _authRequestBuilder.Accesskey.Exchange.PostWithKeyAsync(
             new Auth.Models.Onetimev1.ExchangeAccessKeyRequest
             {
                 LoginOptions = loginOptions

@@ -25,6 +25,7 @@ namespace Descope.Test.Integration
             {
                 ProjectId = ProjectId,
                 ManagementKey = managementKey,
+                AuthManagementKey = managementKey,
                 BaseUrl = baseUrl ?? "https://api.descope.com",
                 IsUnsafe = isUnsafe,
             };

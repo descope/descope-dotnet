@@ -33,6 +33,26 @@ public static class AuthExtensions
         };
     }
 
+    /// <summary>
+    /// Creates a request configuration action that adds an access key to the authorization context.
+    /// Use this when calling API methods that require an access key (e.g., access key exchange).
+    /// Unlike JWT authentication, this does not trigger appending the auth management key (if configured).
+    /// </summary>
+    /// <param name="key">The access key to include in the authorization header.</param>
+    /// <returns>An action that configures the request with the access key.</returns>
+    private static Action<RequestConfiguration<DefaultQueryParameters>> WithKey(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            throw new DescopeException("Access key cannot be empty");
+        }
+
+        return requestConfiguration =>
+        {
+            requestConfiguration.Options.Add(DescopeKeyOption.WithKey(key));
+        };
+    }
+
     #endregion
 
     #region Magiclink Update Extensions
@@ -396,7 +416,7 @@ public static class AuthExtensions
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The exchange access key response containing session tokens.</returns>
     /// <exception cref="DescopeException">Thrown when accessKey is null or empty.</exception>
-    public static async Task<ExchangeAccessKeyResponse?> PostWithJwtAsync(
+    public static async Task<ExchangeAccessKeyResponse?> PostWithKeyAsync(
         this Descope.Auth.V1.Auth.Accesskey.Exchange.ExchangeRequestBuilder requestBuilder,
         ExchangeAccessKeyRequest request,
         string accessKey,
@@ -409,7 +429,7 @@ public static class AuthExtensions
 
         return await requestBuilder.PostAsync(
             request,
-            WithJwt(accessKey),
+            WithKey(accessKey),
             cancellationToken);
     }
 

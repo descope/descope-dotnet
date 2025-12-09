@@ -12,8 +12,16 @@ public class DescopeClientOptions
 
     /// <summary>
     /// The Descope Management Key (optional).
+    /// Required for accessing management APIs.
     /// </summary>
     public string? ManagementKey { get; set; }
+
+    /// <summary>
+    /// The Descope Auth Management Key (optional).
+    /// Used to provide a management key to use with Authentication APIs whose public access has been disabled.
+    /// If not set, only enabled auth APIs can be accessed.
+    /// </summary>
+    public string? AuthManagementKey { get; set; }
 
     /// <summary>
     /// The base URL for the Descope API.

@@ -22,7 +22,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize.Signin
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public SigninRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize/signin{?loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", pathParameters)
+        public SigninRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize/signin{?initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,7 +30,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize.Signin
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public SigninRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize/signin{?loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", rawUrl)
+        public SigninRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize/signin{?initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", rawUrl)
         {
         }
         /// <summary>
@@ -90,6 +90,15 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize.Signin
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class SigninRequestBuilderPostQueryParameters 
         {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("initiatedEmail")]
+            public string? InitiatedEmail { get; set; }
+#nullable restore
+#else
+            [QueryParameter("initiatedEmail")]
+            public string InitiatedEmail { get; set; }
+#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("loginHint")]
