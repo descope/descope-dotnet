@@ -262,7 +262,7 @@ public class TokenActionsTests
                             e = "AQAB",
                             kid = "test-key",
                             kty = "RSA",
-                            n = "whatever",
+                            n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
                             use = "sig"
                         }
                     }
