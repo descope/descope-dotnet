@@ -36,7 +36,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="appsettingsTest.json" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="appsettingsTest.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>
