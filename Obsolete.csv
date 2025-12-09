@@ -1,7 +1,7 @@
 RelativeFilePath,Method,Replacement
 Descope/Generated/Mgmt/V1/Mgmt/User/UserRequestBuilder.cs,GetAsync,GetWithIdentifierAsync
 Descope/Generated/Mgmt/V1/Mgmt/Password/Settings/SettingsRequestBuilder.cs,PostAsync,PostWithSettingsResponseAsync
-Descope/Generated/Mgmt/V1/Mgmt/Password/Settings/SettingsRequestBuilder.cs,GetAsync,GetWithTenantIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Password/Settings/SettingsRequestBuilder.cs,GetAsync,GetForProjectAsync or GetWithTenantIdAsync
 Descope/Generated/Mgmt/V1/Mgmt/Project/Import/ImportRequestBuilder.cs,PostAsync,PostWithExportedProjectAsync
 Descope/Generated/Mgmt/V1/Mgmt/Accesskey/AccesskeyRequestBuilder.cs,GetAsync,GetWithIdAsync
 Descope/Generated/Mgmt/V1/Mgmt/Sso/Idp/App/Load/LoadRequestBuilder.cs,GetAsync,GetWithIdAsync

@@ -78,6 +78,21 @@ public static class MgmtExtensions
     }
 
     /// <summary>
+    /// Loads password settings for a the project
+    /// This is a convenience method that simplifies the common pattern of loading password settings for the project.
+    /// </summary>
+    /// <param name="requestBuilder">The password settings request builder</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>GetPasswordSettingsResponse containing the password settings information</returns>
+    public static async Task<GetPasswordSettingsResponse?> GetForProjectAsync(
+        this Descope.Mgmt.V1.Mgmt.Password.Settings.SettingsRequestBuilder requestBuilder,
+        CancellationToken cancellationToken = default)
+    {
+
+        return await requestBuilder.GetAsync(requestConfiguration => { }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
     /// Imports a project by accepting an ExportSnapshotResponse and converting it to an ImportSnapshotRequest.
     /// This allows for directly importing an exported project without manual conversion.
     /// </summary>

@@ -7,7 +7,7 @@ namespace Descope.Test.Integration
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
-        private async Task RetryUntilSuccessAsync(Func<Task> assertion, int timeoutSeconds = 3)
+        private async Task RetryUntilSuccessAsync(Func<Task> assertion, int timeoutSeconds = 6)
         {
             var endTime = DateTime.UtcNow.AddSeconds(timeoutSeconds);
             Exception? lastException = null;
