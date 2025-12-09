@@ -1,4 +1,4 @@
-using Descope;
+using Microsoft.Extensions.Configuration;
 using Descope.Mgmt.Models.Managementv1;
 using Descope.Mgmt.Models.Onetimev1;
 using Descope.Auth.Models.Onetimev1;
@@ -10,16 +10,17 @@ namespace Descope.Test.Integration
         internal static string? ProjectId { get; private set; }
         internal static IDescopeClient InitDescopeClient()
         {
-            // Read configuration from appsettingsTest.json
-            var configPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettingsTest.json");
-            var json = File.ReadAllText(configPath);
-            var config = System.Text.Json.JsonDocument.Parse(json);
-            var appSettings = config.RootElement.GetProperty("AppSettings");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettingsTest.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
 
-            ProjectId = appSettings.GetProperty("ProjectId").GetString() ?? throw new ApplicationException("Can't run tests without a project ID");
-            var managementKey = appSettings.GetProperty("ManagementKey").GetString() ?? throw new ApplicationException("Can't run tests without a management key");
-            var baseUrl = appSettings.TryGetProperty("BaseURL", out var baseUrlElement) ? baseUrlElement.GetString() : null;
-            var isUnsafe = appSettings.TryGetProperty("Unsafe", out var unsafeElement) && bool.Parse(unsafeElement.GetString() ?? "false");
+            ProjectId = configuration["AppSettings:ProjectId"] ?? throw new ApplicationException("Can't run tests without a project ID");
+            var managementKey = configuration["AppSettings:ManagementKey"] ?? throw new ApplicationException("Can't run tests without a management key");
+            var baseUrl = configuration["AppSettings:BaseURL"];
+            var isUnsafe = bool.Parse(configuration["AppSettings:Unsafe"] ?? "false");
 
             var options = new DescopeClientOptions
             {

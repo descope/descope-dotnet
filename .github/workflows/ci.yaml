@@ -39,7 +39,7 @@ jobs:
         env:
           AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
           AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory "TestResults" --blame --blame-hang --blame-hang-timeout 1min
+        run: dotnet test --no-build --configuration Release --logger trx --results-directory "TestResults" --blame --blame-hang --blame-hang-timeout 1min --diag "TestResults/vstest_diagnostics.log"
 
       - name: Upload dotnet test results
         if: always()
@@ -52,5 +52,5 @@ jobs:
         if: always()
         with:
           name: .NET Tests
-          path: 'TestResults/**/test-results.trx'
+          path: TestResults/**/*.trx
           reporter: dotnet-trx
