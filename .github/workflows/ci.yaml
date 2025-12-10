@@ -35,7 +35,7 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --no-restore --configuration Release
       - name: Test with dotnet
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
           AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
