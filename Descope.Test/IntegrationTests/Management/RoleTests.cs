@@ -47,10 +47,13 @@ namespace Descope.Test.Integration
                 });
 
                 // Load and compare
-                var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
-                var loadedRole = loadedRolesResponse?.Roles?.Find(role => role.Name == name);
-                Assert.NotNull(loadedRole);
-                Assert.Equal(desc, loadedRole.Description);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                    var loadedRole = loadedRolesResponse?.Roles?.Find(role => role.Name == name);
+                    Assert.NotNull(loadedRole);
+                    Assert.Equal(desc, loadedRole.Description);
+                });
             }
             finally
             {
