@@ -32,19 +32,22 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(appId!);
-                Assert.NotNull(loadResponse);
-                Assert.NotNull(loadResponse.App);
-                Assert.NotNull(loadResponse.App.Id);
-                Assert.Equal(appId, loadResponse.App.Id);
-                Assert.Equal(createRequest.Name, loadResponse.App.Name);
-                Assert.Equal(createRequest.Description, loadResponse.App.Description);
-                Assert.Equal(createRequest.Enabled, loadResponse.App.Enabled);
-                Assert.Equal(createRequest.Logo, loadResponse.App.Logo);
-                Assert.Equal("oidc", loadResponse.App.AppType);
-                Assert.NotNull(loadResponse.App.OidcSettings);
-                Assert.Equal(createRequest.LoginPageUrl, loadResponse.App.OidcSettings.LoginPageUrl);
-                Assert.Equal(createRequest.ForceAuthentication, loadResponse.App.OidcSettings.ForceAuthentication);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(appId!);
+                    Assert.NotNull(loadResponse);
+                    Assert.NotNull(loadResponse.App);
+                    Assert.NotNull(loadResponse.App.Id);
+                    Assert.Equal(appId, loadResponse.App.Id);
+                    Assert.Equal(createRequest.Name, loadResponse.App.Name);
+                    Assert.Equal(createRequest.Description, loadResponse.App.Description);
+                    Assert.Equal(createRequest.Enabled, loadResponse.App.Enabled);
+                    Assert.Equal(createRequest.Logo, loadResponse.App.Logo);
+                    Assert.Equal("oidc", loadResponse.App.AppType);
+                    Assert.NotNull(loadResponse.App.OidcSettings);
+                    Assert.Equal(createRequest.LoginPageUrl, loadResponse.App.OidcSettings.LoginPageUrl);
+                    Assert.Equal(createRequest.ForceAuthentication, loadResponse.App.OidcSettings.ForceAuthentication);
+                });
             }
             finally
             {
@@ -87,22 +90,25 @@ namespace Descope.Test.Integration
                 appId = createResponse.Id;
 
                 // Load and verify
-                var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(appId!);
-                Assert.NotNull(loadResponse);
-                Assert.NotNull(loadResponse.App);
-                Assert.Equal(appId, loadResponse.App.Id);
-                Assert.Equal(createRequest.Name, loadResponse.App.Name);
-                Assert.Equal(createRequest.Description, loadResponse.App.Description);
-                Assert.Equal(createRequest.Enabled, loadResponse.App.Enabled);
-                Assert.Equal(createRequest.Logo, loadResponse.App.Logo);
-                Assert.Equal("saml", loadResponse.App.AppType);
-                Assert.NotNull(loadResponse.App.SamlSettings);
-                Assert.Equal(createRequest.LoginPageUrl, loadResponse.App.SamlSettings.LoginPageUrl);
-                Assert.Equal(createRequest.UseMetadataInfo, loadResponse.App.SamlSettings.UseMetadataInfo);
-                Assert.Equal(createRequest.MetadataUrl, loadResponse.App.SamlSettings.MetadataUrl);
-                Assert.Equal(createRequest.EntityId, loadResponse.App.SamlSettings.EntityId);
-                Assert.Equal(createRequest.AcsUrl, loadResponse.App.SamlSettings.AcsUrl);
-                Assert.Equal(createRequest.ForceAuthentication, loadResponse.App.SamlSettings.ForceAuthentication);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadResponse = await _descopeClient.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync(appId!);
+                    Assert.NotNull(loadResponse);
+                    Assert.NotNull(loadResponse.App);
+                    Assert.Equal(appId, loadResponse.App.Id);
+                    Assert.Equal(createRequest.Name, loadResponse.App.Name);
+                    Assert.Equal(createRequest.Description, loadResponse.App.Description);
+                    Assert.Equal(createRequest.Enabled, loadResponse.App.Enabled);
+                    Assert.Equal(createRequest.Logo, loadResponse.App.Logo);
+                    Assert.Equal("saml", loadResponse.App.AppType);
+                    Assert.NotNull(loadResponse.App.SamlSettings);
+                    Assert.Equal(createRequest.LoginPageUrl, loadResponse.App.SamlSettings.LoginPageUrl);
+                    Assert.Equal(createRequest.UseMetadataInfo, loadResponse.App.SamlSettings.UseMetadataInfo);
+                    Assert.Equal(createRequest.MetadataUrl, loadResponse.App.SamlSettings.MetadataUrl);
+                    Assert.Equal(createRequest.EntityId, loadResponse.App.SamlSettings.EntityId);
+                    Assert.Equal(createRequest.AcsUrl, loadResponse.App.SamlSettings.AcsUrl);
+                    Assert.Equal(createRequest.ForceAuthentication, loadResponse.App.SamlSettings.ForceAuthentication);
+                });
             }
             finally
             {

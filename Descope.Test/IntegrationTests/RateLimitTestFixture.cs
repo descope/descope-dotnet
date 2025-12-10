@@ -41,5 +41,28 @@ namespace Descope.Test.Integration
             _semaphore.Release();
             GC.SuppressFinalize(this);
         }
+
+        protected async Task RetryUntilSuccessAsync(Func<Task> assertion, int timeoutSeconds = 6)
+        {
+            var endTime = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+            Exception? lastException = null;
+
+            while (DateTime.UtcNow < endTime)
+            {
+                try
+                {
+                    await assertion();
+                    return; // Success!
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    await Task.Delay(500); // Wait 500ms before retry
+                }
+            }
+
+            // If we get here, all retries failed
+            throw lastException ?? new TimeoutException($"Assertion failed after {timeoutSeconds} seconds");
+        }
     }
 }

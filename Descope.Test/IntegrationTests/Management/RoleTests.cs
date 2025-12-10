@@ -8,29 +8,6 @@ namespace Descope.Test.Integration
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
-        private async Task RetryUntilSuccessAsync(Func<Task> assertion, int timeoutSeconds = 6)
-        {
-            var endTime = DateTime.UtcNow.AddSeconds(timeoutSeconds);
-            Exception? lastException = null;
-
-            while (DateTime.UtcNow < endTime)
-            {
-                try
-                {
-                    await assertion();
-                    return; // Success!
-                }
-                catch (Exception ex)
-                {
-                    lastException = ex;
-                    await Task.Delay(100); // Wait 100ms before retry
-                }
-            }
-
-            // If we get here, all retries failed
-            throw lastException ?? new TimeoutException($"Assertion failed after {timeoutSeconds} seconds");
-        }
-
         [Fact]
         public async Task Role_CreateAndLoad()
         {
