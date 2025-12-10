@@ -44,6 +44,9 @@ public static class DescopeServiceCollectionExtensions
         // Configure HttpClient with handlers and optional unsafe SSL handling
         var httpClientBuilder = services.AddHttpClient(httpClientName);
 
+        // Add the FGA cache URL handler to the pipeline (innermost middleware)
+        httpClientBuilder.AddHttpMessageHandler(() => new Internal.FgaCacheUrlHandler(options.FgaCacheUrl));
+
         // Add the open api application response fix handler to the pipeline
         httpClientBuilder.AddHttpMessageHandler(() => new Internal.FixRootResponseBodyHandler());
 

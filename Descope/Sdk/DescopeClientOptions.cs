@@ -31,6 +31,13 @@ public class DescopeClientOptions
     public string? BaseUrl { get; set; }
 
     /// <summary>
+    /// The FGA cache URL for specific FGA operations (SaveSchema, CreateRelations, DeleteRelations, Check).
+    /// If not set, FGA cache operations will use the standard BaseUrl.
+    /// Must be a valid HTTP or HTTPS URL if provided.
+    /// </summary>
+    public string? FgaCacheUrl { get; set; }
+
+    /// <summary>
     /// The name of the HttpClient to use from IHttpClientFactory.
     /// Only used when registering via dependency injection.
     /// </summary>
@@ -52,6 +59,16 @@ public class DescopeClientOptions
         if (string.IsNullOrWhiteSpace(ProjectId))
         {
             throw new DescopeException("ProjectId is required");
+        }
+
+        if (!string.IsNullOrWhiteSpace(FgaCacheUrl))
+        {
+            var normalizedUrl = FgaCacheUrl!.TrimEnd('/');
+            if (!Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                throw new DescopeException("FgaCacheUrl must be a valid HTTP or HTTPS URL");
+            }
         }
     }
 

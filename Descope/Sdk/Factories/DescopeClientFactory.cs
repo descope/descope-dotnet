@@ -53,10 +53,15 @@ public static class DescopeManagementClientFactory
 #endif
         };
 
-        // Build the handler pipeline: Base -> OpenAPI Fix -> Error Handler
-        var openApiFixHandler = new Internal.FixRootResponseBodyHandler
+        // Build the handler pipeline: Base -> FGA Cache -> OpenAPI Fix -> Error Handler
+        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(options.FgaCacheUrl)
         {
             InnerHandler = baseHandler
+        };
+
+        var openApiFixHandler = new Internal.FixRootResponseBodyHandler
+        {
+            InnerHandler = fgaCacheHandler
         };
 
         var errorHandler = new DescopeErrorResponseHandler
