@@ -26,6 +26,12 @@ public static class DescopeManagementClientFactory
 
         options.Validate();
 
+        // Set BaseUrl if not explicitly provided, using region-based logic
+        if (string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            options.BaseUrl = DescopeClientOptions.GetBaseUrlForProjectId(options.ProjectId);
+        }
+
         // Create separate authentication providers for management and auth
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
         var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
@@ -79,7 +85,7 @@ public static class DescopeManagementClientFactory
         var authClient = new DescopeAuthKiotaClient(authAdapter);
 
         // Wrap both clients with JWT validation support
-        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl, httpClient);
+        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, httpClient);
     }
 
     /// <summary>
@@ -116,11 +122,17 @@ public static class DescopeManagementClientFactory
 
         options.Validate();
 
+        // Set BaseUrl if not explicitly provided, using region-based logic
+        if (string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            options.BaseUrl = DescopeClientOptions.GetBaseUrlForProjectId(options.ProjectId);
+        }
+
         // Create the Kiota clients with the provided adapters
         var authKiotaClient = new DescopeAuthKiotaClient(authAdapter);
         var mgmtKiotaClient = new DescopeMgmtKiotaClient(mgmtAdapter);
 
         // Create and return the wrapper client with optional HttpClient for HTTP-level testing
-        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl, httpClient);
+        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl!, httpClient);
     }
 }

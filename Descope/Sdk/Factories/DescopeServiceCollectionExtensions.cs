@@ -30,6 +30,12 @@ public static class DescopeServiceCollectionExtensions
 
         options.Validate();
 
+        // Set BaseUrl if not explicitly provided, using region-based logic
+        if (string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            options.BaseUrl = DescopeClientOptions.GetBaseUrlForProjectId(options.ProjectId);
+        }
+
         // Use a default HttpClient factory name if not provided
         var httpClientName = string.IsNullOrWhiteSpace(options.HttpClientFactoryName)
             ? "DescopeClient"
@@ -82,7 +88,7 @@ public static class DescopeServiceCollectionExtensions
             var authClient = new DescopeAuthKiotaClient(authAdapter);
 
             // Create the wrapper client with internal Kiota clients
-            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl, httpClient);
+            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, httpClient);
         });
 
         return services;
