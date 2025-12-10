@@ -353,7 +353,7 @@ namespace Descope.Test.Integration
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Hits rate limit in CI/CD pipelines due to real user sms sending")]
         public async Task OtpSms_SignInRegularUser_GeneratesOtpSuccessfully()
         {
             string? loginId = null;
