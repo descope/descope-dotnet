@@ -50,7 +50,47 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	fi
 	@echo "Management API OpenAPI spec found: $(MGMT_OPENAPI_SPEC)"
 	@echo "Generating Management API Kiota client files..."
-	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) --exclude-path /scim/** --exclude-path /v1/mgmt/user/history --clean-output
+	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) \
+		--exclude-path /scim/** \
+		--exclude-path /v1/mgmt/user/history \
+		--exclude-path /v1/mgmt/accesskey/import \
+		--exclude-path /v1/mgmt/accesskey/delete/batch \
+		--exclude-path /v1/mgmt/accesskey/activate/batch \
+		--exclude-path /v1/mgmt/accesskey/deactivate/batch \
+		--exclude-path /v1/mgmt/authz/re/deleteresourcesrelations \
+		--exclude-path /v1/mgmt/connector/useraudit/set \
+		--exclude-path /v1/mgmt/inboundapp/** \
+		--exclude-path /v1/mgmt/infra \
+		--exclude-path /v1/mgmt/localization/** \
+		--exclude-path /v1/mgmt/mcp/** \
+		--exclude-path /v1/mgmt/outbound/app/create/bydcrpreset \
+		--exclude-path /v1/mgmt/outbound/app/create/bytemplate \
+		--exclude-path /v1/mgmt/outbound/app/tenant/token \
+		--exclude-path /v1/mgmt/outbound/app/tenant/token/latest \
+		--exclude-path /v1/mgmt/outbound/app/user/token \
+		--exclude-path /v1/mgmt/outbound/app/user/token/latest \
+		--exclude-path /v1/mgmt/outbound/apps-with-user-token \
+		--exclude-path /v1/mgmt/outbound/token \
+		--exclude-path /v1/mgmt/outbound/user/tokens \
+		--exclude-path /v1/mgmt/project/clone/async \
+		--exclude-path /v1/mgmt/project/clone/async/** \
+		--exclude-path /v1/mgmt/project/export \
+		--exclude-path /v1/mgmt/project/import \
+		--exclude-path /v1/mgmt/project/signkey/** \
+		--exclude-path /v1/mgmt/role/delete/batch \
+		--exclude-path /v1/mgmt/tenant/adminlinks/sso/authenticated \
+		--exclude-path /v1/mgmt/tenant/adminlinks/sso/send \
+		--exclude-path /v1/mgmt/tenant/sso-user-remove \
+		--exclude-path /v1/mgmt/thirdparty/app/delete/batch \
+		--exclude-path /v1/mgmt/token/clientassertion \
+		--exclude-path /v1/mgmt/user/customattribute/** \
+		--exclude-path /v1/mgmt/user/customattributes \
+		--exclude-path /v1/mgmt/user/search \
+		--exclude-path /v2/mgmt/sso/settings/all \
+		--exclude-path /v2/mgmt/tenant/adminlinks/sso/generate \
+		--exclude-path /v2/mgmt/theme/** \
+		--exclude-path /v2/mgmt/user/update/role/add \
+		--clean-output
 	@echo "Management API Kiota generation complete."
 
 generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec

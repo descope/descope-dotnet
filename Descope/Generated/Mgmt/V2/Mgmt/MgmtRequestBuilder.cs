@@ -2,8 +2,6 @@
 #pragma warning disable CS0618
 using Descope.Mgmt.V2.Mgmt.Flow;
 using Descope.Mgmt.V2.Mgmt.Sso;
-using Descope.Mgmt.V2.Mgmt.Tenant;
-using Descope.Mgmt.V2.Mgmt.Theme;
 using Descope.Mgmt.V2.Mgmt.User;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
@@ -28,16 +26,6 @@ namespace Descope.Mgmt.V2.Mgmt
         public global::Descope.Mgmt.V2.Mgmt.Sso.SsoRequestBuilder Sso
         {
             get => new global::Descope.Mgmt.V2.Mgmt.Sso.SsoRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The tenant property</summary>
-        public global::Descope.Mgmt.V2.Mgmt.Tenant.TenantRequestBuilder Tenant
-        {
-            get => new global::Descope.Mgmt.V2.Mgmt.Tenant.TenantRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The theme property</summary>
-        public global::Descope.Mgmt.V2.Mgmt.Theme.ThemeRequestBuilder Theme
-        {
-            get => new global::Descope.Mgmt.V2.Mgmt.Theme.ThemeRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The user property</summary>
         public global::Descope.Mgmt.V2.Mgmt.User.UserRequestBuilder User

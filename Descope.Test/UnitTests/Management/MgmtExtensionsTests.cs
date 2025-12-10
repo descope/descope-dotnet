@@ -189,67 +189,6 @@ public class MgmtExtensionsTests
     }
 
     /// <summary>
-    /// Tests that PostWithExportedProjectAsync correctly copies files from ExportSnapshotResponse to ImportSnapshotRequest.
-    /// </summary>
-    [Fact]
-    public async Task PostWithExportedProjectAsync_CopiesFilesCorrectly()
-    {
-        // Arrange - Create an exported project with files in AdditionalData
-        var exportedProject = new ExportSnapshotResponse
-        {
-            Files = new ExportSnapshotResponse_files()
-        };
-
-        // Add some mock file data to AdditionalData
-        exportedProject.Files.AdditionalData["project.json"] = "project data";
-        exportedProject.Files.AdditionalData["flows.json"] = "flows data";
-        exportedProject.Files.AdditionalData["settings.json"] = "settings data";
-
-        // Use CreateWithStreamAsserter to capture the actual request
-        ImportSnapshotRequest? actualRequest = null;
-        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<ImportSnapshotRequest>(
-            (requestInfo, request) =>
-            {
-                actualRequest = request;
-            });
-
-        // Act - Call the extension method
-        await descopeClient.Mgmt.V1.Project.Import.PostWithExportedProjectAsync(exportedProject);
-
-        // Assert - Verify the request was sent and files were copied correctly
-        actualRequest.Should().NotBeNull("The extension method should have sent a request");
-        actualRequest!.Files.Should().NotBeNull("Files should be populated");
-        actualRequest.Files!.AdditionalData.Should().NotBeNull("Files AdditionalData should be populated");
-
-        // Verify all file keys were copied
-        actualRequest.Files.AdditionalData.Should().HaveCount(3, "All files should be copied");
-        actualRequest.Files.AdditionalData.Should().ContainKey("project.json");
-        actualRequest.Files.AdditionalData.Should().ContainKey("flows.json");
-        actualRequest.Files.AdditionalData.Should().ContainKey("settings.json");
-
-        // Verify the values match
-        actualRequest.Files.AdditionalData["project.json"].Should().Be("project data");
-        actualRequest.Files.AdditionalData["flows.json"].Should().Be("flows data");
-        actualRequest.Files.AdditionalData["settings.json"].Should().Be("settings data");
-    }
-
-    /// <summary>
-    /// Tests that PostWithExportedProjectAsync throws ArgumentNullException when exportedProject is null.
-    /// </summary>
-    [Fact]
-    public async Task PostWithExportedProjectAsync_ThrowsArgumentNullException_WhenExportedProjectIsNull()
-    {
-        // Arrange
-        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<DescopeException>(async () =>
-        {
-            await descopeClient.Mgmt.V1.Project.Import.PostWithExportedProjectAsync(null!);
-        });
-    }
-
-    /// <summary>
     /// Tests that LoadUserAsync correctly passes the identifier to the request.
     /// </summary>
     [Fact]

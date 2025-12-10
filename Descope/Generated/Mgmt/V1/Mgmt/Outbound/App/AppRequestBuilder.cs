@@ -3,9 +3,7 @@
 using Descope.Mgmt.V1.Mgmt.Outbound.App.Create;
 using Descope.Mgmt.V1.Mgmt.Outbound.App.Delete;
 using Descope.Mgmt.V1.Mgmt.Outbound.App.Item;
-using Descope.Mgmt.V1.Mgmt.Outbound.App.Tenant;
 using Descope.Mgmt.V1.Mgmt.Outbound.App.Update;
-using Descope.Mgmt.V1.Mgmt.Outbound.App.User;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
 using System.Collections.Generic;
@@ -30,20 +28,10 @@ namespace Descope.Mgmt.V1.Mgmt.Outbound.App
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.Delete.DeleteRequestBuilder(PathParameters, RequestAdapter);
         }
-        /// <summary>The tenant property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Outbound.App.Tenant.TenantRequestBuilder Tenant
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.Tenant.TenantRequestBuilder(PathParameters, RequestAdapter);
-        }
         /// <summary>The update property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Outbound.App.Update.UpdateRequestBuilder Update
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.Update.UpdateRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The user property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Outbound.App.User.UserRequestBuilder User
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.App.User.UserRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>Gets an item from the Descope.Mgmt.v1.mgmt.outbound.app.item collection</summary>
         /// <param name="position">Unique identifier of the item</param>

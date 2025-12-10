@@ -2,8 +2,6 @@
 #pragma warning disable CS0618
 using Descope.Mgmt.Models.Managementv1;
 using Descope.Mgmt.V1.Mgmt.User.Create;
-using Descope.Mgmt.V1.Mgmt.User.Customattribute;
-using Descope.Mgmt.V1.Mgmt.User.Customattributes;
 using Descope.Mgmt.V1.Mgmt.User.Delete;
 using Descope.Mgmt.V1.Mgmt.User.Import;
 using Descope.Mgmt.V1.Mgmt.User.Logout;
@@ -11,7 +9,6 @@ using Descope.Mgmt.V1.Mgmt.User.Passkeys;
 using Descope.Mgmt.V1.Mgmt.User.Password;
 using Descope.Mgmt.V1.Mgmt.User.Patch;
 using Descope.Mgmt.V1.Mgmt.User.Provider;
-using Descope.Mgmt.V1.Mgmt.User.Search;
 using Descope.Mgmt.V1.Mgmt.User.Signin;
 using Descope.Mgmt.V1.Mgmt.User.Signup;
 using Descope.Mgmt.V1.Mgmt.User.Test;
@@ -38,16 +35,6 @@ namespace Descope.Mgmt.V1.Mgmt.User
         public global::Descope.Mgmt.V1.Mgmt.User.Create.CreateRequestBuilder Create
         {
             get => new global::Descope.Mgmt.V1.Mgmt.User.Create.CreateRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The customattribute property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.User.Customattribute.CustomattributeRequestBuilder Customattribute
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.User.Customattribute.CustomattributeRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The customattributes property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.User.Customattributes.CustomattributesRequestBuilder Customattributes
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.User.Customattributes.CustomattributesRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The deletePath property</summary>
         public global::Descope.Mgmt.V1.Mgmt.User.Delete.DeleteRequestBuilder DeletePath
@@ -83,11 +70,6 @@ namespace Descope.Mgmt.V1.Mgmt.User
         public global::Descope.Mgmt.V1.Mgmt.User.Provider.ProviderRequestBuilder Provider
         {
             get => new global::Descope.Mgmt.V1.Mgmt.User.Provider.ProviderRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The search property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.User.Search.SearchRequestBuilder Search
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.User.Search.SearchRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The signin property</summary>
         public global::Descope.Mgmt.V1.Mgmt.User.Signin.SigninRequestBuilder Signin

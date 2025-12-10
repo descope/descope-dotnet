@@ -5,7 +5,6 @@ using Descope.Mgmt.V1.Mgmt.Accesskey.Activate;
 using Descope.Mgmt.V1.Mgmt.Accesskey.Create;
 using Descope.Mgmt.V1.Mgmt.Accesskey.Deactivate;
 using Descope.Mgmt.V1.Mgmt.Accesskey.Delete;
-using Descope.Mgmt.V1.Mgmt.Accesskey.Import;
 using Descope.Mgmt.V1.Mgmt.Accesskey.Search;
 using Descope.Mgmt.V1.Mgmt.Accesskey.Update;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -43,11 +42,6 @@ namespace Descope.Mgmt.V1.Mgmt.Accesskey
         public global::Descope.Mgmt.V1.Mgmt.Accesskey.Delete.DeleteRequestBuilder DeletePath
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Accesskey.Delete.DeleteRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The import property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Accesskey.Import.ImportRequestBuilder Import
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Accesskey.Import.ImportRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The search property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Accesskey.Search.SearchRequestBuilder Search

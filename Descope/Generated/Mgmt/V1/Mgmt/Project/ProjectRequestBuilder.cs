@@ -2,9 +2,6 @@
 #pragma warning disable CS0618
 using Descope.Mgmt.V1.Mgmt.Project.Clone;
 using Descope.Mgmt.V1.Mgmt.Project.Delete;
-using Descope.Mgmt.V1.Mgmt.Project.Export;
-using Descope.Mgmt.V1.Mgmt.Project.Import;
-using Descope.Mgmt.V1.Mgmt.Project.Signkey;
 using Descope.Mgmt.V1.Mgmt.Project.Snapshot;
 using Descope.Mgmt.V1.Mgmt.Project.Update;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -30,21 +27,6 @@ namespace Descope.Mgmt.V1.Mgmt.Project
         public global::Descope.Mgmt.V1.Mgmt.Project.Delete.DeleteRequestBuilder DeletePath
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Project.Delete.DeleteRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The export property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Project.Export.ExportRequestBuilder Export
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Project.Export.ExportRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The import property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Project.Import.ImportRequestBuilder Import
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Project.Import.ImportRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The signkey property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Project.Signkey.SignkeyRequestBuilder Signkey
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Project.Signkey.SignkeyRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The snapshot property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Project.Snapshot.SnapshotRequestBuilder Snapshot

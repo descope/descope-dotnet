@@ -10,12 +10,8 @@ using Descope.Mgmt.V1.Mgmt.Fga;
 using Descope.Mgmt.V1.Mgmt.Flow;
 using Descope.Mgmt.V1.Mgmt.Group;
 using Descope.Mgmt.V1.Mgmt.Impersonate;
-using Descope.Mgmt.V1.Mgmt.Inboundapp;
-using Descope.Mgmt.V1.Mgmt.Infra;
 using Descope.Mgmt.V1.Mgmt.Jwt;
-using Descope.Mgmt.V1.Mgmt.Localization;
 using Descope.Mgmt.V1.Mgmt.Managementkey;
-using Descope.Mgmt.V1.Mgmt.Mcp;
 using Descope.Mgmt.V1.Mgmt.Outbound;
 using Descope.Mgmt.V1.Mgmt.Password;
 using Descope.Mgmt.V1.Mgmt.Permission;
@@ -28,7 +24,6 @@ using Descope.Mgmt.V1.Mgmt.Tenant;
 using Descope.Mgmt.V1.Mgmt.Tests;
 using Descope.Mgmt.V1.Mgmt.Theme;
 using Descope.Mgmt.V1.Mgmt.Thirdparty;
-using Descope.Mgmt.V1.Mgmt.Token;
 using Descope.Mgmt.V1.Mgmt.User;
 using Descope.Mgmt.V1.Mgmt.Users;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -95,35 +90,15 @@ namespace Descope.Mgmt.V1.Mgmt
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Impersonate.ImpersonateRequestBuilder(PathParameters, RequestAdapter);
         }
-        /// <summary>The inboundapp property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Inboundapp.InboundappRequestBuilder Inboundapp
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Inboundapp.InboundappRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The infra property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Infra.InfraRequestBuilder Infra
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Infra.InfraRequestBuilder(PathParameters, RequestAdapter);
-        }
         /// <summary>The jwt property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Jwt.JwtRequestBuilder Jwt
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Jwt.JwtRequestBuilder(PathParameters, RequestAdapter);
         }
-        /// <summary>The localization property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Localization.LocalizationRequestBuilder Localization
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Localization.LocalizationRequestBuilder(PathParameters, RequestAdapter);
-        }
         /// <summary>The managementkey property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Managementkey.ManagementkeyRequestBuilder Managementkey
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Managementkey.ManagementkeyRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The mcp property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Mcp.McpRequestBuilder Mcp
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Mcp.McpRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The outbound property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Outbound.OutboundRequestBuilder Outbound
@@ -184,11 +159,6 @@ namespace Descope.Mgmt.V1.Mgmt
         public global::Descope.Mgmt.V1.Mgmt.Thirdparty.ThirdpartyRequestBuilder Thirdparty
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Thirdparty.ThirdpartyRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The token property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Token.TokenRequestBuilder Token
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Token.TokenRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The user property</summary>
         public global::Descope.Mgmt.V1.Mgmt.User.UserRequestBuilder User

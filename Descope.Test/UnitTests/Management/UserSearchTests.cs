@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Kiota.Abstractions;
 using Xunit;
 
-#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Descope.Test.UnitTests.Management;
 
@@ -55,7 +54,7 @@ public class UserSearchTests
 
         // Act
         var request = new SearchUsersRequest();
-        var response = await descopeClient.Mgmt.V1.User.Search.PostAsync(request);
+        var response = await descopeClient.Mgmt.V2.User.Search.PostAsync(request);
 
         // Assert
         response.Should().NotBeNull();
@@ -84,7 +83,7 @@ public class UserSearchTests
 
         // Act
         var request = new SearchUsersRequest();
-        var response = await descopeClient.Mgmt.V1.User.Search.PostAsync(request);
+        var response = await descopeClient.Mgmt.V2.User.Search.PostAsync(request);
 
         // Assert
         response.Should().NotBeNull();
@@ -113,7 +112,7 @@ public class UserSearchTests
             {
                 capturedRequest = requestBody;
                 requestInfo.HttpMethod.Should().Be(Method.POST);
-                requestInfo.URI.AbsolutePath.Should().EndWith("/v1/mgmt/user/search");
+                requestInfo.URI.AbsolutePath.Should().EndWith("/v2/mgmt/user/search");
                 return mockResponse;
             });
 
@@ -123,7 +122,7 @@ public class UserSearchTests
             Limit = 10,
             Page = 1
         };
-        await descopeClient.Mgmt.V1.User.Search.PostAsync(request);
+        await descopeClient.Mgmt.V2.User.Search.PostAsync(request);
 
         // Assert
         capturedRequest.Should().NotBeNull();
@@ -163,7 +162,7 @@ public class UserSearchTests
 
         // Act
         var request = new SearchUsersRequest();
-        var response = await descopeClient.Mgmt.V1.User.Search.PostAsync(request);
+        var response = await descopeClient.Mgmt.V2.User.Search.PostAsync(request);
 
         // Assert
         response.Should().NotBeNull();

@@ -93,42 +93,6 @@ public static class MgmtExtensions
     }
 
     /// <summary>
-    /// Imports a project by accepting an ExportSnapshotResponse and converting it to an ImportSnapshotRequest.
-    /// This allows for directly importing an exported project without manual conversion.
-    /// </summary>
-    /// <param name="requestBuilder">The project import request builder</param>
-    /// <param name="exportedProject">The exported project response to import</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Stream containing the response</returns>
-    public static async Task<Stream?> PostWithExportedProjectAsync(
-        this Descope.Mgmt.V1.Mgmt.Project.Import.ImportRequestBuilder requestBuilder,
-        ExportSnapshotResponse exportedProject,
-        CancellationToken cancellationToken = default)
-    {
-        if (exportedProject == null)
-        {
-            throw new DescopeException("Exported project is required for importing");
-        }
-
-        // Create ImportSnapshotRequest_files and copy AdditionalData from exported files
-        var importFiles = new ImportSnapshotRequest_files();
-        if (exportedProject.Files?.AdditionalData != null)
-        {
-            foreach (var kvp in exportedProject.Files.AdditionalData)
-            {
-                importFiles.AdditionalData[kvp.Key] = kvp.Value;
-            }
-        }
-
-        var request = new ImportSnapshotRequest
-        {
-            Files = importFiles
-        };
-
-        return await requestBuilder.PostAsync(request, cancellationToken: cancellationToken);
-    }
-
-    /// <summary>
     /// Loads a user by identifier (userId or loginId)
     /// This is a convenience method that simplifies the common pattern of loading a user by their identifier.
     /// </summary>

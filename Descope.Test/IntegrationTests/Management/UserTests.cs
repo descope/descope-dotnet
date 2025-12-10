@@ -1107,9 +1107,7 @@ namespace Descope.Test.Integration
                     Text = name,
                     Limit = 1
                 };
-#pragma warning disable CS0618 // Type or member is obsolete
-                var users = await _descopeClient.Mgmt.V1.User.Search.PostAsync(searchByNameRequest);
-#pragma warning restore CS0618
+                var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
                 Assert.NotNull(users?.Users);
                 Assert.Single(users.Users);
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
@@ -1123,9 +1121,7 @@ namespace Descope.Test.Integration
                     RoleNames = new List<string> { roleName! }
 
                 };
-#pragma warning disable CS0618 // Type or member is obsolete
-                users = await _descopeClient.Mgmt.V1.User.Search.PostAsync(searchByTenantRoles);
-#pragma warning restore CS0618
+                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
                 Assert.NotNull(users?.Users);
                 Assert.Single(users.Users);
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
@@ -1137,19 +1133,14 @@ namespace Descope.Test.Integration
                 loginId = null;
 
                 // Search again by name - should be empty
-#pragma warning disable CS0618 // Type or member is obsolete
-                users = await _descopeClient.Mgmt.V1.User.Search.PostAsync(searchByNameRequest);
-#pragma warning restore CS0618
+                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
                 Assert.NotNull(users?.Users);
                 Assert.Empty(users.Users);
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
                 Assert.NotNull(users?.Users);
                 Assert.Empty(users.Users);
 
-                // Search again by TenantRoleNames - should be empty
-#pragma warning disable CS0618 // Type or member is obsolete
-                users = await _descopeClient.Mgmt.V1.User.Search.PostAsync(searchByTenantRoles);
-#pragma warning restore CS0618
+                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
                 Assert.NotNull(users?.Users);
                 Assert.Empty(users.Users);
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);

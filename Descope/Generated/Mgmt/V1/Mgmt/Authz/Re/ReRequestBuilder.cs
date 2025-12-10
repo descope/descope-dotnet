@@ -3,7 +3,6 @@
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Create;
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Delete;
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresources;
-using Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresourcesrelations;
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Has;
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Resource;
 using Descope.Mgmt.V1.Mgmt.Authz.Re.Targetall;
@@ -38,11 +37,6 @@ namespace Descope.Mgmt.V1.Mgmt.Authz.Re
         public global::Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresources.DeleteresourcesRequestBuilder Deleteresources
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresources.DeleteresourcesRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The deleteresourcesrelations property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresourcesrelations.DeleteresourcesrelationsRequestBuilder Deleteresourcesrelations
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Authz.Re.Deleteresourcesrelations.DeleteresourcesrelationsRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The has property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Authz.Re.Has.HasRequestBuilder Has

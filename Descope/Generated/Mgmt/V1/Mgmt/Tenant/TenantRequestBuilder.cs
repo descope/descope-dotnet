@@ -7,7 +7,6 @@ using Descope.Mgmt.V1.Mgmt.Tenant.Create;
 using Descope.Mgmt.V1.Mgmt.Tenant.Delete;
 using Descope.Mgmt.V1.Mgmt.Tenant.Search;
 using Descope.Mgmt.V1.Mgmt.Tenant.Settings;
-using Descope.Mgmt.V1.Mgmt.Tenant.SsoUserRemove;
 using Descope.Mgmt.V1.Mgmt.Tenant.Update;
 using Descope.Mgmt.V1.Mgmt.Tenant.UpdateDefaultRoles;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -55,11 +54,6 @@ namespace Descope.Mgmt.V1.Mgmt.Tenant
         public global::Descope.Mgmt.V1.Mgmt.Tenant.Settings.SettingsRequestBuilder Settings
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Tenant.Settings.SettingsRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The ssoUserRemove property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Tenant.SsoUserRemove.SsoUserRemoveRequestBuilder SsoUserRemove
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Tenant.SsoUserRemove.SsoUserRemoveRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The update property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Tenant.Update.UpdateRequestBuilder Update

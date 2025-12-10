@@ -2,9 +2,6 @@
 #pragma warning disable CS0618
 using Descope.Mgmt.V1.Mgmt.Outbound.App;
 using Descope.Mgmt.V1.Mgmt.Outbound.Apps;
-using Descope.Mgmt.V1.Mgmt.Outbound.AppsWithUserToken;
-using Descope.Mgmt.V1.Mgmt.Outbound.Token;
-using Descope.Mgmt.V1.Mgmt.Outbound.User;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
 using System.Collections.Generic;
@@ -28,21 +25,6 @@ namespace Descope.Mgmt.V1.Mgmt.Outbound
         public global::Descope.Mgmt.V1.Mgmt.Outbound.Apps.AppsRequestBuilder Apps
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Outbound.Apps.AppsRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The appsWithUserToken property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Outbound.AppsWithUserToken.AppsWithUserTokenRequestBuilder AppsWithUserToken
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.AppsWithUserToken.AppsWithUserTokenRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The token property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Outbound.Token.TokenRequestBuilder Token
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.Token.TokenRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The user property</summary>
-        public global::Descope.Mgmt.V1.Mgmt.Outbound.User.UserRequestBuilder User
-        {
-            get => new global::Descope.Mgmt.V1.Mgmt.Outbound.User.UserRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Mgmt.V1.Mgmt.Outbound.OutboundRequestBuilder"/> and sets the default values.
