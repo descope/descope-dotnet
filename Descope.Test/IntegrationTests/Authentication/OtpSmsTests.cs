@@ -51,6 +51,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 Assert.NotNull(signInResponse);
@@ -113,6 +114,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 Assert.NotNull(signInResponse);
@@ -166,6 +168,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 Assert.NotNull(signInResponse);
@@ -219,6 +222,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 Assert.NotNull(signInResponse);
@@ -256,6 +260,7 @@ namespace Descope.Test.Integration
                 LoginId = nonExistentLoginId
             };
 
+            await Task.Delay(extraSleepTime);
             async Task Act() => await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
             // Should throw an exception for non-existent user
@@ -319,6 +324,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 Assert.NotNull(signInResponse);
@@ -374,6 +380,7 @@ namespace Descope.Test.Integration
                     LoginId = testLoginId
                 };
 
+                await Task.Delay(extraSleepTime);
                 var signInResponse = await _descopeClient.Auth.V1.Otp.Signin.Sms.PostAsync(signInRequest);
 
                 // Verify the response is not null (indicates successful OTP generation)
