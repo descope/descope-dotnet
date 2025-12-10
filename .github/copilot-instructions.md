@@ -58,6 +58,14 @@ make test
 - **UnitTests/**: Fast, isolated tests using mocks
 - **IntegrationTests/**: Tests against real APIs (require `appsettingsTest.json`)
 - Integration tests are rate-limited - see `Descope.Test/IntegrationTests/RATE_LIMITING.md`
+- **When writing integration tests:** Use `RetryUntilSuccessAsync` from `RateLimitedIntegrationTest` when performing an action and then verifying it by loading an entity. This handles eventual consistency issues where changes may take a moment to propagate.
+  ```csharp
+  await RetryUntilSuccessAsync(async () => 
+  {
+      var entity = await client.LoadEntityAsync(id);
+      Assert.Equal(expectedValue, entity.Property);
+  });
+  ```
 
 ### Client Configuration
 
