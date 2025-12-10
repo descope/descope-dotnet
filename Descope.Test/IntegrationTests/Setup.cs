@@ -19,7 +19,6 @@ namespace Descope.Test.Integration
                 .Build();
 
             ProjectId = configuration["AppSettings:ProjectId"] ?? throw new ApplicationException("Can't run tests without a project ID");
-            Console.WriteLine($"Running tests for project: {ProjectId}");
             var managementKey = configuration["AppSettings:ManagementKey"] ?? throw new ApplicationException("Can't run tests without a management key");
             var baseUrl = configuration["AppSettings:BaseURL"];
             var isUnsafe = bool.Parse(configuration["AppSettings:Unsafe"] ?? "false");
