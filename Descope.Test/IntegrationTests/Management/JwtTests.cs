@@ -7,6 +7,7 @@ namespace Descope.Test.Integration
     public class JwtTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly int extraSleepTime = GetDelayBasedOnPlatform();
 
         [Fact]
         public async Task Jwt_CustomClaims()
@@ -69,8 +70,10 @@ namespace Descope.Test.Integration
                 {
                     Identifier = loginId,
                     Phone = "+972555555555",
-                    RoleNames = new List<string> { roleName }
+                    RoleNames = new List<string> { roleName },
+                    Test = true,
                 };
+                await Task.Delay(extraSleepTime); // sleep to avoid rate limiting in CI/CD pipelines
                 var response = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createUserRequest1);
                 var userId1 = response?.User?.UserId;
                 Assert.NotNull(userId1);
@@ -80,8 +83,10 @@ namespace Descope.Test.Integration
                 var createUserRequest2 = new CreateUserRequest
                 {
                     Identifier = loginId2,
-                    Phone = "+972666666666"
+                    Phone = "+972666666666",
+                    Test = true,
                 };
+                await Task.Delay(extraSleepTime); // sleep to avoid rate limiting in CI/CD pipelines
                 var response2 = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createUserRequest2);
                 var userId2 = response2?.User?.UserId;
                 Assert.NotNull(userId2);
@@ -92,6 +97,7 @@ namespace Descope.Test.Integration
                     ImpersonatorId = userId1,
                     LoginId = loginId2
                 };
+                await Task.Delay(extraSleepTime); // sleep to allow for role propagation
                 var impersonateResponse = await _descopeClient.Mgmt.V1.Impersonate.PostAsync(impersonateRequest);
                 var jwt = impersonateResponse?.Jwt;
                 Assert.NotNull(jwt);
