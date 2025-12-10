@@ -25,10 +25,13 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createRequest);
 
                 // Load and compare
-                var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
-                var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
-                Assert.NotNull(loadedPermission);
-                Assert.Equal(desc, loadedPermission.Description);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
+                    Assert.NotNull(loadedPermission);
+                    Assert.Equal(desc, loadedPermission.Description);
+                });
             }
             finally
             {
@@ -70,12 +73,15 @@ namespace Descope.Test.Integration
                 await _descopeClient.Mgmt.V1.Permission.Update.PostAsync(updateRequest);
 
                 // Load and compare
-                var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
-                var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == updatedName);
-                var originalNamePermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
-                Assert.Null(originalNamePermission);
-                Assert.NotNull(loadedPermission);
-                Assert.True(string.IsNullOrEmpty(loadedPermission.Description));
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == updatedName);
+                    var originalNamePermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
+                    Assert.Null(originalNamePermission);
+                    Assert.NotNull(loadedPermission);
+                    Assert.True(string.IsNullOrEmpty(loadedPermission.Description));
+                });
                 name = null;
             }
             finally
@@ -115,12 +121,16 @@ namespace Descope.Test.Integration
 
                 // Delete it
                 await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = name });
+                var deletedName = name;
                 name = null;
 
                 // Load all and make sure it's gone
-                var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
-                var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
-                Assert.Null(loadedPermission);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == deletedName);
+                    Assert.Null(loadedPermission);
+                });
             }
             finally
             {
