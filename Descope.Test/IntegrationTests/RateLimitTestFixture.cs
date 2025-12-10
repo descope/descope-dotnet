@@ -16,7 +16,7 @@ namespace Descope.Test.Integration
         // Set to 0 on macOS for faster local development, 1000ms in CI to respect rate limits
         private static readonly int DelayBetweenTestsMs = GetDelayBasedOnPlatform();
 
-        private static int GetDelayBasedOnPlatform()
+        protected static int GetDelayBasedOnPlatform()
         {
             return OperatingSystem.IsMacOS() ? 0 : 1000; // We do not need rate limiting on macOS for local dev
         }

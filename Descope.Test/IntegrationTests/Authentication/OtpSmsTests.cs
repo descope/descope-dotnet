@@ -9,6 +9,8 @@ namespace Descope.Test.Integration
     public class OtpSmsTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        // The tests in this class perform many user mgmt calls, which have lower rate limits, so we add extra delay in addition to the base rate limiting
+        private readonly int extraSleepTime = GetDelayBasedOnPlatform();
 
         [Fact]
         public async Task OtpSms_SignInAndVerify_Success()
@@ -26,6 +28,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -78,7 +81,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -100,6 +103,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Invalid Code Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -130,7 +134,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -152,6 +156,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Empty Code Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -182,7 +187,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -204,6 +209,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Null Code Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -234,7 +240,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -291,6 +297,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Wrong LoginId Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -334,7 +341,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -356,6 +363,7 @@ namespace Descope.Test.Integration
                     Name = "OTP SMS Generation Test User"
                 };
 
+                await Task.Delay(extraSleepTime);
                 var user = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
@@ -377,7 +385,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
