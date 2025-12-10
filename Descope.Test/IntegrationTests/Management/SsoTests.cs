@@ -48,12 +48,13 @@ namespace Descope.Test.Integration
                         }
                     }
                 };
+                var testDomain = $"{Guid.NewGuid().ToString().Substring(0, 8)}.com";
                 var configureSamlRequest = new ConfigureSSOSAMLSettingsRequest
                 {
                     TenantId = tenantId,
                     Settings = settings,
                     RedirectUrl = "https://myredirect.com",
-                    Domains = new List<string> { "domain1.com" }
+                    Domains = new List<string> { testDomain }
                 };
                 await _descopeClient.Mgmt.V1.Sso.Saml.PostAsync(configureSamlRequest);
 
@@ -68,7 +69,7 @@ namespace Descope.Test.Integration
                 Assert.Equal("group1", loadedSetting?.Saml?.GroupsMapping?.First()?.Groups?[0]);
                 Assert.Equal("group2", loadedSetting?.Saml?.GroupsMapping?.First()?.Groups?[1]);
                 Assert.Equal("https://myredirect.com", loadedSetting?.Saml?.RedirectUrl);
-                Assert.Equal("domain1.com", loadedSetting?.Tenant?.Domains?.First());
+                Assert.Equal(testDomain, loadedSetting?.Tenant?.Domains?.First());
 
                 // Delete the settings
                 await _descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync(tenantId!);
@@ -127,12 +128,13 @@ namespace Descope.Test.Integration
                         }
                     }
                 };
+                var testDomain = $"{Guid.NewGuid().ToString().Substring(0, 8)}.com";
                 var configureSamlByMetadataRequest = new ConfigureSSOSAMLSettingsByMetadataRequest
                 {
                     TenantId = tenantId,
                     Settings = settings,
                     RedirectUrl = "https://myredirect.com",
-                    Domains = new List<string> { "domain1.com" }
+                    Domains = new List<string> { testDomain }
                 };
                 await _descopeClient.Mgmt.V1.Sso.Saml.Metadata.PostAsync(configureSamlByMetadataRequest);
 
@@ -145,7 +147,7 @@ namespace Descope.Test.Integration
                 Assert.Equal("group1", loadedSetting?.Saml?.GroupsMapping?.First()?.Groups?[0]);
                 Assert.Equal("group2", loadedSetting?.Saml?.GroupsMapping?.First()?.Groups?[1]);
                 Assert.Equal("https://myredirect.com", loadedSetting?.Saml?.RedirectUrl);
-                Assert.Equal("domain1.com", loadedSetting?.Tenant?.Domains?.First());
+                Assert.Equal(testDomain, loadedSetting?.Tenant?.Domains?.First());
             }
             finally
             {
@@ -197,11 +199,12 @@ namespace Descope.Test.Integration
                     JWKsUrl = "https://mytestauth.com",
                     UserAttrMapping = new OAuthUserDataClaimsMapping { }
                 };
+                var testDomain = $"{Guid.NewGuid().ToString().Substring(0, 8)}.com";
                 var configureOidcRequest = new ConfigureSSOOIDCSettingsRequest
                 {
                     TenantId = tenantId,
                     Settings = settings,
-                    Domains = new List<string> { "domain1.com" }
+                    Domains = new List<string> { testDomain }
                 };
                 await _descopeClient.Mgmt.V1.Sso.Oidc.PostAsync(configureOidcRequest);
 
@@ -214,7 +217,7 @@ namespace Descope.Test.Integration
                 Assert.Equal(settings.AuthUrl, loadedSetting?.Oidc?.AuthUrl);
                 Assert.Equal(settings.TokenUrl, loadedSetting?.Oidc?.TokenUrl);
                 Assert.Equal(settings.JWKsUrl, loadedSetting?.Oidc?.JWKsUrl);
-                Assert.Equal("domain1.com", loadedSetting?.Tenant?.Domains?.First());
+                Assert.Equal(testDomain, loadedSetting?.Tenant?.Domains?.First());
             }
             finally
             {
@@ -256,11 +259,12 @@ namespace Descope.Test.Integration
                     JWKsUrl = "https://testauth.example.com/.well-known/jwks.json",
                     UserAttrMapping = new OAuthUserDataClaimsMapping { }
                 };
+                var testDomain = $"{Guid.NewGuid().ToString().Substring(0, 8)}.com";
                 var configureOidcRequest = new ConfigureSSOOIDCSettingsRequest
                 {
                     TenantId = tenantId,
                     Settings = settings,
-                    Domains = new List<string> { "test-domain.com" }
+                    Domains = new List<string> { testDomain }
                 };
 
                 await _descopeClient.Mgmt.V1.Sso.Oidc.PostAsync(configureOidcRequest);
