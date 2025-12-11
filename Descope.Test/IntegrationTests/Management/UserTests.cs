@@ -1,6 +1,5 @@
 using Xunit;
 using Descope.Mgmt.Models.Managementv1;
-using Descope.Mgmt.Models.Userv1;
 using Descope.Mgmt.Models.Onetimev1;
 
 namespace Descope.Test.Integration
@@ -824,9 +823,61 @@ namespace Descope.Test.Integration
         public async Task User_Roles()
         {
             string? loginId = null;
+            string? permissionName = null;
+            string? roleName = null;
+            string? tenantId = null;
+            string? tenantPermissionName = null;
+            string? tenantRoleName = null;
             try
             {
-                // Create a user
+                // Create a unique permission for this test (project-level)
+                permissionName = "TestPermission_" + Guid.NewGuid().ToString();
+                var createPermissionRequest = new CreatePermissionRequest
+                {
+                    Name = permissionName,
+                    Description = "Test permission for role testing"
+                };
+                await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createPermissionRequest);
+
+                // Create a unique role with the permission (project-level)
+                roleName = "TestRole_" + Guid.NewGuid().ToString();
+                var createRoleRequest = new CreateRoleRequest
+                {
+                    Name = roleName,
+                    Description = "Test role with permission",
+                    PermissionNames = new List<string> { permissionName }
+                };
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(createRoleRequest);
+
+                // Create a tenant for tenant-specific roles
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+                tenantId = tenantResponse?.Id;
+
+                // Create a tenant-specific permission
+                tenantPermissionName = "TestTenantPermission_" + Guid.NewGuid().ToString();
+                var createTenantPermissionRequest = new CreatePermissionRequest
+                {
+                    Name = tenantPermissionName,
+                    Description = "Test tenant-specific permission",
+                };
+                await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createTenantPermissionRequest);
+
+                // Create a tenant-specific role with the permission
+                tenantRoleName = "TestTenantRole_" + Guid.NewGuid().ToString();
+                var createTenantRoleRequest = new CreateRoleRequest
+                {
+                    Name = tenantRoleName,
+                    Description = "Test tenant-specific role with permission",
+                    PermissionNames = new List<string> { tenantPermissionName },
+                    TenantId = tenantId
+                };
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(createTenantRoleRequest);
+
+                // Create a test user
                 var name = Guid.NewGuid().ToString();
                 var createRequest = new CreateUserRequest
                 {
@@ -834,11 +885,27 @@ namespace Descope.Test.Integration
                     Phone = "+972555555555",
                     VerifiedPhone = true,
                 };
-                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createRequest);
                 loginId = createResult?.User?.LoginIds?.FirstOrDefault();
 
-                // Add roles
-                var roleNames = new List<string> { "Tenant Admin" };
+                // Verify the roles were created with the permissions
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var roleResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                    var createdRole = roleResponse?.Roles?.Find(r => r.Name == roleName);
+                    Assert.NotNull(createdRole);
+                    Assert.NotNull(createdRole.PermissionNames);
+                    Assert.Contains(permissionName, createdRole.PermissionNames);
+
+                    var createdTenantRole = roleResponse?.Roles?.Find(r => r.Name == tenantRoleName);
+                    Assert.NotNull(createdTenantRole);
+                    Assert.NotNull(createdTenantRole.PermissionNames);
+                    Assert.Contains(tenantPermissionName, createdTenantRole.PermissionNames);
+                    Assert.Equal(tenantId, createdTenantRole.TenantId);
+                });
+
+                // Add the project-level role to the user
+                var roleNames = new List<string> { roleName };
                 var addRequest = new UpdateUserRolesRequest
                 {
                     Identifier = loginId,
@@ -847,13 +914,141 @@ namespace Descope.Test.Integration
                 var updateResult = await _descopeClient.Mgmt.V1.User.Update.Role.Add.PostAsync(addRequest);
                 Assert.NotNull(updateResult?.User?.RoleNames);
                 Assert.Single(updateResult.User.RoleNames);
-                Assert.Contains("Tenant Admin", updateResult.User.RoleNames);
+                Assert.Contains(roleName, updateResult.User.RoleNames);
+
+                // Add the tenant to the user (without roles first)
+                var addTenantRequest = new UpdateUserTenantRequest
+                {
+                    Identifier = loginId,
+                    TenantId = tenantId
+                };
+                await _descopeClient.Mgmt.V1.User.Update.Tenant.Add.PostAsync(addTenantRequest);
+
+                // Add the tenant-specific role to the user
+                var tenantRoleRequest = new UpdateUserRolesRequest
+                {
+                    Identifier = loginId,
+                    RoleNames = new List<string> { tenantRoleName },
+                    TenantId = tenantId
+                };
+                var tenantUpdateResult = await _descopeClient.Mgmt.V1.User.Update.Role.Add.PostAsync(tenantRoleRequest);
+
+                // Verify tenant-specific role was added
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
+                    Assert.NotNull(loadResult?.User?.UserTenants);
+                    Assert.Single(loadResult.User.UserTenants);
+                    var userTenant = loadResult.User.UserTenants.FirstOrDefault(t => t.TenantId == tenantId);
+                    Assert.NotNull(userTenant);
+                    Assert.NotNull(userTenant.RoleNames);
+                    Assert.Contains(tenantRoleName, userTenant.RoleNames);
+                });
+
+                // Get a valid user session (JWT) and check it for roles and permissions
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    // Generate a fresh token to get latest role information
+                    var magicLinkRequest = new Descope.Mgmt.Models.Onetimev1.TestUserGenerateMagicLinkRequest
+                    {
+                        DeliveryMethod = "email",
+                        LoginId = loginId,
+                        RedirectUrl = "https://example.com/auth"
+                    };
+                    var magicLinkResponse = await _descopeClient.Mgmt.V1.Tests.Generate.Magiclink.PostAsync(magicLinkRequest);
+                    var uri = new Uri(magicLinkResponse!.Link!); // magic link url with token is returned for test users
+                    var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    var magicLinkToken = queryParams["t"];
+                    var verifyRequest = new Descope.Auth.Models.Onetimev1.VerifyMagicLinkRequest
+                    {
+                        Token = magicLinkToken
+                    };
+                    var authResponse = await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
+
+                    // Select the tenant to get tenant-specific claims in the token
+                    var selectTenantRequest = new Descope.Auth.Models.Onetimev1.SelectTenantRequest
+                    {
+                        Tenant = tenantId
+                    };
+                    var tenantSession = await _descopeClient.Auth.V1.Tenant.Select.PostWithJwtAsync(
+                        selectTenantRequest,
+                        authResponse!.RefreshJwt!);
+
+                    var sessionToken = await _descopeClient.Auth.ValidateSessionAsync(tenantSession!.SessionJwt!);
+
+                    // Verify the tenant is in the token
+                    var userTenants = sessionToken.GetTenants();
+                    Assert.Contains(tenantId, userTenants);
+
+                    // Validate that the token has the custom project-level role
+                    Assert.True(sessionToken.ValidateRoles(new List<string> { roleName }));
+                    // Validate roles with non-existent role returns false
+                    Assert.False(sessionToken.ValidateRoles(new List<string> { "NonExistentRole" }));
+
+                    // Get matched project-level roles - should return the custom role
+                    var matchedRoles = sessionToken.GetMatchedRoles(new List<string> { roleName, "Other Role" });
+                    Assert.Single(matchedRoles);
+                    Assert.Contains(roleName, matchedRoles);
+
+                    // Get MatchedRoles with non-existent role returns empty
+                    var noRoleMatches = sessionToken.GetMatchedRoles(new List<string> { "NonExistentRole" });
+                    Assert.Empty(noRoleMatches);
+
+                    // Validate that the token has the test project-level permission
+                    Assert.True(sessionToken.ValidatePermissions(new List<string> { permissionName }));
+                    // Validate permissions doesn't match non-existent permission
+                    Assert.False(sessionToken.ValidatePermissions(new List<string> { "NonExistentPermission" }));
+
+                    // Get matched project-level permissions - should return only the test permission
+                    var matchedPermissions = sessionToken.GetMatchedPermissions(new List<string> { permissionName, "NonExistentPermission" });
+                    Assert.Single(matchedPermissions);
+                    Assert.Contains(permissionName, matchedPermissions);
+
+                    // GetMatchedPermissions with non-existent permission returns empty
+                    var noMatches = sessionToken.GetMatchedPermissions(new List<string> { "NonExistentPermission" });
+                    Assert.Empty(noMatches);
+
+                    // Validate tenant-specific roles and permissions
+                    Assert.NotNull(tenantId);
+
+                    // Validate that the token has the tenant-specific role
+                    Assert.True(sessionToken.ValidateRoles(new List<string> { tenantRoleName }, tenantId));
+                    // Validate tenant roles with non-existent role returns false
+                    Assert.False(sessionToken.ValidateRoles(new List<string> { "NonExistentTenantRole" }, tenantId));
+                    // Validate tenant roles with non-existent tenant returns false
+                    Assert.False(sessionToken.ValidateRoles(new List<string> { tenantRoleName }, "NonExistentTenant"));
+
+                    // Get matched tenant-specific roles - should return the tenant role
+                    var matchedTenantRoles = sessionToken.GetMatchedRoles(new List<string> { tenantRoleName, "Other Tenant Role" }, tenantId);
+                    Assert.Single(matchedTenantRoles);
+                    Assert.Contains(tenantRoleName, matchedTenantRoles);
+
+                    // Get matched roles with non-existent tenant returns empty
+                    var noTenantRoleMatches = sessionToken.GetMatchedRoles(new List<string> { tenantRoleName }, "NonExistentTenant");
+                    Assert.Empty(noTenantRoleMatches);
+
+                    // Validate that the token has the tenant-specific permission
+                    Assert.True(sessionToken.ValidatePermissions(new List<string> { tenantPermissionName }, tenantId));
+                    // Validate tenant permissions with non-existent permission returns false
+                    Assert.False(sessionToken.ValidatePermissions(new List<string> { "NonExistentTenantPermission" }, tenantId));
+                    // Validate tenant permissions with non-existent tenant returns false
+                    Assert.False(sessionToken.ValidatePermissions(new List<string> { tenantPermissionName }, "NonExistentTenant"));
+
+                    // Get matched tenant-specific permissions - should return only the tenant permission
+                    var matchedTenantPermissions = sessionToken.GetMatchedPermissions(new List<string> { tenantPermissionName, "NonExistentTenantPermission" }, tenantId);
+                    Assert.Single(matchedTenantPermissions);
+                    Assert.Contains(tenantPermissionName, matchedTenantPermissions);
+
+                    // GetMatchedPermissions with non-existent tenant returns empty
+                    var noTenantMatches = sessionToken.GetMatchedPermissions(new List<string> { tenantPermissionName }, "NonExistentTenant");
+                    Assert.Empty(noTenantMatches);
+                });
 
                 // Remove roles
                 var removeRequest = new UpdateUserRolesRequest
                 {
                     Identifier = loginId,
-                    RoleNames = roleNames
+                    RoleNames = roleNames,
                 };
                 updateResult = await _descopeClient.Mgmt.V1.User.Update.Role.Remove.PostAsync(removeRequest);
                 Assert.NotNull(updateResult?.User?.RoleNames);
@@ -868,7 +1063,7 @@ namespace Descope.Test.Integration
                 updateResult = await _descopeClient.Mgmt.V1.User.Update.Role.Set.PostAsync(setRequest);
                 Assert.NotNull(updateResult?.User?.RoleNames);
                 Assert.Single(updateResult.User.RoleNames);
-                Assert.Contains("Tenant Admin", updateResult.User.RoleNames);
+                Assert.Contains(roleName, updateResult.User.RoleNames);
             }
             finally
             {
@@ -876,6 +1071,31 @@ namespace Descope.Test.Integration
                 if (!string.IsNullOrEmpty(loginId))
                 {
                     try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(roleName))
+                {
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = roleName }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(permissionName))
+                {
+                    try { await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = permissionName }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantRoleName))
+                {
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = tenantRoleName }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantPermissionName))
+                {
+                    try { await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = tenantPermissionName }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }

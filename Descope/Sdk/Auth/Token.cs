@@ -205,23 +205,39 @@ public class Token
             {
                 try
                 {
+                    // Try to deserialize as an array first
                     var list = JsonSerializer.Deserialize<List<string>>(claimValue);
                     if (list != null) return list;
                 }
-                catch { }
+                catch
+                {
+                    // If JSON deserialization fails, the claim might be a plain string value
+                    // This happens when there's only one role/permission
+                    if (!string.IsNullOrWhiteSpace(claimValue))
+                    {
+                        return new List<string> { claimValue };
+                    }
+                }
             }
         }
         else
         {
             var tenantValue = GetTenantValue(tenant, claim);
-            if (tenantValue is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
+            if (tenantValue is JsonElement jsonElement)
             {
-                try
+                if (jsonElement.ValueKind == JsonValueKind.Array)
                 {
-                    var list = jsonElement.Deserialize<List<string>>();
-                    if (list != null) return list;
+                    try
+                    {
+                        var list = jsonElement.Deserialize<List<string>>();
+                        if (list != null) return list;
+                    }
+                    catch { }
                 }
-                catch { }
+                else if (jsonElement.ValueKind == JsonValueKind.String)
+                {
+                    return new List<string> { jsonElement.GetString()! };
+                }
             }
         }
 
