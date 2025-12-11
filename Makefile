@@ -109,7 +109,7 @@ dotnet-build: ## Build the C# project
 	cd Descope && dotnet build
 	@echo "Build complete."
 
-test: ## Run unit tests for all target frameworks (net6.0, net8.0, net9.0, net10.0)
+test: ## Run tests for all target frameworks (net6.0, net8.0, net9.0, net10.0)
 	@echo "Checking for required .NET SDK versions..."
 	@for version in 6.0 8.0 9.0 10.0; do \
 		if ! dotnet --list-sdks | grep -q "^$$version"; then \
@@ -135,19 +135,21 @@ test: ## Run unit tests for all target frameworks (net6.0, net8.0, net9.0, net10
 	@echo ""
 	@echo "All framework tests complete."
 
-test-quick: ## Run unit tests for default framework only (faster)
+test-quick: ## Run tests for default framework only (faster)
 	@echo "Running unit tests (quick)..."
 	cd Descope.Test && dotnet test --framework net8.0
 	@echo "Quick tests complete."
 
-cover: ## Run unit tests with coverage report
+cover: ## Run tests for default framework with coverage report - can be viewed in VSCode using Coverage Gutters extension
+	@echo "Cleaning previous test results..."
+	@rm -rf Descope.Test/TestResults 2>/dev/null || true
 	@echo "Checking for ReportGenerator..."
-	@which reportgenerator > /dev/null 2>&1 || { \
+	@dotnet tool list -g | grep -q dotnet-reportgenerator-globaltool || { \
 		echo "ReportGenerator not found. Installing..."; \
 		dotnet tool install -g dotnet-reportgenerator-globaltool; \
 	}
 	@echo "Running unit tests with coverage..."
-	cd Descope.Test && dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+	cd Descope.Test && dotnet test --framework net8.0 --collect:"XPlat Code Coverage" --results-directory ./TestResults
 	@echo ""
 	@echo "Coverage Summary:"
 	@reportgenerator -reports:"Descope.Test/TestResults/**/coverage.cobertura.xml" -reporttypes:"TextSummary" -targetdir:"." 2>/dev/null || true
