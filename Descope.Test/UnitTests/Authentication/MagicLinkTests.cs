@@ -1,295 +1,200 @@
-using Descope.Internal;
-using Descope.Internal.Auth;
-using System.Text.Json;
+using Descope.Auth;
+using Descope.Auth.Models.Onetimev1;
+using Descope.Auth.Models.Userv1;
+using Descope.Test.Helpers;
+using FluentAssertions;
+using Microsoft.Kiota.Abstractions;
 using Xunit;
 
-namespace Descope.Test.Unit
+namespace Descope.Test.UnitTests.Authentication;
+
+/// <summary>
+/// Unit tests for Magic Link authentication using the Kiota-based DescopeClient.
+/// These tests use a mock request adapter to simulate API responses without making actual HTTP calls.
+/// </summary>
+public class MagicLinkTests
 {
-    public class MagicLinkTests
+    /// <summary>
+    /// Tests that the MagicLink Verify endpoint correctly processes a valid token
+    /// and returns the expected authentication response with session JWT, refresh JWT, and user data.
+    /// </summary>
+    [Fact]
+    public async Task MagicLink_Verify_Success()
     {
-        [Fact]
-        public async Task MagicLink_SignIn_Email_Success()
+        // Arrange - Create mock response
+        var mockUser = new ResponseUser
         {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
+            UserId = "user123",
+            Email = "test@example.com",
+            LoginIds = new List<string> { "test@example.com" }
+        };
+
+        var mockResponse = new JWTResponse
+        {
+            SessionJwt = "session_jwt",
+            RefreshJwt = "refresh_jwt",
+            User = mockUser
+        };
+
+        // Create mock DescopeClient with validation
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<VerifyMagicLinkRequest, JWTResponse>((requestInfo, requestBody) =>
+        {
+            requestInfo.HttpMethod.Should().Be(Method.POST);
+            requestInfo.URI.AbsolutePath.Should().EndWith("/v1/auth/magiclink/verify");
+            return mockResponse;
+        });
+
+        // Act - Call the Verify endpoint
+        var request = new VerifyMagicLinkRequest
+        {
+            Token = "test_token"
+        };
+
+        var response = await descopeClient.Auth.V1.Magiclink.Verify.PostAsync(request);
+
+        // Assert - Verify the response
+        response.Should().NotBeNull();
+        response!.SessionJwt.Should().Be("session_jwt");
+        response.RefreshJwt.Should().Be("refresh_jwt");
+        response.User.Should().NotBeNull();
+        response.User!.UserId.Should().Be("user123");
+        response.User.Email.Should().Be("test@example.com");
+    }
+
+    /// <summary>
+    /// Tests that the MagicLink Verify endpoint correctly deserializes
+    /// all expected fields from the JWT response.
+    /// </summary>
+    [Fact]
+    public async Task MagicLink_Verify_DeserializesAllFields()
+    {
+        // Arrange
+        var mockUser = new ResponseUser
+        {
+            UserId = "user456",
+            Email = "another@example.com",
+            GivenName = "John",
+            FamilyName = "Doe",
+            LoginIds = new List<string> { "another@example.com", "john.doe" }
+        };
+
+        var mockResponse = new JWTResponse
+        {
+            SessionJwt = "session_token_abc",
+            RefreshJwt = "refresh_token_xyz",
+            User = mockUser,
+            FirstSeen = true,
+            SessionExpiration = 3600,
+            CookieDomain = "example.com",
+            CookiePath = "/"
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithResponse(mockResponse);
+
+        // Act
+        var request = new VerifyMagicLinkRequest { Token = "test_token" };
+        var response = await descopeClient.Auth.V1.Magiclink.Verify.PostAsync(request);
+
+        // Assert
+        response.Should().NotBeNull();
+        response!.SessionJwt.Should().Be("session_token_abc");
+        response.RefreshJwt.Should().Be("refresh_token_xyz");
+        response.FirstSeen.Should().BeTrue();
+        response.SessionExpiration.Should().Be(3600);
+        response.CookieDomain.Should().Be("example.com");
+        response.CookiePath.Should().Be("/");
+
+        response.User.Should().NotBeNull();
+        response.User!.UserId.Should().Be("user456");
+        response.User.Email.Should().Be("another@example.com");
+        response.User.GivenName.Should().Be("John");
+        response.User.FamilyName.Should().Be("Doe");
+        response.User.LoginIds.Should().HaveCount(2);
+        response.User.LoginIds.Should().Contain("another@example.com");
+        response.User.LoginIds.Should().Contain("john.doe");
+    }
+
+    /// <summary>
+    /// Tests that the request body is properly serialized when calling the Verify endpoint.
+    /// </summary>
+    [Fact]
+    public async Task MagicLink_Verify_SendsCorrectRequestBody()
+    {
+        // Arrange
+        VerifyMagicLinkRequest? capturedRequestBody = null;
+
+        var mockResponse = new JWTResponse
+        {
+            SessionJwt = "test_session",
+            RefreshJwt = "test_refresh",
+            User = new ResponseUser { UserId = "test_user" }
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<VerifyMagicLinkRequest, JWTResponse>((requestInfo, requestBody) =>
+        {
+            capturedRequestBody = requestBody;
+            return mockResponse;
+        });
+
+        // Act
+        var request = new VerifyMagicLinkRequest { Token = "my_magic_link_token" };
+        await descopeClient.Auth.V1.Magiclink.Verify.PostAsync(request);
+
+        // Assert
+        capturedRequestBody.Should().NotBeNull();
+        capturedRequestBody!.Token.Should().Be("my_magic_link_token");
+    }
+
+    /// <summary>
+    /// Tests that an ArgumentNullException is thrown when the request body is null.
+    /// </summary>
+    [Fact]
+    public async Task MagicLink_Verify_ThrowsOnNullRequest()
+    {
+        // Arrange - Create client to test null handling
+        var mockResponse = new JWTResponse
+        {
+            SessionJwt = "test_session",
+            RefreshJwt = "test_refresh",
+            User = new ResponseUser { UserId = "test_user" }
+        };
+        var descopeClient = TestDescopeClientFactory.CreateWithResponse(mockResponse);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await descopeClient.Auth.V1.Magiclink.Verify.PostAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that the Verify endpoint can handle a minimal response with only required fields.
+    /// </summary>
+    [Fact]
+    public async Task MagicLink_Verify_HandlesMinimalResponse()
+    {
+        // Arrange - Create response with only essential fields
+        var mockResponse = new JWTResponse
+        {
+            SessionJwt = "minimal_session",
+            RefreshJwt = "minimal_refresh",
+            User = new ResponseUser
             {
-                Assert.Equal(Routes.MagicLinkSignIn + "email", url);
-                Assert.Null(pswd);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("test@example.com", requestBody.GetProperty("loginId").GetString());
-                Assert.Equal("https://example.com", requestBody.GetProperty("URI").GetString());
-                return null;
-            };
+                UserId = "minimal_user"
+            }
+        };
 
-            var maskedEmail = await magicLink.SignIn(DeliveryMethod.Email, "test@example.com", "https://example.com");
+        var descopeClient = TestDescopeClientFactory.CreateWithResponse(mockResponse);
 
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
+        // Act
+        var request = new VerifyMagicLinkRequest { Token = "test" };
+        var response = await descopeClient.Auth.V1.Magiclink.Verify.PostAsync(request);
 
-        [Fact]
-        public async Task MagicLink_SignIn_SMS_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedPhone = "+1***1234" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignIn + "sms", url);
-                Assert.Null(pswd);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("+11234567890", requestBody.GetProperty("loginId").GetString());
-                return null;
-            };
-
-            var maskedPhone = await magicLink.SignIn(DeliveryMethod.Sms, "+11234567890");
-
-            Assert.Equal("+1***1234", maskedPhone);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignIn_WithLoginOptions_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            var loginOptions = new LoginOptions { CustomClaims = new Dictionary<string, object> { { "key", "value" } } };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignIn + "email", url);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
-                Assert.Equal("value", customClaims.GetProperty("key").GetString());
-                return null;
-            };
-
-            var maskedEmail = await magicLink.SignIn(DeliveryMethod.Email, "test@example.com", loginOptions: loginOptions);
-
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignIn_ThrowsForEmptyLoginId()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-
-            async Task Act() => await magicLink.SignIn(DeliveryMethod.Email, "");
-            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("loginId missing", exception.Message);
-            Assert.Equal(0, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUp_Email_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            var signUpDetails = new SignUpDetails { Name = "Test User", Email = "test@example.com" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUp + "email", url);
-                Assert.Null(pswd);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("test@example.com", requestBody.GetProperty("loginId").GetString());
-                Assert.True(requestBody.TryGetProperty("user", out JsonElement user));
-                Assert.Equal("Test User", user.GetProperty("name").GetString());
-                return null;
-            };
-
-            var maskedEmail = await magicLink.SignUp(DeliveryMethod.Email, "test@example.com", signUpDetails: signUpDetails);
-
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUp_SMS_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedPhone = "+1***1234" };
-            var signUpDetails = new SignUpDetails { Name = "Test User", Phone = "+11234567890" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUp + "sms", url);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("+11234567890", requestBody.GetProperty("loginId").GetString());
-                Assert.True(requestBody.TryGetProperty("user", out JsonElement userProp));
-                Assert.Equal("+11234567890", userProp.GetProperty("phone").GetString());
-                return null;
-            };
-
-            var maskedPhone = await magicLink.SignUp(DeliveryMethod.Sms, "+11234567890", signUpDetails: signUpDetails);
-
-            Assert.Equal("+1***1234", maskedPhone);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUp_WithSignUpOptions_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            var signUpOptions = new SignUpOptions
-            {
-                CustomClaims = new Dictionary<string, object> { { "key", "value" } },
-                TemplateID = "template123"
-            };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUp + "email", url);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
-                Assert.Equal("value", customClaims.GetProperty("key").GetString());
-                Assert.Equal("template123", requestBody.GetProperty("loginOptions").GetProperty("templateId").GetString());
-                return null;
-            };
-
-            var maskedEmail = await magicLink.SignUp(DeliveryMethod.Email, "test@example.com", signUpOptions: signUpOptions);
-
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUp_ThrowsForEmptyLoginId()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-
-            async Task Act() => await magicLink.SignUp(DeliveryMethod.Email, "");
-            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("loginId missing", exception.Message);
-            Assert.Equal(0, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUpOrIn_Email_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUpOrIn + "email", url);
-                Assert.Null(pswd);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("test@example.com", requestBody.GetProperty("loginId").GetString());
-                return null;
-            };
-
-            var maskedEmail = await magicLink.SignUpOrIn(DeliveryMethod.Email, "test@example.com");
-
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUpOrIn_WhatsApp_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedPhone = "+1***1234" };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUpOrIn + "whatsapp", url);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("+11234567890", requestBody.GetProperty("loginId").GetString());
-                return null;
-            };
-
-            var maskedPhone = await magicLink.SignUpOrIn(DeliveryMethod.Whatsapp, "+11234567890");
-
-            Assert.Equal("+1***1234", maskedPhone);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUpOrIn_WithSignUpOptions_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { maskedEmail = "t***@example.com" };
-            var signUpOptions = new SignUpOptions { CustomClaims = new Dictionary<string, object> { { "key", "value" } } };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkSignUpOrIn + "email", url);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.True(requestBody.GetProperty("loginOptions").TryGetProperty("customClaims", out JsonElement customClaims));
-                Assert.Equal("value", customClaims.GetProperty("key").GetString());
-                return null;
-            };
-
-            var maskedEmail = await magicLink.SignUpOrIn(DeliveryMethod.Email, "test@example.com", signUpOptions: signUpOptions);
-
-            Assert.Equal("t***@example.com", maskedEmail);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_SignUpOrIn_ThrowsForEmptyLoginId()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-
-            async Task Act() => await magicLink.SignUpOrIn(DeliveryMethod.Email, "");
-            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("loginId missing", exception.Message);
-            Assert.Equal(0, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_Verify_Success()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-            client.PostResponse = new { sessionJwt = "session_jwt", refreshJwt = "refresh_jwt", user = new { userId = "user123" } };
-            client.PostAssert = (url, pswd, body, queryParams) =>
-            {
-                Assert.Equal(Routes.MagicLinkVerify, url);
-                Assert.Null(pswd);
-                var requestBody = Utils.Convert<dynamic>(body);
-                Assert.Equal("test_token", requestBody.GetProperty("token").GetString());
-                return null;
-            };
-
-            var response = await magicLink.Verify("test_token");
-
-            Assert.Equal("session_jwt", response.SessionJwt);
-            Assert.Equal("refresh_jwt", response.RefreshJwt);
-            Assert.Equal("user123", response.User.UserId);
-            Assert.Equal(1, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_Verify_ThrowsForEmptyToken()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-
-            async Task Act() => await magicLink.Verify("");
-            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("token missing", exception.Message);
-            Assert.Equal(0, client.PostCount);
-        }
-
-        [Fact]
-        public async Task MagicLink_Verify_ThrowsForNullToken()
-        {
-            var client = new MockHttpClient();
-            IMagicLink magicLink = new MagicLink(client);
-
-            async Task Act() => await magicLink.Verify(null!);
-            var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("token missing", exception.Message);
-            Assert.Equal(0, client.PostCount);
-        }
+        // Assert
+        response.Should().NotBeNull();
+        response!.SessionJwt.Should().Be("minimal_session");
+        response.RefreshJwt.Should().Be("minimal_refresh");
+        response.User.Should().NotBeNull();
+        response.User!.UserId.Should().Be("minimal_user");
     }
 }

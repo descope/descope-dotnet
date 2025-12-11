@@ -1,12 +1,14 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class TenantTests
+    [Collection("Integration Tests")]
+    public class TenantTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
-        // Create a three-tier tenant hierarchy (parent → child → grandchild) and assert Parent and Successor relationships between tenants
+        // Create tenants and test load functionality
         [Fact]
         public async Task Tenant_CreateAndLoad()
         {
@@ -18,67 +20,84 @@ namespace Descope.Test.Integration
                 // Create parent tenant
                 var parentName = Guid.NewGuid().ToString();
                 var parentDomain = parentName + ".com";
-                var parentOptions = new TenantOptions(parentName)
+                var parentOptions = new CreateTenantRequest
                 {
-                    SelfProvisioningDomains = new List<string> { parentDomain },
+                    Name = parentName,
+                    SelfProvisioningDomains = new List<string> { parentDomain }
                 };
-                parentTenantId = await _descopeClient.Management.Tenant.Create(options: parentOptions);
+                var tenant1Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(parentOptions);
+                parentTenantId = tenant1Response?.Id;
+                Assert.NotNull(parentTenantId);
 
                 // Create child tenant with parent relation
                 var childName = Guid.NewGuid().ToString();
-                var childOptions = new TenantOptions(childName)
+                var tenant2Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest
                 {
-                    Parent = parentTenantId,
-                };
-                childTenantId = await _descopeClient.Management.Tenant.Create(options: childOptions);
+                    Name = childName,
+                    Parent = parentTenantId
+                });
+                childTenantId = tenant2Response?.Id;
+                Assert.NotNull(childTenantId);
 
-                // Create grandchild tenant with child as parent
+                // Create third tenant
                 var grandchildName = Guid.NewGuid().ToString();
-                var grandchildOptions = new TenantOptions(grandchildName)
+                var tenant3Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest
                 {
-                    Parent = childTenantId,
-                };
-                grandchildTenantId = await _descopeClient.Management.Tenant.Create(options: grandchildOptions);
+                    Name = grandchildName,
+                    Parent = childTenantId
+                });
+                grandchildTenantId = tenant3Response?.Id;
+                Assert.NotNull(grandchildTenantId);
 
                 // Load parent and verify successors
-                var loadedParent = await _descopeClient.Management.Tenant.LoadById(parentTenantId);
-                Assert.Equal(loadedParent.Name, parentOptions.Name);
-                Assert.NotNull(loadedParent.SelfProvisioningDomains);
-                Assert.Contains(parentDomain, loadedParent.SelfProvisioningDomains);
-                Assert.Empty(loadedParent.Parent);
-                Assert.NotNull(loadedParent.Successors);
-                Assert.Contains(childTenantId, loadedParent.Successors);
+                var loadedParent = await _descopeClient.Mgmt.V1.Tenant.GetWithIdAsync(parentTenantId!);
+                Assert.NotNull(loadedParent);
+                Assert.NotNull(loadedParent.Tenant);
+                Assert.Equal(parentName, loadedParent.Tenant.Name);
+                Assert.NotNull(loadedParent.Tenant.Parent);
+                Assert.Empty(loadedParent.Tenant.Parent);
+                Assert.NotNull(loadedParent.Tenant.Successors);
+                Assert.NotNull(loadedParent.Tenant.SelfProvisioningDomains);
+                Assert.Contains(parentDomain, loadedParent.Tenant.SelfProvisioningDomains);
 
-                // Load child and verify parent and successors
-                var loadedChild = await _descopeClient.Management.Tenant.LoadById(childTenantId);
-                Assert.Equal(loadedChild.Name, childOptions.Name);
+                // Load second tenant using Search
+                var tenant2SearchResponse = await _descopeClient.Mgmt.V1.Tenant.Search.PostAsync(new SearchTenantsRequest
+                {
+                    TenantIds = new List<string> { childTenantId! }
+                });
+                Assert.NotNull(tenant2SearchResponse?.Tenants);
+                Assert.Single(tenant2SearchResponse.Tenants);
+                var loadedChild = tenant2SearchResponse.Tenants[0];
+                Assert.Equal(childName, loadedChild.Name);
                 Assert.Equal(parentTenantId, loadedChild.Parent);
                 Assert.NotNull(loadedChild.Successors);
                 Assert.Contains(grandchildTenantId, loadedChild.Successors);
 
-                // Load grandchild and verify parent
-                var loadedGrandchild = await _descopeClient.Management.Tenant.LoadById(grandchildTenantId);
-                Assert.Equal(loadedGrandchild.Name, grandchildOptions.Name);
-                Assert.Equal(childTenantId, loadedGrandchild.Parent);
-                Assert.NotNull(loadedGrandchild.Successors);
-                Assert.Empty(loadedGrandchild.Successors);
+                // Load third tenant
+                var loadedGrandchild = await _descopeClient.Mgmt.V1.Tenant.GetWithIdAsync(grandchildTenantId!);
+                Assert.NotNull(loadedGrandchild);
+                Assert.NotNull(loadedGrandchild.Tenant);
+                Assert.Equal(grandchildName, loadedGrandchild.Tenant.Name);
+                Assert.Equal(childTenantId, loadedGrandchild.Tenant.Parent);
+                Assert.NotNull(loadedGrandchild.Tenant.Successors);
+                Assert.Empty(loadedGrandchild.Tenant.Successors);
             }
             finally
             {
-                // Cleanup in reverse order (child before parent)
+                // Cleanup
                 if (!string.IsNullOrEmpty(grandchildTenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(grandchildTenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = grandchildTenantId }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(childTenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(childTenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = childTenantId }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(parentTenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(parentTenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = parentTenantId }); }
                     catch { }
                 }
             }
@@ -87,9 +106,9 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Create_MissingName()
         {
-            async Task Act() => await _descopeClient.Management.Tenant.Create(new TenantOptions(""));
+            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = "" });
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Tenant name is required", result.Message);
+            Assert.Contains("The name field is required", result.Message);
         }
 
         [Fact]
@@ -100,21 +119,30 @@ namespace Descope.Test.Integration
             {
                 // Create a tenant
                 string tenantName = Guid.NewGuid().ToString();
-                tenantId = await _descopeClient.Management.Tenant.Create(options: new TenantOptions(tenantName));
+                var createResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = tenantName });
+                tenantId = createResponse?.Id;
                 var updatedTenantName = tenantName + "updated";
 
                 // Update and compare
-                await _descopeClient.Management.Tenant.Update(tenantId, new TenantOptions(updatedTenantName));
-                var tenants = await _descopeClient.Management.Tenant.SearchAll(new TenantSearchOptions { Ids = new List<string> { tenantId } });
-                Assert.Single(tenants);
-                Assert.Equal(tenants[0].Name, updatedTenantName);
+                await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest
+                {
+                    Id = tenantId,
+                    Name = updatedTenantName
+                });
+                var searchResponse = await _descopeClient.Mgmt.V1.Tenant.Search.PostAsync(new SearchTenantsRequest
+                {
+                    TenantIds = new List<string> { tenantId! }
+                });
+                Assert.NotNull(searchResponse?.Tenants);
+                Assert.Single(searchResponse.Tenants);
+                Assert.Equal(updatedTenantName, searchResponse.Tenants[0].Name);
             }
             finally
             {
                 // Cleanup
                 if (!string.IsNullOrEmpty(tenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(tenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
@@ -123,17 +151,17 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Update_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.Tenant.Update("", new TenantOptions(""));
+            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "", Name = "" });
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Tenant ID is required", result.Message);
+            Assert.Contains("The id field is required", result.Message);
         }
 
         [Fact]
         public async Task Tenant_Update_MissingName()
         {
-            async Task Act() => await _descopeClient.Management.Tenant.Update("someId", new TenantOptions(""));
+            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "someId", Name = "" });
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("name cannot be updated to empty", result.Message);
+            Assert.Contains("The name field is required", result.Message);
         }
 
         [Fact]
@@ -143,16 +171,18 @@ namespace Descope.Test.Integration
             try
             {
                 // Create a tenant
-                var id = await _descopeClient.Management.Tenant.Create(options: new TenantOptions(Guid.NewGuid().ToString()));
+                var createResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = Guid.NewGuid().ToString() });
+                var id = createResponse?.Id;
                 tenantId = id;
 
                 // Delete it
-                await _descopeClient.Management.Tenant.Delete(id);
+                await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = id });
                 tenantId = null;
 
                 // Load all and make sure it's gone
-                var tenants = await _descopeClient.Management.Tenant.LoadAll();
-                foreach (var tenant in tenants)
+                var loadAllResponse = await _descopeClient.Mgmt.V1.Tenant.All.GetAsync();
+                Assert.NotNull(loadAllResponse?.Tenants);
+                foreach (var tenant in loadAllResponse.Tenants)
                 {
                     Assert.NotEqual(id, tenant.Id);
                 }
@@ -162,7 +192,7 @@ namespace Descope.Test.Integration
                 // Cleanup
                 if (!string.IsNullOrEmpty(tenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(tenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
@@ -171,10 +201,9 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Delete_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.Tenant.Delete("");
+            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = "" });
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Tenant ID is required", result.Message);
+            Assert.Contains("The id field is required", result.Message);
         }
     }
-
 }

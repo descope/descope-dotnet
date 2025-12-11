@@ -1,0 +1,28 @@
+RelativeFilePath,Method,Replacement
+Descope/Generated/Mgmt/V1/Mgmt/User/UserRequestBuilder.cs,GetAsync,GetWithIdentifierAsync
+Descope/Generated/Mgmt/V1/Mgmt/Password/Settings/SettingsRequestBuilder.cs,PostAsync,PostWithSettingsResponseAsync
+Descope/Generated/Mgmt/V1/Mgmt/Password/Settings/SettingsRequestBuilder.cs,GetAsync,GetForProjectAsync or GetWithTenantIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Accesskey/AccesskeyRequestBuilder.cs,GetAsync,GetWithIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Sso/Idp/App/Load/LoadRequestBuilder.cs,GetAsync,GetWithIdAsync
+Descope/Generated/Mgmt/V2/Mgmt/Sso/Settings/SettingsRequestBuilder.cs,GetAsync,GetWithTenantIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Thirdparty/App/Load/LoadRequestBuilder.cs,GetAsync,GetWithIdAsync or GetWithClientIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Sso/Settings/SettingsRequestBuilder.cs,DeleteAsync,DeleteWithTenantIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/TenantRequestBuilder.cs,GetAsync,GetWithIdAsync
+Descope/Generated/Auth/V1/Auth/Magiclink/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Whatsapp/WhatsappRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Enchantedlink/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Otp/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Voice/VoiceRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Whatsapp/WhatsappRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Password/Update/UpdateRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Totp/Update/UpdateRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Webauthn/Update/Start/StartRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Refresh/RefreshRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Accesskey/Exchange/ExchangeRequestBuilder.cs,PostAsync,PostWithKeyAsync
+Descope/Generated/Auth/V1/Auth/Me/MeRequestBuilder.cs,GetAsync,GetWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Logout/LogoutRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Tenant/Select/SelectRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Me/History/HistoryRequestBuilder.cs,GetAsync,GetWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Sso/Authorize/AuthorizeRequestBuilder.cs,PostAsync,PostWithQueryParamsAsync

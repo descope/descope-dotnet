@@ -1,0 +1,38 @@
+{
+  "descriptionHash": "9DEA52D71C1FFBC769068DF55B11A6BE7B49E81E937106C0775D84449496F4BBE393CF9F05AC15837BDF4D41A166F086930D447AA3738E33B09D5100A99BF1B2",
+  "descriptionLocation": "../../../../../go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.28.0",
+  "clientClassName": "DescopeAuthKiotaClient",
+  "typeAccessModifier": "Public",
+  "clientNamespaceName": "Descope.Auth",
+  "language": "CSharp",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": false,
+  "includeAdditionalData": true,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [
+    "/v1/auth/**"
+  ],
+  "excludePatterns": [
+    "/v1/auth/validate"
+  ],
+  "disabledValidationRules": []
+}

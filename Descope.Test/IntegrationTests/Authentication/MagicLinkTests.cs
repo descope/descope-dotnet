@@ -48,9 +48,10 @@ Example appsettingsTest.json object:
 }
 
 */
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 using Xunit;
+using Descope.Auth.Models.Onetimev1;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
@@ -61,42 +62,10 @@ namespace Descope.Test.Integration
         public string RedirectUrl { get; set; } = string.Empty;
     }
 
-    public class MagicLinkTests
+    [Collection("Integration Tests")]
+    public class MagicLinkTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
-        private readonly IConfiguration _configuration;
-
-        public MagicLinkTests()
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
-            _configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettingsTest.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-        }
-
-        private static string GetTokenFromUrl(string url)
-        {
-            var uri = new Uri(url);
-            // verify that the part until the query is https://example.com/auth
-            if (uri.GetLeftPart(UriPartial.Path) != "https://example.com/auth")
-                throw new InvalidOperationException("Magic link URL does not match expected redirect URL");
-            var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            var token = queryParams["t"];
-            if (string.IsNullOrEmpty(token))
-                throw new InvalidOperationException("Magic link token not found in the provided URL");
-            return token;
-        }
-
-        private MagicLinkScenario GetScenario(string name)
-        {
-            var scenarios = _configuration.GetSection("AppSettings:MagicLink:Scenarios").Get<List<MagicLinkScenario>>();
-            var scenario = scenarios?.FirstOrDefault(s => s.Name == name);
-            if (scenario == null)
-                throw new ApplicationException($"Scenario '{name}' not found in appsettingsTest.json");
-            return scenario;
-        }
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
         public async Task MagicLink_Verify_Success()
@@ -106,33 +75,44 @@ namespace Descope.Test.Integration
             {
                 // Create a test user with email
                 var testLoginId = Guid.NewGuid().ToString() + "@test.descope.com";
-                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                var createUserRequest = new CreateUserRequest
                 {
+                    Identifier = testLoginId,
                     Email = testLoginId,
                     VerifiedEmail = true,
                     Name = "Magic Link Test User"
-                }, testUser: true);
+                };
+
+                var user = await _descopeClient.Mgmt.V1.User.Create.Test.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
                 // Generate magic link for test user with custom claims
-                var loginOptions = new LoginOptions
+                var customClaims = new Descope.Mgmt.Models.Onetimev1.LoginOptions_customClaims
                 {
-                    CustomClaims = new Dictionary<string, object>
+                    AdditionalData = new Dictionary<string, object>
                     {
                         { "testKey", "testValue" },
                         { "numericKey", 42 }
                     }
                 };
 
-                var magicLinkResponse = await _descopeClient.Management.User.GenerateMagicLinkForTestUser(
-                    DeliveryMethod.Email,
-                    testLoginId,
-                    "https://example.com/auth",
-                    loginOptions
-                );
+                var loginOptions = new Descope.Mgmt.Models.Onetimev1.LoginOptions
+                {
+                    CustomClaims = customClaims
+                };
+
+                var magicLinkRequest = new Descope.Mgmt.Models.Onetimev1.TestUserGenerateMagicLinkRequest
+                {
+                    DeliveryMethod = "email",
+                    LoginId = testLoginId,
+                    RedirectUrl = "https://example.com/auth",
+                    LoginOptions = loginOptions
+                };
+
+                var magicLinkResponse = await _descopeClient.Mgmt.V1.Tests.Generate.Magiclink.PostAsync(magicLinkRequest);
 
                 // Extract token from the magic link URL
-                var uri = new Uri(magicLinkResponse.Link);
+                var uri = new Uri(magicLinkResponse!.Link!);
                 var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
                 var token = queryParams["t"];
 
@@ -140,18 +120,22 @@ namespace Descope.Test.Integration
                 Assert.NotEmpty(token);
 
                 // Verify the magic link token
-                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
+                var verifyRequest = new VerifyMagicLinkRequest
+                {
+                    Token = token
+                };
+                var authResponse = await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
                 // Verify the response
                 Assert.NotNull(authResponse);
-                Assert.NotEmpty(authResponse.SessionJwt);
+                Assert.NotEmpty(authResponse.SessionJwt!);
                 Assert.NotNull(authResponse.RefreshJwt);
                 Assert.NotEmpty(authResponse.RefreshJwt);
-                Assert.Equal(user.UserId, authResponse.User.UserId);
-                Assert.Equal(testLoginId, authResponse.User.Email);
+                Assert.Equal(user!.User!.UserId, authResponse.User?.UserId);
+                Assert.Equal(testLoginId, authResponse.User?.Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -180,151 +164,9 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
-            }
-        }
-
-        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
-        // This test is only for manual testing purposes
-        [Fact(Skip = "Manual testing only - requires email verification")]
-        public async Task MagicLink_SignIn_Email_Success()
-        {
-            var scenario = GetScenario("signin");
-            var testLoginId = scenario.Email;
-            var redirectUrl = scenario.RedirectUrl;
-
-            if (string.IsNullOrEmpty(redirectUrl))
-            {
-                // Cleanup user at start
-                try { await _descopeClient.Management.User.Delete(testLoginId); } catch { }
-                // Create user directly (not via sign-up magic link)
-                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest
-                {
-                    Email = testLoginId,
-                    VerifiedEmail = true,
-                    Name = $"Magic Link SignIn Test User {DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
-                });
-                // Sanity check - user should exist now
-                var loadedUser = await _descopeClient.Management.User.Load(user.UserId);
-                Assert.Equal(user.UserId, loadedUser.UserId);
-                // Send sign-in magic link
-                await _descopeClient.Auth.MagicLink.SignIn(DeliveryMethod.Email, testLoginId, "https://example.com/auth");
-                throw new InvalidOperationException("CHECK YOUR EMAIL! Waiting for user to paste magic link into config.");
-            }
-            else
-            {
-                // Validate the URL
-                var token = GetTokenFromUrl(redirectUrl);
-                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
-                Assert.NotNull(authResponse);
-                Assert.NotNull(authResponse.SessionJwt);
-                Assert.NotNull(authResponse.RefreshJwt);
-                Assert.NotEmpty(authResponse.User.UserId);
-                // Verify the userId in the token matches the original user
-                var loadedUser = await _descopeClient.Management.User.Load(authResponse.User.UserId);
-                Assert.Equal(testLoginId, loadedUser.Email);
-
-                // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
-                Assert.NotNull(validatedToken);
-                Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
-
-                // Cleanup user at end
-                await _descopeClient.Management.User.Delete(testLoginId);
-            }
-        }
-
-        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
-        // This test is only for manual testing purposes
-        [Fact(Skip = "Manual testing only - requires email verification")]
-        public async Task MagicLink_SignUp_Email_Success()
-        {
-            var scenario = GetScenario("signup");
-            var testLoginId = scenario.Email;
-            var redirectUrl = scenario.RedirectUrl;
-
-            if (string.IsNullOrEmpty(redirectUrl))
-            {
-                // Cleanup user at start
-                try { await _descopeClient.Management.User.Delete(testLoginId); } catch { }
-                // Send sign-up magic link
-                await _descopeClient.Auth.MagicLink.SignUp(DeliveryMethod.Email, testLoginId, "https://example.com/auth", new SignUpDetails
-                {
-                    Email = testLoginId,
-                    Name = $"Magic Link SignUp Test User {DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
-                });
-                throw new InvalidOperationException("CHECK YOUR EMAIL! Waiting for user to paste magic link into config.");
-            }
-            else
-            {
-                // Validate the URL
-                var token = GetTokenFromUrl(redirectUrl);
-                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
-                Assert.NotNull(authResponse);
-                Assert.NotNull(authResponse.SessionJwt);
-                Assert.NotNull(authResponse.RefreshJwt);
-                Assert.NotEmpty(authResponse.User.UserId);
-                // Verify the userId in the token matches the original user
-                var loadedUser = await _descopeClient.Management.User.Load(authResponse.User.UserId);
-                Assert.Equal(testLoginId, loadedUser.Email);
-                // Verify the name matches the sign-up details
-                Assert.Equal(loadedUser.Name, authResponse.User.Name);
-
-                // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
-                Assert.NotNull(validatedToken);
-                Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
-
-                // Cleanup user at end
-                await _descopeClient.Management.User.Delete(testLoginId);
-            }
-        }
-
-        // Skip this test in CI - it requires manual intervention to retrieve the magic link from email
-        // This test is only for manual testing purposes
-        [Fact(Skip = "Manual testing only - requires email verification")]
-        public async Task MagicLink_SignUpOrIn_Email_Success()
-        {
-            var scenario = GetScenario("sign-in-or-up");
-            var testLoginId = scenario.Email;
-            var redirectUrl = scenario.RedirectUrl;
-
-            if (string.IsNullOrEmpty(redirectUrl))
-            {
-                // Cleanup user at start
-                try { await _descopeClient.Management.User.Delete(testLoginId); } catch { }
-                // Send sign-up-or-in magic link
-                await _descopeClient.Auth.MagicLink.SignUpOrIn(DeliveryMethod.Email, testLoginId, "https://example.com/auth", new SignUpOptions
-                {
-                    CustomClaims = new Dictionary<string, object>
-                    {
-                        { "name", $"Magic Link SignUpOrIn Test User {DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}" }
-                    }
-                });
-                throw new InvalidOperationException("CHECK YOUR EMAIL! Waiting for user to paste magic link into config.");
-            }
-            else
-            {
-                // Validate the URL
-                var token = GetTokenFromUrl(redirectUrl);
-                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
-                Assert.NotNull(authResponse);
-                Assert.NotNull(authResponse.SessionJwt);
-                Assert.NotNull(authResponse.RefreshJwt);
-                Assert.NotEmpty(authResponse.User.UserId);
-                // Verify the userId in the token matches the original user
-                var loadedUser = await _descopeClient.Management.User.Load(authResponse.User.UserId);
-                Assert.Equal(testLoginId, loadedUser.Email);
-
-                // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
-                Assert.NotNull(validatedToken);
-                Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
-
-                // Cleanup user at end
-                await _descopeClient.Management.User.Delete(testLoginId);
             }
         }
 
@@ -332,7 +174,8 @@ namespace Descope.Test.Integration
         public async Task MagicLink_Verify_WithInvalidToken_ShouldFail()
         {
             // Try to verify an invalid magic link token
-            async Task Act() => await _descopeClient.Auth.MagicLink.Verify("invalid_token_123");
+            var verifyRequest = new VerifyMagicLinkRequest { Token = "invalid_token_123" };
+            async Task Act() => await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
             // Should throw an exception for invalid token
             var exception = await Assert.ThrowsAsync<DescopeException>(Act);
@@ -343,22 +186,24 @@ namespace Descope.Test.Integration
         public async Task MagicLink_Verify_WithEmptyToken_ShouldFail()
         {
             // Try to verify an empty magic link token
-            async Task Act() => await _descopeClient.Auth.MagicLink.Verify("");
+            var verifyRequest = new VerifyMagicLinkRequest { Token = "" };
+            async Task Act() => await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
             // Should throw an exception for empty token
             var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("token missing", exception.Message);
+            Assert.Contains("token", exception.Message.ToLowerInvariant());
         }
 
         [Fact]
         public async Task MagicLink_Verify_WithNullToken_ShouldFail()
         {
             // Try to verify a null magic link token
-            async Task Act() => await _descopeClient.Auth.MagicLink.Verify(null!);
+            var verifyRequest = new VerifyMagicLinkRequest { Token = null };
+            async Task Act() => await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
             // Should throw an exception for null token
             var exception = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Equal("token missing", exception.Message);
+            Assert.Contains("token", exception.Message.ToLowerInvariant());
         }
 
         [Fact]
@@ -369,40 +214,53 @@ namespace Descope.Test.Integration
             {
                 // Create a user with email
                 var testLoginId = Guid.NewGuid().ToString() + "@descope.com";
-                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                var createUserRequest = new CreateUserRequest
                 {
+                    Identifier = testLoginId,
                     Email = testLoginId,
                     VerifiedEmail = true,
                     Name = "Embedded Link User"
-                }, testUser: false);
+                };
+                var user = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
                 // Generate embedded link for test user with custom claims
-                var customClaims = new Dictionary<string, object>
+                var customClaims = new Descope.Mgmt.Models.Managementv1.EmbeddedLinkSignInRequest_customClaims
                 {
-                    { "embeddedTestKey", "embeddedTestValue" },
-                    { "numericKey", 123 },
-                    { "booleanKey", true }
+                    AdditionalData = new Dictionary<string, object>
+                    {
+                        { "embeddedTestKey", "embeddedTestValue" },
+                        { "numericKey", 123 },
+                        { "booleanKey", true }
+                    }
                 };
 
-                var token = await _descopeClient.Management.User.GenerateEmbeddedLink(testLoginId, customClaims);
+                var embeddedLinkRequest = new Descope.Mgmt.Models.Managementv1.EmbeddedLinkSignInRequest
+                {
+                    LoginId = testLoginId,
+                    CustomClaims = customClaims
+                };
+
+                var embeddedLinkResponse = await _descopeClient.Mgmt.V1.User.Signin.Embeddedlink.PostAsync(embeddedLinkRequest);
+                var token = embeddedLinkResponse!.Token;
 
                 Assert.NotNull(token);
                 Assert.NotEmpty(token);
 
                 // Verify the embedded link token using magic link verification
-                var authResponse = await _descopeClient.Auth.MagicLink.Verify(token);
+                var verifyRequest = new VerifyMagicLinkRequest { Token = token };
+                var authResponse = await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
                 // Verify the response
                 Assert.NotNull(authResponse);
-                Assert.NotEmpty(authResponse.SessionJwt);
+                Assert.NotEmpty(authResponse.SessionJwt!);
                 Assert.NotNull(authResponse.RefreshJwt);
                 Assert.NotEmpty(authResponse.RefreshJwt);
-                Assert.Equal(user.UserId, authResponse.User.UserId);
-                Assert.Equal(testLoginId, authResponse.User.Email);
+                Assert.Equal(user!.User!.UserId, authResponse.User?.UserId);
+                Assert.Equal(testLoginId, authResponse.User?.Email);
 
                 // Validate the session JWT
-                var validatedToken = await _descopeClient.Auth.ValidateSession(authResponse.SessionJwt);
+                var validatedToken = await _descopeClient.Auth.ValidateSessionAsync(authResponse.SessionJwt!);
                 Assert.NotNull(validatedToken);
                 Assert.Equal(authResponse.SessionJwt, validatedToken.Jwt);
 
@@ -434,7 +292,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
@@ -448,16 +306,25 @@ namespace Descope.Test.Integration
             {
                 // Create a user with email
                 var testLoginId = Guid.NewGuid().ToString() + "@descope.com";
-                var user = await _descopeClient.Management.User.Create(testLoginId, new UserRequest()
+                var createUserRequest = new CreateUserRequest
                 {
+                    Identifier = testLoginId,
                     Email = testLoginId,
                     VerifiedEmail = true,
                     Name = "Embedded Link Timeout Test User"
-                }, testUser: false);
+                };
+                var user = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createUserRequest);
                 loginId = testLoginId;
 
                 // Generate embedded link with a 1 second timeout
-                var token = await _descopeClient.Management.User.GenerateEmbeddedLink(testLoginId, null, 1);
+                var embeddedLinkRequest = new Descope.Mgmt.Models.Managementv1.EmbeddedLinkSignInRequest
+                {
+                    LoginId = testLoginId,
+                    Timeout = 1
+                };
+
+                var embeddedLinkResponse = await _descopeClient.Mgmt.V1.User.Signin.Embeddedlink.PostAsync(embeddedLinkRequest);
+                var token = embeddedLinkResponse!.Token;
 
                 Assert.NotNull(token);
                 Assert.NotEmpty(token);
@@ -466,7 +333,8 @@ namespace Descope.Test.Integration
                 await Task.Delay(2000);
 
                 // Try to verify the expired token - should fail
-                async Task Act() => await _descopeClient.Auth.MagicLink.Verify(token);
+                var verifyRequest = new VerifyMagicLinkRequest { Token = token };
+                async Task Act() => await _descopeClient.Auth.V1.Magiclink.Verify.PostAsync(verifyRequest);
 
                 // Should throw an exception for expired token
                 var exception = await Assert.ThrowsAsync<DescopeException>(Act);
@@ -476,7 +344,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(loginId))
                 {
-                    try { await _descopeClient.Management.User.Delete(loginId); }
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }

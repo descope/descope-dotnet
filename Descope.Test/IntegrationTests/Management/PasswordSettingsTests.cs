@@ -1,10 +1,12 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class PasswordSettingsTests
+    [Collection("Integration Tests")]
+    public class PasswordSettingsTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
         public async Task PasswordSettings_GetAndUpdate()
@@ -13,28 +15,35 @@ namespace Descope.Test.Integration
             try
             {
                 // Create a tenant
-                tenantId = await _descopeClient.Management.Tenant.Create(new TenantOptions(Guid.NewGuid().ToString()));
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+                tenantId = tenantResponse?.Id!;
 
-                // update project level
-                var settings = await _descopeClient.Management.Password.GetSettings();
-                settings.MinLength = 6;
-                await _descopeClient.Management.Password.ConfigureSettings(settings);
+                // Update project level
+                var settings = await _descopeClient.Mgmt.V1.Password.Settings.GetForProjectAsync();
+                settings!.MinLength = 6;
+                await _descopeClient.Mgmt.V1.Password.Settings.PostWithSettingsResponseAsync(settings);
 
-                // update tenant level
-                settings.MinLength = 7;
-                await _descopeClient.Management.Password.ConfigureSettings(settings, tenantId);
+                // Update tenant level
+                settings!.MinLength = 7;
+                settings.TenantId = tenantId;
+                await _descopeClient.Mgmt.V1.Password.Settings.PostWithSettingsResponseAsync(settings);
 
-                // make sure changes don't clash
-                var projectSettings = await _descopeClient.Management.Password.GetSettings();
-                Assert.Equal(6, projectSettings.MinLength);
-                var tenantSettings = await _descopeClient.Management.Password.GetSettings(tenantId);
-                Assert.Equal(7, tenantSettings.MinLength);
+                // Make sure changes don't clash
+                var projectSettings = await _descopeClient.Mgmt.V1.Password.Settings.GetForProjectAsync();
+                Assert.Equal(6, projectSettings?.MinLength);
+
+                var tenantSettings = await _descopeClient.Mgmt.V1.Password.Settings.GetWithTenantIdAsync(tenantId!);
+                Assert.Equal(7, tenantSettings?.MinLength);
             }
             finally
             {
                 if (!string.IsNullOrEmpty(tenantId))
                 {
-                    try { await _descopeClient.Management.Tenant.Delete(tenantId); }
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
