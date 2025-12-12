@@ -370,7 +370,6 @@ namespace Descope.Internal.Management
             {
                 {"loginId", loginId}
             };
-            // For Patch: include field if it's not null (even if empty string), skip if null
             if (request.Email != null) body["email"] = request.Email;
             if (request.Phone != null) body["phone"] = request.Phone;
             if (request.Name != null) body["displayName"] = request.Name;
