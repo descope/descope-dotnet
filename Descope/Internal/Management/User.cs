@@ -42,7 +42,7 @@ namespace Descope.Internal.Management
         public async Task<UserResponse> Patch(string loginId, UserRequest? request)
         {
             request ??= new UserRequest();
-            var body = MakeUpdateUserRequestBody(loginId, request);
+            var body = MakePatchUserRequestBody(loginId, request);
             var result = await _httpClient.Patch<WrappedUserResponse>(Routes.UserPatch, _managementKey, body);
             return result.User;
         }
@@ -359,6 +359,27 @@ namespace Descope.Internal.Management
             if (request.UserTenants != null) body["userTenants"] = MakeAssociatedTenantList(request.UserTenants);
             if (request.CustomAttributes != null) body["customAttributes"] = request.CustomAttributes;
             if (!string.IsNullOrEmpty(request.Picture)) body["picture"] = request.Picture;
+            if (request.AdditionalLoginIds != null) body["additionalLoginIds"] = request.AdditionalLoginIds;
+            if (request.SsoAppIds != null) body["ssoAppIDs"] = request.SsoAppIds;
+            return body;
+        }
+
+        private static Dictionary<string, object> MakePatchUserRequestBody(string loginId, UserRequest request)
+        {
+            var body = new Dictionary<string, object>
+            {
+                {"loginId", loginId}
+            };
+            if (request.Email != null) body["email"] = request.Email;
+            if (request.Phone != null) body["phone"] = request.Phone;
+            if (request.Name != null) body["displayName"] = request.Name;
+            if (request.GivenName != null) body["givenName"] = request.GivenName;
+            if (request.MiddleName != null) body["middleName"] = request.MiddleName;
+            if (request.FamilyName != null) body["familyName"] = request.FamilyName;
+            if (request.Picture != null) body["picture"] = request.Picture;
+            if (request.RoleNames != null) body["roleNames"] = request.RoleNames;
+            if (request.UserTenants != null) body["userTenants"] = MakeAssociatedTenantList(request.UserTenants);
+            if (request.CustomAttributes != null) body["customAttributes"] = request.CustomAttributes;
             if (request.AdditionalLoginIds != null) body["additionalLoginIds"] = request.AdditionalLoginIds;
             if (request.SsoAppIds != null) body["ssoAppIDs"] = request.SsoAppIds;
             return body;
