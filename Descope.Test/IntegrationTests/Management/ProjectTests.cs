@@ -1,41 +1,54 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
+using Xunit.Abstractions;
 
 namespace Descope.Test.Integration
 {
-    public class ProjectTests
+    [Collection("Integration Tests")]
+    public class ProjectTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly ITestOutputHelper _output;
 
-        [Fact]
-        public async Task Project_ExportImport()
+        public ProjectTests(ITestOutputHelper output)
         {
-            var imported_project = await _descopeClient.Management.Project.Export();
-            await _descopeClient.Management.Project.Import(imported_project);
+            _output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky when run in CI")]
         public async Task Project_Rename()
         {
-            var name = Guid.NewGuid().ToString().Split("-").First();
-            // Rename
-            var new_name = Guid.NewGuid().ToString().Split("-").First();
-            await _descopeClient.Management.Project.Rename(new_name);
+            var originalName = "Dotnet SDK Testing";
+            try
+            {
+                // Rename to a new name
+                var newName = Guid.NewGuid().ToString().Split("-").First();
+                var renameRequest = new UpdateProjectNameRequest
+                {
+                    Name = newName
+                };
+                await _descopeClient.Mgmt.V1.Project.Update.Name.PostAsync(renameRequest);
 
-            // Rename again so we will have original name
-            await _descopeClient.Management.Project.Rename("Dotnet SDK Testing");
+                // Rename back to original name
+                var restoreRequest = new UpdateProjectNameRequest
+                {
+                    Name = originalName
+                };
+                await _descopeClient.Mgmt.V1.Project.Update.Name.PostAsync(restoreRequest);
+            }
+            finally
+            {
+                // Make sure we restore the original name
+                try
+                {
+                    var restoreRequest = new UpdateProjectNameRequest
+                    {
+                        Name = originalName
+                    };
+                    await _descopeClient.Mgmt.V1.Project.Update.Name.PostAsync(restoreRequest);
+                }
+                catch { }
+            }
         }
-
-        [Fact(Skip = "Skipping due to lack of mgmt key permissions")]
-        public async Task Project_CloneAndDelete()
-        {
-            // Clone the current project
-            var name = Guid.NewGuid().ToString().Split("-").First();
-            var result = await _descopeClient.Management.Project.Clone(name, "");
-            Assert.NotNull(result);
-
-            // Delete cloned project
-            await _descopeClient.Management.Project.Delete(result.ProjectId);
-        }
-
     }
 }

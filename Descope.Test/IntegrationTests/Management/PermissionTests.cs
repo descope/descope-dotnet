@@ -1,10 +1,12 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class PermissionTests
+    [Collection("Integration Tests")]
+    public class PermissionTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
         public async Task Permission_CreateAndLoad()
@@ -15,19 +17,30 @@ namespace Descope.Test.Integration
                 // Create a permission
                 name = Guid.NewGuid().ToString();
                 var desc = "desc";
-                await _descopeClient.Management.Permission.Create(name, desc);
+                var createRequest = new CreatePermissionRequest
+                {
+                    Name = name,
+                    Description = desc
+                };
+                await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createRequest);
 
                 // Load and compare
-                var loadedPermissions = await _descopeClient.Management.Permission.LoadAll();
-                var loadedPermission = loadedPermissions.Find(permission => permission.Name == name);
-                Assert.NotNull(loadedPermission);
-                Assert.Equal(loadedPermission.Description, desc);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
+                    Assert.NotNull(loadedPermission);
+                    Assert.Equal(desc, loadedPermission.Description);
+                });
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Permission.Delete(name); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = name });
+                    }
                     catch { }
                 }
             }
@@ -43,30 +56,50 @@ namespace Descope.Test.Integration
                 // Create a permission
                 name = Guid.NewGuid().ToString();
                 string desc = "desc";
-                await _descopeClient.Management.Permission.Create(name, desc);
+                var createRequest = new CreatePermissionRequest
+                {
+                    Name = name,
+                    Description = desc
+                };
+                await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createRequest);
                 updatedName = name + "updated";
 
                 // Update and compare
-                await _descopeClient.Management.Permission.Update(name, updatedName);
+                var updateRequest = new UpdatePermissionRequest
+                {
+                    Name = name,
+                    NewName = updatedName
+                };
+                await _descopeClient.Mgmt.V1.Permission.Update.PostAsync(updateRequest);
+
                 // Load and compare
-                var loadedPermissions = await _descopeClient.Management.Permission.LoadAll();
-                var loadedPermission = loadedPermissions.Find(permission => permission.Name == updatedName);
-                var originalNamePermission = loadedPermissions.Find(permission => permission.Name == name);
-                Assert.Null(originalNamePermission);
-                Assert.NotNull(loadedPermission);
-                Assert.True(string.IsNullOrEmpty(loadedPermission.Description));
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == updatedName);
+                    var originalNamePermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == name);
+                    Assert.Null(originalNamePermission);
+                    Assert.NotNull(loadedPermission);
+                    Assert.True(string.IsNullOrEmpty(loadedPermission.Description));
+                });
                 name = null;
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Permission.Delete(name); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = name });
+                    }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(updatedName))
                 {
-                    try { await _descopeClient.Management.Permission.Delete(updatedName); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = updatedName });
+                    }
                     catch { }
                 }
             }
@@ -80,26 +113,36 @@ namespace Descope.Test.Integration
             {
                 // Create a permission
                 name = Guid.NewGuid().ToString();
-                await _descopeClient.Management.Permission.Create(name);
+                var createRequest = new CreatePermissionRequest
+                {
+                    Name = name
+                };
+                await _descopeClient.Mgmt.V1.Permission.Create.PostAsync(createRequest);
 
                 // Delete it
-                await _descopeClient.Management.Permission.Delete(name);
+                await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = name });
+                var deletedName = name;
                 name = null;
 
                 // Load all and make sure it's gone
-                var loadedPermissions = await _descopeClient.Management.Permission.LoadAll();
-                var loadedPermission = loadedPermissions.Find(permission => permission.Name == name);
-                Assert.Null(loadedPermission);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedPermissionsResponse = await _descopeClient.Mgmt.V1.Permission.All.GetAsync();
+                    var loadedPermission = loadedPermissionsResponse?.Permissions?.Find(permission => permission.Name == deletedName);
+                    Assert.Null(loadedPermission);
+                });
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Permission.Delete(name); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = name });
+                    }
                     catch { }
                 }
             }
         }
     }
-
 }
