@@ -318,5 +318,45 @@ namespace Descope.Test.Integration
                 }
             }
         }
+
+        // This test relies on the FixRotResponseBodyHandler middleware to correctly parse the response for loading a tenant, makes sure it applies to DI setup as well
+        [Fact]
+        public async Task ServiceDI_CreateAndLoadTenant_Success()
+        {
+            var client = InitDescopeClientWithDI();
+            string? tenantId = null;
+
+            try
+            {
+                // Create a test tenant
+                var tenantName = Guid.NewGuid().ToString();
+                var createTenantRequest = new CreateTenantRequest
+                {
+                    Name = tenantName
+                };
+
+                var createResponse = await client.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
+
+                Assert.NotNull(createResponse);
+                Assert.NotNull(createResponse.Id);
+                tenantId = createResponse.Id;
+
+                // Load the tenant using GetWithIdAsync
+                var loadResponse = await client.Mgmt.V1.Tenant.GetWithIdAsync(tenantId);
+
+                Assert.NotNull(loadResponse);
+                Assert.NotNull(loadResponse.Tenant);
+                Assert.Equal(tenantId, loadResponse.Tenant.Id);
+                Assert.Equal(tenantName, loadResponse.Tenant.Name);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    try { await client.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    catch { }
+                }
+            }
+        }
     }
 }
