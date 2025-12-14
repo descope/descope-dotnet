@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Setup dotnet
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
@@ -29,12 +29,13 @@ jobs:
             6.x.x
             8.x.x
             9.x.x
+            10.x.x
       - name: Install dependencies
         run: dotnet restore --locked-mode
       - name: Build with dotnet
         run: dotnet build --no-restore --configuration Release
       - name: Test with dotnet
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
           AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
@@ -47,9 +48,9 @@ jobs:
           name: dotnet-results
           path: TestResults
       - name: Post test results to GitHub
-        uses: dorny/test-reporter@7b7927aa7da8b82e81e755810cb51f39941a2cc7 # v2.2.0
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
         if: always()
         with:
           name: .NET Tests
-          path: TestResults/*.trx
+          path: TestResults/**/*.trx
           reporter: dotnet-trx

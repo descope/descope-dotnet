@@ -1,17 +1,24 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class AccessKeyTests
+    [Collection("Integration Tests")]
+    public class AccessKeyTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
         public async Task AccessKey_Create_MissingName()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Create(name: "");
+            var createAccessKeyRequest = new CreateAccessKeyRequest
+            {
+                Name = ""
+            };
+
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Access key name is required", result.Message);
+            Assert.Contains("The name field is required", result.Message);
         }
 
         [Fact]
@@ -21,19 +28,31 @@ namespace Descope.Test.Integration
             try
             {
                 // Create an access key
-                var accessKey = await _descopeClient.Management.AccessKey.Create(name: Guid.NewGuid().ToString());
-                id = accessKey.Key.Id;
+                var createAccessKeyRequest = new CreateAccessKeyRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var accessKey = await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
+                id = accessKey?.Key?.Id;
 
                 // Update and compare
-                var updatedName = accessKey.Key.Name + "updated";
-                var updatedKey = await _descopeClient.Management.AccessKey.Update(id: id, name: updatedName);
-                Assert.Equal(updatedKey.Name, updatedKey.Name);
+                var updatedName = accessKey?.Key?.Name + "updated";
+                var updateRequest = new UpdateAccessKeyRequest
+                {
+                    Id = id,
+                    Name = updatedName
+                };
+                var updatedKey = await _descopeClient.Mgmt.V1.Accesskey.Update.PostAsync(updateRequest);
+                Assert.Equal(updatedName, updatedKey?.Key?.Name);
             }
             finally
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    try { await _descopeClient.Management.AccessKey.Delete(id); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(new AccessKeyRequest { Id = id });
+                    }
                     catch { }
                 }
             }
@@ -42,17 +61,54 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task AccessKey_Update_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Update("", "name");
+            var updateRequest = new UpdateAccessKeyRequest
+            {
+                Id = "",
+                Name = "name"
+            };
+
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.Update.PostAsync(updateRequest);
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("ID is required", result.Message);
+            Assert.Contains("The id field is required", result.Message);
         }
 
         [Fact]
         public async Task AccessKey_Update_MissingName()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Update("someId", "");
-            DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("name cannot be updated to empty", result.Message);
+            string? id = null;
+            try
+            {
+                // Create an access key first
+                var createAccessKeyRequest = new CreateAccessKeyRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var accessKey = await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
+                id = accessKey?.Key?.Id;
+
+                // Try to update with empty name
+                var updateRequest = new UpdateAccessKeyRequest
+                {
+                    Id = id,
+                    Name = ""
+                };
+
+                async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.Update.PostAsync(updateRequest);
+                DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
+                // The API validates that name can't be empty
+                Assert.Contains("The name field is required", result.Message);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(id))
+                {
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(new AccessKeyRequest { Id = id });
+                    }
+                    catch { }
+                }
+            }
         }
 
         [Fact]
@@ -62,24 +118,37 @@ namespace Descope.Test.Integration
             try
             {
                 // Create an access key
-                var accessKey = await _descopeClient.Management.AccessKey.Create(name: Guid.NewGuid().ToString());
-                id = accessKey.Key.Id;
+                var createAccessKeyRequest = new CreateAccessKeyRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var accessKey = await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
+                id = accessKey?.Key?.Id;
 
                 // Deactivate
-                await _descopeClient.Management.AccessKey.Deactivate(id);
-                var loadedKey = await _descopeClient.Management.AccessKey.Load(id);
-                Assert.Equal("inactive", loadedKey.Status);
+                var deactivateRequest = new AccessKeyRequest { Id = id };
+                await _descopeClient.Mgmt.V1.Accesskey.Deactivate.PostAsync(deactivateRequest);
+
+                // Reload the key to verify status
+                var loadedKey = await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(id!);
+                Assert.Equal("inactive", loadedKey?.Key?.Status);
 
                 // Activate
-                await _descopeClient.Management.AccessKey.Activate(id);
-                loadedKey = await _descopeClient.Management.AccessKey.Load(id);
-                Assert.Equal("active", loadedKey.Status);
+                var activateRequest = new AccessKeyRequest { Id = id };
+                await _descopeClient.Mgmt.V1.Accesskey.Activate.PostAsync(activateRequest);
+
+                // Reload the key to verify status
+                loadedKey = await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync(id!);
+                Assert.Equal("active", loadedKey?.Key?.Status);
             }
             finally
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    try { await _descopeClient.Management.AccessKey.Delete(id); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(new AccessKeyRequest { Id = id });
+                    }
                     catch { }
                 }
             }
@@ -88,25 +157,30 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task AccessKey_Activate_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Activate("");
+            var activateRequest = new AccessKeyRequest { Id = "" };
+
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.Activate.PostAsync(activateRequest);
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("ID is required", result.Message);
+            Assert.Contains("The id field is required", result.Message);
         }
 
         [Fact]
         public async Task AccessKey_Deactivate_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Deactivate("");
+            var deactivateRequest = new AccessKeyRequest { Id = "" };
+
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.Deactivate.PostAsync(deactivateRequest);
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("ID is required", result.Message);
+            Assert.Contains("The id field is required", result.Message);
         }
 
         [Fact]
         public async Task AccessKey_Load_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Load("");
-            DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Access key ID is required", result.Message);
+            // Test that loading with an empty ID throws an appropriate error
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.GetWithIdAsync("");
+            var result = await Assert.ThrowsAsync<DescopeException>(Act);
+            Assert.Contains("ID is required", result.Message);
         }
 
         [Fact]
@@ -116,19 +190,27 @@ namespace Descope.Test.Integration
             try
             {
                 // Create an access key
-                var accessKey = await _descopeClient.Management.AccessKey.Create(name: Guid.NewGuid().ToString());
-                id = accessKey.Key.Id;
+                var createAccessKeyRequest = new CreateAccessKeyRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var accessKey = await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
+                id = accessKey?.Key?.Id;
 
                 // Search for it
-                var accessKeys = await _descopeClient.Management.AccessKey.SearchAll();
-                var key = accessKeys.Find(key => key.Id == id);
+                var searchRequest = new SearchAccessKeysRequest();
+                var accessKeys = await _descopeClient.Mgmt.V1.Accesskey.Search.PostAsync(searchRequest);
+                var key = accessKeys?.Keys?.Find(key => key.Id == id);
                 Assert.NotNull(key);
             }
             finally
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    try { await _descopeClient.Management.AccessKey.Delete(id); }
+                    try
+                    {
+                        await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(new AccessKeyRequest { Id = id });
+                    }
                     catch { }
                 }
             }
@@ -138,23 +220,31 @@ namespace Descope.Test.Integration
         public async Task AccessKey_Delete()
         {
             // Arrange
-            var accessKey = await _descopeClient.Management.AccessKey.Create(name: Guid.NewGuid().ToString());
+            var createAccessKeyRequest = new CreateAccessKeyRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
+            var accessKey = await _descopeClient.Mgmt.V1.Accesskey.Create.PostAsync(createAccessKeyRequest);
 
             // Act
-            await _descopeClient.Management.AccessKey.Delete(accessKey.Key.Id);
+            var deleteRequest = new AccessKeyRequest { Id = accessKey?.Key?.Id };
+            await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(deleteRequest);
 
-            // Assert
-            var accessKeys = await _descopeClient.Management.AccessKey.SearchAll(new List<string>() { accessKey.Key.Id });
-            Assert.Empty(accessKeys);
+            // Assert - search for the key and verify it's gone
+            var searchRequest = new SearchAccessKeysRequest();
+            var accessKeys = await _descopeClient.Mgmt.V1.Accesskey.Search.PostAsync(searchRequest);
+            var deletedKey = accessKeys?.Keys?.Find(key => key.Id == accessKey?.Key?.Id);
+            Assert.Null(deletedKey);
         }
 
         [Fact]
         public async Task Accesskey_Delete_MissingId()
         {
-            async Task Act() => await _descopeClient.Management.AccessKey.Delete("");
-            DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
-            Assert.Contains("Access key ID is required", result.Message);
-        }
+            var deleteRequest = new AccessKeyRequest { Id = "" };
 
+            async Task Act() => await _descopeClient.Mgmt.V1.Accesskey.DeletePath.PostAsync(deleteRequest);
+            DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
+            Assert.Contains("The id field is required", result.Message);
+        }
     }
 }

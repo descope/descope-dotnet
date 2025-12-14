@@ -1,10 +1,12 @@
 using Xunit;
+using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    public class RoleTests
+    [Collection("Integration Tests")]
+    public class RoleTests : RateLimitedIntegrationTest
     {
-        private readonly DescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
+        private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
         public async Task Role_CreateAndLoad()
@@ -15,19 +17,26 @@ namespace Descope.Test.Integration
                 // Create a role
                 name = Guid.NewGuid().ToString();
                 var desc = "desc";
-                await _descopeClient.Management.Role.Create(name, desc);
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(new CreateRoleRequest
+                {
+                    Name = name,
+                    Description = desc
+                });
 
                 // Load and compare
-                var loadedRoles = await _descopeClient.Management.Role.LoadAll();
-                var loadedRole = loadedRoles.Find(role => role.Name == name);
-                Assert.NotNull(loadedRole);
-                Assert.Equal(loadedRole.Description, desc);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                    var loadedRole = loadedRolesResponse?.Roles?.Find(role => role.Name == name);
+                    Assert.NotNull(loadedRole);
+                    Assert.Equal(desc, loadedRole.Description);
+                });
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Role.Delete(name); }
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = name }); }
                     catch { }
                 }
             }
@@ -43,31 +52,65 @@ namespace Descope.Test.Integration
                 // Create a role
                 name = Guid.NewGuid().ToString();
                 string desc = "desc";
-                await _descopeClient.Management.Role.Create(name, desc);
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(new CreateRoleRequest
+                {
+                    Name = name,
+                    Description = desc
+                });
                 updatedName = name + "updated";
 
                 // Update and compare
-                await _descopeClient.Management.Role.Update(name, updatedName);
-                // Load and compare
-                var foundRoles = await _descopeClient.Management.Role.SearchAll(new RoleSearchOptions { RoleNames = new List<string> { updatedName } });
-                var role = foundRoles.Find(role => role.Name == updatedName);
-                Assert.NotNull(role);
-                Assert.True(string.IsNullOrEmpty(role.Description));
-                foundRoles = await _descopeClient.Management.Role.SearchAll(new RoleSearchOptions { RoleNames = new List<string> { name } });
-                role = foundRoles.Find(role => role.Name == name);
-                Assert.Null(role);
+                await _descopeClient.Mgmt.V1.Role.Update.PostAsync(new UpdateRoleRequest
+                {
+                    Name = name,
+                    NewName = updatedName
+                });
+
+                // Search for updated role
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                    {
+                        RoleNames = new List<string> { updatedName }
+                    });
+                    var role = foundRolesResponse?.Roles?.Find(r => r.Name == updatedName);
+                    Assert.NotNull(role);
+                    Assert.True(string.IsNullOrEmpty(role.Description));
+                });
+
+                // Search for old name - should not be found
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var foundRolesResponse = await _descopeClient.Mgmt.V1.Role.Search.PostAsync(new SearchRolesRequest
+                    {
+                        RoleNames = new List<string> { name }
+                    });
+                    var role = foundRolesResponse?.Roles?.Find(r => r.Name == name);
+                    Assert.Null(role);
+                });
                 name = null;
+
+                // Load all and make sure only updated role is there
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                    Assert.NotNull(loadedRolesResponse?.Roles);
+                    var role = loadedRolesResponse?.Roles?.Find(r => r.Name == updatedName);
+                    Assert.NotNull(role);
+                    role = loadedRolesResponse?.Roles?.Find(r => r.Name == name);
+                    Assert.Null(role);
+                });
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Role.Delete(name); }
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = name }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(updatedName))
                 {
-                    try { await _descopeClient.Management.Role.Delete(updatedName); }
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = updatedName }); }
                     catch { }
                 }
             }
@@ -81,22 +124,25 @@ namespace Descope.Test.Integration
             {
                 // Create a role
                 name = Guid.NewGuid().ToString();
-                await _descopeClient.Management.Role.Create(name);
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(new CreateRoleRequest
+                {
+                    Name = name
+                });
 
                 // Delete it
-                await _descopeClient.Management.Role.Delete(name);
+                await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = name });
                 name = null;
 
                 // Load all and make sure it's gone
-                var loadedRoles = await _descopeClient.Management.Role.LoadAll();
-                var loadedRole = loadedRoles.Find(role => role.Name == name);
+                var loadedRolesResponse = await _descopeClient.Mgmt.V1.Role.All.GetAsync();
+                var loadedRole = loadedRolesResponse?.Roles?.Find(role => role.Name == name);
                 Assert.Null(loadedRole);
             }
             finally
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    try { await _descopeClient.Management.Role.Delete(name); }
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = name }); }
                     catch { }
                 }
             }
