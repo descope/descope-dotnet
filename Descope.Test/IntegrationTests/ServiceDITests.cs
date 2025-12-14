@@ -319,7 +319,7 @@ namespace Descope.Test.Integration
             }
         }
 
-        // This test relies on the FixRotResponseBodyHandler middleware to correctly parse the response for loading a tenant, makes sure it applies to DI setup as well
+        // This test relies on the FixRootResponseBodyHandler middleware to correctly parse the response for loading a tenant, makes sure it applies to DI setup as well
         [Fact]
         public async Task ServiceDI_CreateAndLoadTenant_Success()
         {
