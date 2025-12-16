@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 
@@ -21,7 +22,7 @@ namespace Descope.Internal.Auth
 
         private readonly IHttpClient _httpClient;
         private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
-        private readonly Dictionary<string, List<SecurityKey>> _securityKeys = new();
+        private readonly ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
 
         private const string ClaimPermissions = "permissions";
         private const string ClaimRoles = "roles";
@@ -182,16 +183,21 @@ namespace Descope.Internal.Auth
 
         private async Task FetchKeyIfNeeded()
         {
-            if (_securityKeys != null && _securityKeys.Count > 0) return;
+            if (!_securityKeys.IsEmpty) return;
 
             var response = await _httpClient.Get<JwtKeyResponse>(Routes.AuthKeys + $"{_httpClient.DescopeConfig.ProjectId}");
             foreach (var key in response.Keys)
             {
                 var rsa = RSA.Create();
                 rsa.ImportParameters(key.ToRsaParameters());
-                var list = _securityKeys.ContainsKey(key.Kid) ? _securityKeys[key.Kid] : new List<SecurityKey>();
-                list.Add(new RsaSecurityKey(rsa));
-                _securityKeys[key.Kid] = list;
+                _securityKeys.AddOrUpdate(
+                    key.Kid,
+                    _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
+                    (_, existingKeys) =>
+                    {
+                        existingKeys.Add(new RsaSecurityKey(rsa));
+                        return existingKeys;
+                    });
             }
         }
 
