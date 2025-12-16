@@ -4,7 +4,23 @@
     <TargetFrameworks>netstandard2.0;net6.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <PackageId>Descope</PackageId>
+    <Title>Descope .NET SDK</Title>
+    <Description>The Descope SDK for .NET provides authentication and user management capabilities for your applications.</Description>
+    <Authors>Descope</Authors>
+    <Company>Descope</Company>
+    <PackageProjectUrl>https://github.com/descope/descope-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/descope/descope-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>descope;authentication;authorization;security;auth;sso;oauth;saml;magic-link;otp;mfa;2fa</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

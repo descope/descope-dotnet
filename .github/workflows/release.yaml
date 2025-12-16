@@ -1,30 +1,65 @@
-name: Upload dotnet package
+name: Release Please
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
-env:
-  PACKAGE_NAME: Descope
-  RELEASE_VERSION: ${{ github.event.release.tag_name }}
+permissions:
+  contents: read
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Get token
+        id: get_token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        with:
+          private_key: ${{ secrets.RELEASE_APP_PEM }}
+          app_id: ${{ secrets.RELEASE_APP_ID }}
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          token: ${{ steps.get_token.outputs.token }}
+
   publish:
     runs-on: ubuntu-latest
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
     permissions:
       packages: write
       contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
         with:
-          source-url: https://nuget.pkg.github.com/${{github.repository_owner}}/index.json
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         env:
-          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - run: dotnet build --configuration Release ${{ env.PACKAGE_NAME }}
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: dotnet build --configuration Release Descope
+
       - name: Create the package
-        run: dotnet pack --configuration Release ${{ env.PACKAGE_NAME }}
-      - name: Publish the package to GPR
-        run: dotnet nuget push ${{ env.PACKAGE_NAME }}/bin/Release/*.nupkg
-      - name: Publish the package to NuGet.org
-        run: dotnet nuget push -k ${{ secrets.NUGET_ORG_KEY }} -s https://api.nuget.org/v3/index.json ${{ env.PACKAGE_NAME }}/bin/Release/*.nupkg
+        run: dotnet pack --configuration Release Descope --no-build
+
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push Descope/bin/Release/*.nupkg --skip-duplicate
+        continue-on-error: true
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push Descope/bin/Release/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        continue-on-error: true
