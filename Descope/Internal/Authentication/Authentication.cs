@@ -193,11 +193,8 @@ namespace Descope.Internal.Auth
                 _securityKeys.AddOrUpdate(
                     key.Kid,
                     _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
-                    (_, existingKeys) =>
-                    {
-                        existingKeys.Add(new RsaSecurityKey(rsa));
-                        return existingKeys;
-                    });
+                    (_, existingKeys) => new List<SecurityKey>(existingKeys) { new RsaSecurityKey(rsa) }
+                );
             }
         }
 
