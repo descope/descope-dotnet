@@ -3,10 +3,13 @@ name: Upload dotnet package
 on:
   release:
     types: [created]
+  push:
+    tags:
+      - "0.*.*"
 
 env:
   PACKAGE_NAME: Descope
-  RELEASE_VERSION: ${{ github.event.release.tag_name }}
+  RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
 
 jobs:
   publish:
