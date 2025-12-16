@@ -1,6 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
     "release-type": "simple",
+    "bootstrap-sha": "d39f55924214a3000b54f0eea828eb455c490893",
     "packages": {
         ".": {
             "package-name": "Descope",
