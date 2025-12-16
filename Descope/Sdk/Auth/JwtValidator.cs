@@ -1,5 +1,6 @@
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,11 +9,12 @@ namespace Descope;
 
 /// <summary>
 /// Handles JWT validation using locally cached public keys.
+/// This class is thread-safe and can be used concurrently from multiple threads.
 /// </summary>
 internal class JwtValidator
 {
     private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
-    private readonly Dictionary<string, List<SecurityKey>> _securityKeys = new();
+    private readonly ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
     private readonly string _projectId;
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
@@ -69,7 +71,7 @@ internal class JwtValidator
 
     private async Task FetchKeyIfNeeded()
     {
-        if (_securityKeys.Count > 0) return;
+        if (!_securityKeys.IsEmpty) return;
 
         var url = $"{_baseUrl.TrimEnd('/')}/v2/keys/{_projectId}";
         var response = await _httpClient.GetAsync(url);
@@ -85,12 +87,14 @@ internal class JwtValidator
             var rsa = RSA.Create();
             rsa.ImportParameters(key.ToRsaParameters());
 
-            if (!_securityKeys.ContainsKey(key.Kid))
-            {
-                _securityKeys[key.Kid] = new List<SecurityKey>();
-            }
-
-            _securityKeys[key.Kid].Add(new RsaSecurityKey(rsa));
+            _securityKeys.AddOrUpdate(
+                key.Kid,
+                _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
+                (_, existingKeys) =>
+                {
+                    existingKeys.Add(new RsaSecurityKey(rsa));
+                    return existingKeys;
+                });
         }
     }
 

@@ -306,6 +306,90 @@ public class TokenActionsTests
         Assert.Equal(1, requestCount);
     }
 
+    [Fact]
+    public async Task ValidateSession_CalledConcurrently_ShouldNotThrowConcurrentAccessException()
+    {
+        // This test reproduces a race condition bug where multiple concurrent calls to
+        // ValidateSessionAsync would corrupt the internal dictionary state due to
+        // non-thread-safe Dictionary<string, List<SecurityKey>> access.
+        // See: https://github.com/descope/descope-dotnet/issues/XXX
+        //
+        // The error manifests as:
+        // "Operations that change non-concurrent collections must have exclusive access.
+        // A concurrent update was performed on this collection and corrupted its state."
+
+        // Arrange
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+
+        // Setup the mock to return a valid JWKS response with a small delay
+        // to increase the chance of race conditions
+        mockHttpHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(() =>
+            {
+                // Small delay to increase chance of concurrent access
+                Thread.Sleep(10);
+
+                // Mock the public keys endpoint response with a valid RSA key
+                var keysResponse = new
+                {
+                    keys = new[]
+                    {
+                        new
+                        {
+                            alg = "RS256",
+                            e = "AQAB",
+                            kid = "test-key",
+                            kty = "RSA",
+                            n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
+                            use = "sig"
+                        }
+                    }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(keysResponse);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                };
+            });
+
+        // Create the client with our mock HttpClient
+        var httpClient = new HttpClient(mockHttpHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        var testJwt = "look ma, a jwt";
+        const int concurrentCalls = 50;
+
+        // Act - Run multiple validation calls concurrently
+        // This should NOT throw InvalidOperationException about concurrent collection access
+        var tasks = Enumerable.Range(0, concurrentCalls).Select(async _ =>
+        {
+            try
+            {
+                await client.Auth.ValidateSessionAsync(testJwt);
+            }
+            catch (DescopeException)
+            {
+                // Expected to fail due to invalid JWT signature, that's fine
+            }
+            // Any other exception (especially InvalidOperationException for concurrent access)
+            // should bubble up and fail the test
+        }).ToArray();
+
+        // Assert - This should complete without throwing InvalidOperationException
+        // If the dictionary is not thread-safe, this will throw:
+        // "Operations that change non-concurrent collections must have exclusive access"
+        var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(tasks));
+
+        Assert.Null(exception);
+    }
+
     #endregion
 
 }
