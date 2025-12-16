@@ -312,7 +312,7 @@ public class TokenActionsTests
         // This test reproduces a race condition bug where multiple concurrent calls to
         // ValidateSessionAsync would corrupt the internal dictionary state due to
         // non-thread-safe Dictionary<string, List<SecurityKey>> access.
-        // See: https://github.com/descope/descope-dotnet/issues/XXX
+        // See: https://github.com/descope/etc/issues/13256
         //
         // The error manifests as:
         // "Operations that change non-concurrent collections must have exclusive access.
