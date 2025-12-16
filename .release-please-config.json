@@ -4,7 +4,6 @@
     "packages": {
         ".": {
             "package-name": "Descope",
-            "version-file": "Descope/Descope.csproj",
             "extra-files": [
                 {
                     "type": "xml",
