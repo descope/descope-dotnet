@@ -92,8 +92,7 @@ internal class JwtValidator
                 _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
                 (_, existingKeys) =>
                 {
-                    existingKeys.Add(new RsaSecurityKey(rsa));
-                    return existingKeys;
+                    return existingKeys.Concat(new[] { new RsaSecurityKey(rsa) }).ToList();
                 });
         }
     }
