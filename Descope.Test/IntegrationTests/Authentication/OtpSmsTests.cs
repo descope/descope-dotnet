@@ -5,7 +5,8 @@ using Descope.Mgmt.Models.Onetimev1;
 
 namespace Descope.Test.Integration
 {
-    [Collection("Integration Tests")]
+    [Collection("Authentication Tests")]
+    [Trait("Category", "Authentication")]
     public class OtpSmsTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();

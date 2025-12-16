@@ -3,7 +3,8 @@ using Descope.Mgmt.Models.Managementv1;
 
 namespace Descope.Test.Integration
 {
-    [Collection("Integration Tests")]
+    [Collection("Tenant Management Tests")]
+    [Trait("Category", "TenantManagement")]
     public class TenantTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();

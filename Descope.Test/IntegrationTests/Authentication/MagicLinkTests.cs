@@ -62,7 +62,8 @@ namespace Descope.Test.Integration
         public string RedirectUrl { get; set; } = string.Empty;
     }
 
-    [Collection("Integration Tests")]
+    [Collection("Authentication Tests")]
+    [Trait("Category", "Authentication")]
     public class MagicLinkTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
