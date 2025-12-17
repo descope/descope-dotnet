@@ -4,7 +4,8 @@ using Descope.Mgmt.Models.Onetimev1;
 
 namespace Descope.Test.Integration
 {
-    [Collection("Integration Tests")]
+    [Collection("User Management Tests")]
+    [Trait("Category", "UserManagement")]
     public class UserTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();

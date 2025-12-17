@@ -6,20 +6,15 @@ on:
       - main
   pull_request:
 
-concurrency:
-  group: ci # global group
-  cancel-in-progress: false # let them run
-  # this will disable CI parellelism
-  # TODO: refactor use of test users to allow running in parallel
+permissions:
+    contents: read
 
 jobs:
-  test:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      actions: read
-      checks: write
-    runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Setup dotnet
@@ -34,23 +29,103 @@ jobs:
         run: dotnet restore --locked-mode
       - name: Build with dotnet
         run: dotnet build --no-restore --configuration Release
-      - name: Test with dotnet
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/**
+            **/obj/**
+          retention-days: 1
+
+  unit-tests:
+    name: Unit Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: |
+            6.x.x
+            8.x.x
+            9.x.x
+            10.x.x
+      - name: Download build artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: build-artifacts
+      - name: Run unit tests
+        timeout-minutes: 5
+        run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName!~Integration" --logger trx --results-directory "TestResults-Unit" --blame --blame-hang --blame-hang-timeout 1min
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unit-test-results
+          path: TestResults-Unit
+      - name: Post unit test results to GitHub
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        if: always()
+        with:
+          name: Unit Tests
+          path: TestResults-Unit/**/*.trx
+          reporter: dotnet-trx
+
+  integration-tests:
+    name: Integration Tests - ${{ matrix.category }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        category:
+          - Authentication
+          - UserManagement
+          - TenantManagement
+          - Authorization
+          - ProjectSettings
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: |
+            6.x.x
+            8.x.x
+            9.x.x
+            10.x.x
+      - name: Download build artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: build-artifacts
+      - name: Run integration tests
         timeout-minutes: 10
         env:
           AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
           AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
-        run: dotnet test --no-build --configuration Release --logger trx --results-directory "TestResults" --blame --blame-hang --blame-hang-timeout 1min --diag "TestResults/vstest_diagnostics.log"
-
-      - name: Upload dotnet test results
+        run: |
+          dotnet test --no-build --configuration Release \
+            --filter "Category=${{ matrix.category }}" \
+            --logger "trx;LogFileName=TestResults-${{ matrix.category }}.trx" \
+            --results-directory "TestResults-${{ matrix.category }}" \
+            --blame --blame-hang --blame-hang-timeout 1min \
+            --diag "TestResults-${{ matrix.category }}/vstest_diagnostics.log"
+      - name: Upload integration test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: dotnet-results
-          path: TestResults
-      - name: Post test results to GitHub
+          name: integration-test-results-${{ matrix.category }}
+          path: TestResults-${{ matrix.category }}
+      - name: Post integration test results to GitHub
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
         if: always()
         with:
-          name: .NET Tests
-          path: TestResults/**/*.trx
+          name: Integration Tests - ${{ matrix.category }}
+          path: TestResults-${{ matrix.category }}/**/*.trx
           reporter: dotnet-trx
