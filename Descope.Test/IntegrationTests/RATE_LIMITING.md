@@ -24,7 +24,8 @@ Tests are partitioned into 5 collections based on resource conflicts. Each test 
 1. **Authentication Tests** (`[Trait("Category", "Authentication")]`)
    - Auth flow tests (OTP, MagicLink, Password, etc.)
    - Stateless operations that don't modify shared resources
-   - Classes: `AuthenticationTests`, `MagicLinkTests`, `OtpEmailTests`, `OtpSmsTests`, `PasswordAuthenticationTests`, `ServiceDITests`
+   - Also includes DI configuration tests (e.g., `ServiceDITests`)
+   - Classes: `AuthenticationTests`, `MagicLinkTests`, `OtpEmailTests`, `OtpSmsTests`, `PasswordAuthenticationTests`, `ServiceDITests` (dependency injection)
 
 2. **User Management Tests** (`[Trait("Category", "UserManagement")]`)
    - User CRUD operations
