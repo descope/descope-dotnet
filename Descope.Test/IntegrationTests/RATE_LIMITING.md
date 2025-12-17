@@ -70,7 +70,7 @@ With ~97 integration tests distributed across 5 collections running in parallel 
   - Each collection groups tests that don't conflict with each other
   - Collections can run in parallel; tests within a collection run sequentially
   
-- **All 18 integration test classes**:
+- **All 17 integration test classes**:
   - Inherit from `RateLimitedIntegrationTest`
   - Marked with appropriate `[Collection("...")]` attribute for XUnit organization
   - Marked with `[Trait("Category", "...")]` attribute for CI filtering
