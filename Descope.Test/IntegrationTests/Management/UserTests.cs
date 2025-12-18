@@ -1648,15 +1648,18 @@ namespace Descope.Test.Integration
                 Assert.NotNull(userId);
 
                 // Load auth history for the user (newly created user won't have history, but API should work)
-                var historyRequest = new UsersAuthHistoryRequest
+                await RetryUntilSuccessAsync(async () =>
                 {
-                    UserIds = new List<string> { userId }
-                };
-                var historyResult = await _descopeClient.Mgmt.V2.User.History.PostAsync(historyRequest);
+                    var historyRequest = new UsersAuthHistoryRequest
+                    {
+                        UserIds = new List<string> { userId }
+                    };
+                    var historyResult = await _descopeClient.Mgmt.V2.User.History.PostAsync(historyRequest);
 
-                // Response should not be null, but history list may be empty for a new user
-                Assert.NotNull(historyResult);
-                Assert.NotNull(historyResult.UsersAuthHistory);
+                    // Response should not be null, but history list may be empty for a new user
+                    Assert.NotNull(historyResult);
+                    Assert.NotNull(historyResult.UsersAuthHistory);
+                });
             }
             finally
             {
