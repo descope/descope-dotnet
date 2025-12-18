@@ -1625,5 +1625,48 @@ namespace Descope.Test.Integration
                 }
             }
         }
+
+        [Fact]
+        public async Task User_AuthHistory()
+        {
+            string? loginId = null;
+            string? userId = null;
+            try
+            {
+                // Create a user
+                var name = Guid.NewGuid().ToString();
+                var createRequest = new CreateUserRequest
+                {
+                    Identifier = name,
+                    Email = name + "@test.com",
+                };
+                var createResult = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = createResult?.User?.LoginIds?.FirstOrDefault();
+                userId = createResult?.User?.UserId;
+
+                Assert.NotNull(loginId);
+                Assert.NotNull(userId);
+
+                // Load auth history for the user (newly created user won't have history, but API should work)
+                var historyRequest = new UsersAuthHistoryRequest
+                {
+                    UserIds = new List<string> { userId }
+                };
+                var historyResult = await _descopeClient.Mgmt.V2.User.History.PostAsync(historyRequest);
+
+                // Response should not be null, but history list may be empty for a new user
+                Assert.NotNull(historyResult);
+                Assert.NotNull(historyResult.UsersAuthHistory);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+            }
+        }
     }
 }

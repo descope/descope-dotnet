@@ -31,6 +31,14 @@ namespace Descope.Mgmt.Models.Auditv1
 #endif
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The auditTypes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? AuditTypes { get; set; }
+#nullable restore
+#else
+        public List<string> AuditTypes { get; set; }
+#endif
         /// <summary>The devices property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -186,6 +194,7 @@ namespace Descope.Mgmt.Models.Auditv1
             {
                 { "actions", n => { Actions = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "actorIds", n => { ActorIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "auditTypes", n => { AuditTypes = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "devices", n => { Devices = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "excludedActions", n => { ExcludedActions = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "excludedExternalIds", n => { ExcludedExternalIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
@@ -216,6 +225,7 @@ namespace Descope.Mgmt.Models.Auditv1
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
             writer.WriteCollectionOfPrimitiveValues<string>("actions", Actions);
             writer.WriteCollectionOfPrimitiveValues<string>("actorIds", ActorIds);
+            writer.WriteCollectionOfPrimitiveValues<string>("auditTypes", AuditTypes);
             writer.WriteCollectionOfPrimitiveValues<string>("devices", Devices);
             writer.WriteCollectionOfPrimitiveValues<string>("excludedActions", ExcludedActions);
             writer.WriteCollectionOfPrimitiveValues<string>("excludedExternalIds", ExcludedExternalIds);
