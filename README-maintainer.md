@@ -10,6 +10,7 @@ This guide is intended for maintainers of the Descope .NET SDK. For SDK usage do
 - [Extension Methods](#extension-methods)
 - [Middleware Overview](#middleware-overview)
 - [Testing](#testing)
+- [Releasing Versions](#releasing-versions)
 
 ## Getting Started
 
@@ -238,3 +239,54 @@ Integration tests require a valid Descope project. To run locally, create and po
 
 **Important:** In the CI environment, integration tests use environment variables instead of `appsettingsTest.json`.
 **Important:** Integration tests are rate-limited. See `Descope.Test/IntegrationTests/RATE_LIMITING.md` for details.
+
+## Releasing Versions
+
+The SDK maintains two separate version lines with different release processes:
+
+### 1.x.x - Kiota-Based SDK (Current)
+
+The current Kiota-generated SDK uses automated release management via [release-please](https://github.com/googleapis/release-please).
+
+**How it works:**
+- Release-please automatically maintains a release PR that tracks all changes merged into `main`
+- The PR is continuously updated with new changes and follows [Conventional Commits](https://www.conventionalcommits.org/) to determine version bumps
+- Changelog entries are automatically generated from commit messages
+
+**To release a new version:**
+1. Review the open release-please PR to verify the changes and version bump
+2. Merge the release-please PR into `main`
+3. Release-please will automatically:
+   - Create a GitHub release
+   - Publish the package to NuGet
+   - Update the version number
+
+**Important:** Make sure your commit messages follow conventional commit format (e.g., `feat:`, `fix:`, `chore:`) for proper changelog generation and version bumping.
+
+### 0.x.x - Legacy SDK (Maintenance Only)
+
+The legacy manually-generated SDK is maintained on the `main-v0` branch for critical bug fixes and vulnerability updates only.
+
+**When to use:**
+- Security vulnerabilities affecting `0.x.x` users
+- Critical bug fixes that can't wait for users to migrate to `1.x.x`
+
+**Release process:**
+1. **Create and merge PR to `main-v0`:**
+   - The `main-v0` branch is protected and tracks the `0.x.x` SDK version
+   - Create your fix/update branch from `main-v0`
+   - Open a PR targeting `main-v0` (NOT `main`)
+   - Get it reviewed and merged
+
+2. **Manually create a release:**
+   - Go to the [GitHub Releases page](https://github.com/descope/descope-dotnet/releases)
+   - Click "Draft a new release"
+   - **Important:** Select `main-v0` as the target branch (NOT `main`)
+   - Set the tag version with `0.` prefix (e.g., `0.8.1`, `0.8.2`)
+   - Fill in release notes describing the fixes
+   - Publish the release
+
+**Important Notes:**
+- Release-please does NOT track the `main-v0` branch - releases must be created manually
+- Always ensure the version number starts with `0.` to distinguish it from the `1.x.x` line
+- NuGet package publication is handled automatically by GitHub Actions on release creation
