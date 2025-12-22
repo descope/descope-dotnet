@@ -88,6 +88,14 @@ namespace Descope.Mgmt.Models.Onetimev1
 #else
         public string TenantSSOID { get; set; }
 #endif
+        /// <summary>The trustedDeviceJwt property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TrustedDeviceJwt { get; set; }
+#nullable restore
+#else
+        public string TrustedDeviceJwt { get; set; }
+#endif
         /// <summary>The user property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -133,6 +141,7 @@ namespace Descope.Mgmt.Models.Onetimev1
                 { "sessionExpiration", n => { SessionExpiration = n.GetIntValue(); } },
                 { "sessionJwt", n => { SessionJwt = n.GetStringValue(); } },
                 { "tenantSSOID", n => { TenantSSOID = n.GetStringValue(); } },
+                { "trustedDeviceJwt", n => { TrustedDeviceJwt = n.GetStringValue(); } },
                 { "user", n => { User = n.GetObjectValue<global::Descope.Mgmt.Models.Userv1.ResponseUser>(global::Descope.Mgmt.Models.Userv1.ResponseUser.CreateFromDiscriminatorValue); } },
             };
         }
@@ -155,6 +164,7 @@ namespace Descope.Mgmt.Models.Onetimev1
             writer.WriteIntValue("sessionExpiration", SessionExpiration);
             writer.WriteStringValue("sessionJwt", SessionJwt);
             writer.WriteStringValue("tenantSSOID", TenantSSOID);
+            writer.WriteStringValue("trustedDeviceJwt", TrustedDeviceJwt);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Userv1.ResponseUser>("user", User);
             writer.WriteAdditionalData(AdditionalData);
         }

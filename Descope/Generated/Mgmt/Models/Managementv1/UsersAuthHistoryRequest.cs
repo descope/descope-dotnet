@@ -9,37 +9,35 @@ namespace Descope.Mgmt.Models.Managementv1
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class LoadAllThirdPartyApplicationsResponse : IAdditionalDataHolder, IParsable
+    public partial class UsersAuthHistoryRequest : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The apps property</summary>
+        /// <summary>The userIds property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public List<global::Descope.Mgmt.Models.Managementv1.ThirdPartyApplication>? Apps { get; set; }
+        public List<string>? UserIds { get; set; }
 #nullable restore
 #else
-        public List<global::Descope.Mgmt.Models.Managementv1.ThirdPartyApplication> Apps { get; set; }
+        public List<string> UserIds { get; set; }
 #endif
-        /// <summary>The total property</summary>
-        public int? Total { get; set; }
         /// <summary>
-        /// Instantiates a new <see cref="global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse"/> and sets the default values.
+        /// Instantiates a new <see cref="global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest"/> and sets the default values.
         /// </summary>
-        public LoadAllThirdPartyApplicationsResponse()
+        public UsersAuthHistoryRequest()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse"/></returns>
+        /// <returns>A <see cref="global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
-            return new global::Descope.Mgmt.Models.Managementv1.LoadAllThirdPartyApplicationsResponse();
+            return new global::Descope.Mgmt.Models.Managementv1.UsersAuthHistoryRequest();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -49,8 +47,7 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "apps", n => { Apps = n.GetCollectionOfObjectValues<global::Descope.Mgmt.Models.Managementv1.ThirdPartyApplication>(global::Descope.Mgmt.Models.Managementv1.ThirdPartyApplication.CreateFromDiscriminatorValue)?.AsList(); } },
-                { "total", n => { Total = n.GetIntValue(); } },
+                { "userIds", n => { UserIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
             };
         }
         /// <summary>
@@ -60,8 +57,7 @@ namespace Descope.Mgmt.Models.Managementv1
         public virtual void Serialize(ISerializationWriter writer)
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
-            writer.WriteCollectionOfObjectValues<global::Descope.Mgmt.Models.Managementv1.ThirdPartyApplication>("apps", Apps);
-            writer.WriteIntValue("total", Total);
+            writer.WriteCollectionOfPrimitiveValues<string>("userIds", UserIds);
             writer.WriteAdditionalData(AdditionalData);
         }
     }
