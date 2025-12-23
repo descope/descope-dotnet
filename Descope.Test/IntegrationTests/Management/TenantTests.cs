@@ -1,6 +1,5 @@
 using Xunit;
 using Descope.Mgmt.Models.Managementv1;
-using Microsoft.VisualBasic;
 
 namespace Descope.Test.Integration
 {
