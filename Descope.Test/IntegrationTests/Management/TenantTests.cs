@@ -1,5 +1,6 @@
 using Xunit;
 using Descope.Mgmt.Models.Managementv1;
+using Microsoft.VisualBasic;
 
 namespace Descope.Test.Integration
 {
@@ -112,7 +113,7 @@ namespace Descope.Test.Integration
         }
 
         [Fact]
-        public async Task Tenant_UpdateAndSearch()
+        public async Task Tenant_CreateLoadUpdateAndSearch()
         {
             string? tenantId = null;
             try
@@ -120,15 +121,29 @@ namespace Descope.Test.Integration
                 // Create a tenant
                 string tenantName = Guid.NewGuid().ToString();
                 var createResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = tenantName });
-                tenantId = createResponse?.Id;
-                var updatedTenantName = tenantName + "updated";
+                Assert.NotNull(createResponse);
+                tenantId = createResponse.Id!;
+
+                // Load the tenant
+                var loadedTenant = await _descopeClient.Mgmt.V1.Tenant.GetWithIdAsync(tenantId);
+                Assert.NotNull(loadedTenant);
 
                 // Update and compare
+                var updatedTenantName = tenantName + "updated";
                 await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest
                 {
-                    Id = tenantId,
-                    Name = updatedTenantName
+                    Id = loadedTenant.Tenant!.Id,
+                    Name = updatedTenantName,
+                    Disabled = loadedTenant.Tenant.Disabled,
+                    EnforceSSO = loadedTenant.Tenant.EnforceSSO,
+                    EnforceSSOExclusions = loadedTenant.Tenant.EnforceSSOExclusions,
+                    SelfProvisioningDomains = loadedTenant.Tenant.SelfProvisioningDomains,
+                    CustomAttributes = loadedTenant.Tenant.CustomAttributes != null
+                        ? new UpdateTenantRequest_customAttributes { AdditionalData = loadedTenant.Tenant.CustomAttributes.AdditionalData }
+                        : null,
+                    FederatedAppIds = loadedTenant.Tenant.FederatedAppIds,
                 });
+
                 var searchResponse = await _descopeClient.Mgmt.V1.Tenant.Search.PostAsync(new SearchTenantsRequest
                 {
                     TenantIds = new List<string> { tenantId! }
@@ -136,6 +151,20 @@ namespace Descope.Test.Integration
                 Assert.NotNull(searchResponse?.Tenants);
                 Assert.Single(searchResponse.Tenants);
                 Assert.Equal(updatedTenantName, searchResponse.Tenants[0].Name);
+                Assert.Equal(loadedTenant.Tenant!.Disabled, searchResponse.Tenants[0].Disabled);
+                Assert.Equal(loadedTenant.Tenant.EnforceSSO, searchResponse.Tenants[0].EnforceSSO);
+                Assert.Equal(loadedTenant.Tenant.EnforceSSOExclusions, searchResponse.Tenants[0].EnforceSSOExclusions);
+                Assert.Equal(loadedTenant.Tenant.SelfProvisioningDomains, searchResponse.Tenants[0].SelfProvisioningDomains);
+                Assert.Equal(loadedTenant.Tenant.FederatedAppIds, searchResponse.Tenants[0].FederatedAppIds);
+                if (loadedTenant.Tenant.CustomAttributes != null)
+                {
+                    Assert.NotNull(searchResponse.Tenants[0].CustomAttributes);
+                    Assert.Equal(loadedTenant.Tenant.CustomAttributes.AdditionalData, searchResponse.Tenants[0].CustomAttributes?.AdditionalData);
+                }
+                else
+                {
+                    Assert.Null(searchResponse.Tenants[0].CustomAttributes);
+                }
             }
             finally
             {
