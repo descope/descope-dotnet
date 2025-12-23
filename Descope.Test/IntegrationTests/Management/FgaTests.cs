@@ -43,54 +43,60 @@ type User
                 await _descopeClient.Mgmt.V1.Fga.Relations.PostAsync(createRelationsRequest);
 
                 // Check that the relation exists
-                var checkRequest = new CheckRequest
+                await RetryUntilSuccessAsync(async () =>
                 {
-                    Tuples = new List<TupleObject>
+                    var checkRequest = new CheckRequest
                     {
-                        new TupleObject
+                        Tuples = new List<TupleObject>
                         {
-                            ResourceType = "User",
-                            Resource = "u1",
-                            Relation = "friend",
-                            TargetType = "User",
-                            Target = "u2"
+                            new TupleObject
+                            {
+                                ResourceType = "User",
+                                Resource = "u1",
+                                Relation = "friend",
+                                TargetType = "User",
+                                Target = "u2"
+                            }
                         }
-                    }
-                };
-                var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
+                    };
+                    var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
 
-                // Verify the relation was found
-                Assert.NotNull(checkResponse);
-                Assert.NotNull(checkResponse.Tuples);
-                Assert.Single(checkResponse.Tuples);
-                Assert.True(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be allowed");
+                    // Verify the relation was found
+                    Assert.NotNull(checkResponse);
+                    Assert.NotNull(checkResponse.Tuples);
+                    Assert.Single(checkResponse.Tuples);
+                    Assert.True(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be allowed");
+                });
             }
             finally
             {
                 // Delete the relations (cleanup, but also verifies DeleteRelations works)
                 await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync();
                 // Check that the relation no longer exists
-                var checkRequest = new CheckRequest
+                await RetryUntilSuccessAsync(async () =>
                 {
-                    Tuples = new List<TupleObject>
+                    var checkRequest = new CheckRequest
                     {
-                        new TupleObject
+                        Tuples = new List<TupleObject>
                         {
-                            ResourceType = "User",
-                            Resource = "u1",
-                            Relation = "friend",
-                            TargetType = "User",
-                            Target = "u2"
+                            new TupleObject
+                            {
+                                ResourceType = "User",
+                                Resource = "u1",
+                                Relation = "friend",
+                                TargetType = "User",
+                                Target = "u2"
+                            }
                         }
-                    }
-                };
-                var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
+                    };
+                    var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
 
-                // Verify the relation was found
-                Assert.NotNull(checkResponse);
-                Assert.NotNull(checkResponse.Tuples);
-                Assert.Single(checkResponse.Tuples);
-                Assert.False(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be deleted");
+                    // Verify the relation was found
+                    Assert.NotNull(checkResponse);
+                    Assert.NotNull(checkResponse.Tuples);
+                    Assert.Single(checkResponse.Tuples);
+                    Assert.False(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be deleted");
+                });
             }
         }
 
