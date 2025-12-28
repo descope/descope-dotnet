@@ -9,7 +9,7 @@ builder.Configuration.AddJsonFile("localExampleSettings.json", optional: true, r
 
 // Configure Descope OIDC authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddDescopeOIDCAuthentication(
+    .AddDescopeOidcAuthentication(
         // MANDATORY: set your Descope project ID (all other options are OPTIONAL)
         configureOidc: options =>
         {

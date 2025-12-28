@@ -142,11 +142,11 @@ Other operations requiring `PostWithJwt` include, among others: updating phone n
 
 ## ASP.NET OIDC Integration
 
-For ASP.NET Core applications, use the `AddDescopeOIDCAuthentication` extension method to integrate Descope as your Identity Provider (IdP) using OpenID Connect (OIDC):
+For ASP.NET Core applications, use the `AddDescopeOidcAuthentication` extension method to integrate Descope as your Identity Provider (IdP) using OpenID Connect (OIDC):
 
 ```csharp
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddDescopeOIDCAuthentication(options =>
+    .AddDescopeOidcAuthentication(options =>
     {
         options.ProjectId = "your-project-id";
     });

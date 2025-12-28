@@ -88,7 +88,7 @@ public static class DescopeCookieExtensions
     /// </code>
     /// </example>
     /// </remarks>
-    public static AuthenticationBuilder AddDescopeOIDCAuthentication(
+    public static AuthenticationBuilder AddDescopeOidcAuthentication(
         this AuthenticationBuilder builder,
         Action<DescopeOidcOptions> configureOidc,
         Action<CookieAuthenticationOptions>? configureCookies = null,
