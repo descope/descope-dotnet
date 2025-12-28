@@ -171,9 +171,6 @@ app.MapGet("/success", (HttpContext context) =>
                ?? user.Identity?.Name
                ?? "User";
 
-    var email = user.FindFirst("email")?.Value ?? "N/A";
-    var sub = user.FindFirst("sub")?.Value ?? "N/A";
-
     var html = $$"""
         <!DOCTYPE html>
         <html lang="en">
