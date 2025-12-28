@@ -79,7 +79,7 @@ public static class DescopeCookieExtensions
     /// <example>
     /// <code>
     /// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    ///     .AddDescopeWebAppAuthentication(options =>
+    ///     .AddDescopeOIDCAuthentication(options =>
     ///     {
     ///         options.ProjectId = "your_project_id";
     ///         options.ClientSecret = "optional_for_pkce";
