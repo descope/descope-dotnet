@@ -44,7 +44,7 @@ public static class DescopeCookieExtensions
     /// </code>
     /// </example>
     /// </remarks>
-    public static AuthenticationBuilder AddCookies(
+    public static AuthenticationBuilder AddDescopeCookies(
         this AuthenticationBuilder builder,
         Action<CookieAuthenticationOptions>? configureCookies = null)
     {
@@ -73,7 +73,7 @@ public static class DescopeCookieExtensions
     /// <param name="configureCookies">Optional action to customize cookie options.</param>
     /// <returns>The authentication builder for chaining.</returns>
     /// <remarks>
-    /// This method combines <see cref="AddCookies"/> and
+    /// This method combines <see cref="AddDescopeCookies"/> and
     /// <see cref="AuthenticationBuilderExtensions.AddDescopeOidc"/> for a simplified setup.
     ///
     /// <example>
@@ -95,7 +95,7 @@ public static class DescopeCookieExtensions
         Action<OpenIdConnectEvents>? configureEvents = null)
     {
         return builder
-            .AddCookies(configureCookies)
+            .AddDescopeCookies(configureCookies)
             .AddDescopeOidc(configureOidc, configureEvents);
     }
 }
