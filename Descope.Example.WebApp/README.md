@@ -14,7 +14,7 @@ A minimal ASP.NET web application demonstrating Descope OIDC authentication inte
 ```json
 {
   "Descope": {
-    "ProjectId": "your-project-id",
+    "ProjectId": "your-project-id"
   }
 }
 ```
