@@ -1383,8 +1383,6 @@ namespace Descope.Test.Integration
         }
 
 
-
-
         [Fact]
         public async Task User_TestUser()
         {
