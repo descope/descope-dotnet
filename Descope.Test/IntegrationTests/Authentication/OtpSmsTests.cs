@@ -10,7 +10,6 @@ namespace Descope.Test.Integration
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
         // The tests in this class perform many user mgmt calls, which have lower rate limits, so we add extra delay in addition to the base rate limiting
-        private readonly int extraSleepTime = GetDelayBasedOnPlatform();
 
         [Fact]
         public async Task OtpSms_SignInAndVerify_Success()

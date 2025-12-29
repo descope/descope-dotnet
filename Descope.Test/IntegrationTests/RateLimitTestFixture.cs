@@ -11,6 +11,8 @@ namespace Descope.Test.Integration
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private static DateTime _lastTestEndTime = DateTime.MinValue;
 
+        protected readonly int extraSleepTime = GetDelayBasedOnPlatform();
+
         // Delay between tests in milliseconds
         // 1000ms provides ~60 requests per 60 seconds (buffer below the 100 req/60s limit since each test may make multiple requests)
         // Set to 0 on macOS for faster local development, 1000ms in CI to respect rate limits

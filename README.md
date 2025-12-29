@@ -140,6 +140,20 @@ var response = await client.Auth.V1.Magiclink.Update.Email.PostWithJwtAsync(
 
 Other operations requiring `PostWithJwt` include, among others: updating phone numbers, passwords, TOTP settings, WebAuthn devices, and getting user details via the `/me` endpoint.
 
+## ASP.NET OIDC Integration
+
+For ASP.NET Core applications, use the `AddDescopeOidcAuthentication` extension method to integrate Descope as your Identity Provider (IdP) using OpenID Connect (OIDC):
+
+```csharp
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddDescopeOidcAuthentication(options =>
+    {
+        options.ProjectId = "your-project-id";
+    });
+```
+
+See the [OIDC Demo Application](Descope.Example.WebApp/README.md) for a complete working example with additional customization options.
+
 ## For Maintainers
 
 If you're maintaining or contributing to this SDK, see the [Maintainer Guide](README-maintainer.md) for detailed information about code generation, extension methods, testing, and development workflows.

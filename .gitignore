@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Ignore local example settings file
+Descope.Example.WebApp/localExampleSettings.json
