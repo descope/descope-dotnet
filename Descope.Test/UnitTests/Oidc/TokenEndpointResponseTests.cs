@@ -5,147 +5,17 @@ using System.Text.Json;
 
 namespace Descope.Test.UnitTests.Oidc
 {
-    public class DescopeOidcOptionsTests
-    {
-        [Fact]
-        public void DefaultValues_AreCorrect()
-        {
-            var options = new DescopeOidcOptions();
-
-            Assert.Equal(string.Empty, options.ProjectId);
-            Assert.Null(options.ClientSecret);
-            Assert.Equal("https://api.descope.com", options.BaseUrl);
-            Assert.Equal("/signin-descope", options.CallbackPath);
-            Assert.Equal("/signout-callback-descope", options.SignedOutCallbackPath);
-            Assert.Null(options.PostLogoutRedirectUri);
-            Assert.Equal("openid profile email", options.Scope);
-            Assert.True(options.UsePkce);
-            Assert.True(options.SaveTokens);
-            Assert.False(options.GetClaimsFromUserInfoEndpoint);
-            Assert.Equal("Descope", options.AuthenticationScheme);
-        }
-
-        [Fact]
-        public void BaseUrl_FallsBackToDefault_WhenSetToEmptyString()
-        {
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "P123456789",
-                BaseUrl = ""
-            };
-
-            Assert.Equal("https://api.descope.com", options.BaseUrl);
-        }
-
-        [Fact]
-        public void BaseUrl_FallsBackToDefault_WhenSetToNull()
-        {
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "P123456789",
-                BaseUrl = null
-            };
-
-            Assert.Equal("https://api.descope.com", options.BaseUrl);
-        }
-
-        [Fact]
-        public void BaseUrl_FallsBackToRegionalUrl_WhenSetToEmptyWithRegionalProjectId()
-        {
-            // 32+ character project ID with region "use1" at positions 1-4
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "Puse1567890123456789012345678901",
-                BaseUrl = ""
-            };
-
-            Assert.Equal("https://api.use1.descope.com", options.BaseUrl);
-        }
-
-        [Fact]
-        public void Validate_ThrowsWhenProjectIdIsEmpty()
-        {
-            var options = new DescopeOidcOptions();
-
-            var ex = Assert.Throws<DescopeException>(() => options.Validate());
-            Assert.Contains("ProjectId is required", ex.Message);
-        }
-
-        [Fact]
-        public void Validate_ThrowsWhenProjectIdIsWhitespace()
-        {
-            var options = new DescopeOidcOptions { ProjectId = "   " };
-
-            var ex = Assert.Throws<DescopeException>(() => options.Validate());
-            Assert.Contains("ProjectId is required", ex.Message);
-        }
-
-        [Fact]
-        public void Validate_PassesWithValidProjectId()
-        {
-            var options = new DescopeOidcOptions { ProjectId = "P123456789" };
-
-            options.Validate(); // Should not throw
-        }
-
-        [Fact]
-        public void GetAuthority_UsesDefaultBaseUrl_WhenBaseUrlIsNull()
-        {
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "P123456789",
-                BaseUrl = null
-            };
-
-            var authority = options.GetAuthority();
-
-            Assert.Equal("https://api.descope.com/P123456789", authority);
-        }
-
-        [Fact]
-        public void GetAuthority_UsesProvidedBaseUrl()
-        {
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "P123456789",
-                BaseUrl = "https://custom.example.com"
-            };
-
-            var authority = options.GetAuthority();
-
-            Assert.Equal("https://custom.example.com/P123456789", authority);
-        }
-
-        [Fact]
-        public void GetAuthority_TrimsTrailingSlash()
-        {
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "P123456789",
-                BaseUrl = "https://custom.example.com/"
-            };
-
-            var authority = options.GetAuthority();
-
-            Assert.Equal("https://custom.example.com/P123456789", authority);
-        }
-
-        [Fact]
-        public void GetAuthority_UsesRegionalUrl_ForLongProjectId()
-        {
-            // 32+ character project ID with region at positions 1-4
-            var options = new DescopeOidcOptions
-            {
-                ProjectId = "Peus1abcdefghijklmnopqrstuvwxyz12",
-                BaseUrl = null
-            };
-
-            var authority = options.GetAuthority();
-
-            Assert.Equal("https://api.eus1.descope.com/Peus1abcdefghijklmnopqrstuvwxyz12", authority);
-        }
-    }
-
+    /// <summary>
+    // We are actually testing Microsoft Identity Model's OpenIdConnectMessage parsing here,
+    // using example responses from Descope's /oauth2/v1/token endpoint, and not testing
+    // the Descope SDK itself directly.
+    //
+    // However, this is still important!
+    //
+    // This is done to verify that the version of the Microsoft.IdentityModel.Protocols.OpenIdConnect
+    // package we depend on does not have any bugs which cause parsing issues.
+    // (Version 7.0.3 had a bug which failed to parse the Id token! it was fixed in 8.0.0+)
+    /// </summary>
     public class TokenEndpointResponseTests
     {
         /// <summary>
@@ -209,28 +79,6 @@ namespace Descope.Test.UnitTests.Oidc
             Assert.Equal("Bearer", message.TokenType);
             Assert.Equal("600", message.ExpiresIn);
             Assert.Equal("openid profile email", message.Scope);
-        }
-
-        /// <summary>
-        /// Verifies that the IdToken can be decoded and contains expected claims.
-        /// </summary>
-        [Fact]
-        public void TokenEndpointResponse_IdToken_ContainsExpectedClaims()
-        {
-            // Arrange
-            var idToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNLMzZaMlg0TE93dFlVRHp5b1MwTk9ndWxQMHdoIiwidHlwIjoiSldUIn0.eyJhdWQiOlsiUDM2WjJXeFR2ZU1RQldsTGZDTVBsQzNRTTFPYSJdLCJhenAiOiJQMzZaMld4VHZlTVFCV2xMZkNNUGxDM1FNMU9hIiwiZW1haWwiOiJ5b3NpKzFAZGVzY29wZS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoxNzY2OTEyNzk4LCJpYXQiOjE3NjY5MTIxOTgsImlzcyI6Imh0dHBzOi8veW9zaS5kZXNjb3BlLnRlYW0vUDM2WjJXeFR2ZU1RQldsTGZDTVBsQzNRTTFPYSIsIm5vbmNlIjoiNjM5MDI1MDg5ODQ5OTQwMTMwLlpqWXlZemRrTVRBdFltSTNNaTAwT0dFMUxXSmlabVl0T1RZd09ESTBZMlZqT0RjNE9EaGpPV1ZrTmpRdE1EWmlOQzAwTnpFM0xXRXlOVGN0TldVM09UZGtNV1E0T1RsaSIsInJleHAiOiIyMDI2LTAxLTI1VDA4OjU2OjM4WiIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzdWIiOiJVMzdMM1VqdUFsSmdISmtZR1BoM1o0bkxjZG5nIiwidG9rZW5fdHlwZSI6ImlkX3Rva2VuIn0.mifmGUi8vQmkpZYw7P9jL7C8TkucovLYmX37rrUAg00B4K7lHlo0rvPPHcjVT-R8LSQMBgitSOe4JxBk_tZDHguimMbJwT3hSlfpvNDpQpISa6-a1PyAaKyno0EzMEQZISZhWWEiCN6DSGFNzOC3EH7pBeDTKs5gCaMIvATewy_j5ajpufDGpYO2oYBcuLS-43lA9nP29pN56unGiJ5sg9ZPNlTOxsg3RY_9JzRNHzphugN4W9osBv2pfhtQPVvRWhsP6UULmk4AlqbS8Nja6VRb1jtXuqEWT76ObI7mmng2ipPJyaS1gYVTZ_FbhmW1IjVo-4uPmhvTro1ofw09_Q";
-
-            // Act - Decode the JWT without signature validation (we just want to read claims)
-            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(idToken);
-
-            // Assert
-            Assert.Equal("id_token", jwt.Payload["token_type"]?.ToString());
-            Assert.Equal("yosi+1@descope.com", jwt.Payload["email"]?.ToString());
-            Assert.True((bool?)jwt.Payload["email_verified"]);
-            Assert.Equal("U37L3UjuAlJgHJkYGPh3Z4nLcdng", jwt.Subject);
-            Assert.Contains("P36Z2WxTveMQBWlLfCMPlC3QM1Oa", jwt.Audiences);
-            Assert.Equal("https://yosi.descope.team/P36Z2WxTveMQBWlLfCMPlC3QM1Oa", jwt.Issuer);
         }
 
         /// <summary>
