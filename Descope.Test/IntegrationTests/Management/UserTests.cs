@@ -1338,7 +1338,7 @@ namespace Descope.Test.Integration
                 {
                     Limit = 10,
                     TenantIds = new List<string> { tenantId! },
-                    RoleNames = new List<string> { roleName! },
+                    RoleNames = new List<string> { roleName! }
                 };
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
                 Assert.NotNull(users?.Users);
