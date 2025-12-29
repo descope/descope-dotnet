@@ -1338,8 +1338,7 @@ namespace Descope.Test.Integration
                 {
                     Limit = 10,
                     TenantIds = new List<string> { tenantId! },
-                    RoleNames = new List<string> { roleName! }
-
+                    RoleNames = new List<string> { roleName! },
                 };
                 users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
                 Assert.NotNull(users?.Users);
@@ -1382,6 +1381,8 @@ namespace Descope.Test.Integration
                 }
             }
         }
+
+
 
 
         [Fact]
@@ -1621,6 +1622,45 @@ namespace Descope.Test.Integration
                 if (!string.IsNullOrEmpty(tenantId))
                 {
                     try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task User_DeletePasskeys()
+        {
+            string? loginId = null;
+            try
+            {
+                // Create a test user
+                var name = Guid.NewGuid().ToString();
+                var createRequest = new CreateUserRequest
+                {
+                    Identifier = name,
+                    Email = name + "@test.com",
+                };
+                var result = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
+                loginId = result?.User?.LoginIds?.FirstOrDefault();
+
+                Assert.NotNull(result?.User);
+                Assert.NotNull(loginId);
+
+                // Delete user passkeys - should return 200 OK even if user has no passkeys
+                var deletePasskeysRequest = new RemoveUserPasskeysRequest
+                {
+                    LoginId = loginId
+                };
+
+                // The endpoint returns a Stream, but we just need to verify it doesn't throw
+                await _descopeClient.Mgmt.V1.User.Passkeys.DeletePath.PostAsync(deletePasskeysRequest);
+            }
+            finally
+            {
+                // Cleanup
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
             }
