@@ -25,12 +25,14 @@ namespace Descope.Test.Integration
                     Name = parentName,
                     SelfProvisioningDomains = new List<string> { parentDomain }
                 };
+                await Task.Delay(extraSleepTime);
                 var tenant1Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(parentOptions);
                 parentTenantId = tenant1Response?.Id;
                 Assert.NotNull(parentTenantId);
 
                 // Create child tenant with parent relation
                 var childName = Guid.NewGuid().ToString();
+                await Task.Delay(extraSleepTime);
                 var tenant2Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest
                 {
                     Name = childName,
@@ -41,6 +43,7 @@ namespace Descope.Test.Integration
 
                 // Create third tenant
                 var grandchildName = Guid.NewGuid().ToString();
+                await Task.Delay(extraSleepTime);
                 var tenant3Response = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest
                 {
                     Name = grandchildName,
@@ -87,17 +90,17 @@ namespace Descope.Test.Integration
                 // Cleanup
                 if (!string.IsNullOrEmpty(grandchildTenantId))
                 {
-                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = grandchildTenantId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = grandchildTenantId }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(childTenantId))
                 {
-                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = childTenantId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = childTenantId }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(parentTenantId))
                 {
-                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = parentTenantId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = parentTenantId }); }
                     catch { }
                 }
             }
@@ -106,7 +109,7 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Create_MissingName()
         {
-            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = "" });
+            async Task Act() { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = "" }); }
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Contains("The name field is required", result.Message);
         }
@@ -119,6 +122,7 @@ namespace Descope.Test.Integration
             {
                 // Create a tenant
                 string tenantName = Guid.NewGuid().ToString();
+                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = tenantName });
                 Assert.NotNull(createResponse);
                 tenantId = createResponse.Id!;
@@ -129,6 +133,7 @@ namespace Descope.Test.Integration
 
                 // Update and compare
                 var updatedTenantName = tenantName + "updated";
+                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest
                 {
                     Id = loadedTenant.Tenant!.Id,
@@ -170,7 +175,7 @@ namespace Descope.Test.Integration
                 // Cleanup
                 if (!string.IsNullOrEmpty(tenantId))
                 {
-                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
@@ -179,7 +184,7 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Update_MissingId()
         {
-            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "", Name = "" });
+            async Task Act() { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "", Name = "" }); }
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Contains("The id field is required", result.Message);
         }
@@ -187,7 +192,7 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Update_MissingName()
         {
-            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "someId", Name = "" });
+            async Task Act() { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.Update.PostAsync(new UpdateTenantRequest { Id = "someId", Name = "" }); }
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Contains("The name field is required", result.Message);
         }
@@ -199,11 +204,13 @@ namespace Descope.Test.Integration
             try
             {
                 // Create a tenant
+                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(new CreateTenantRequest { Name = Guid.NewGuid().ToString() });
                 var id = createResponse?.Id;
                 tenantId = id;
 
                 // Delete it
+                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = id });
                 tenantId = null;
 
@@ -220,7 +227,7 @@ namespace Descope.Test.Integration
                 // Cleanup
                 if (!string.IsNullOrEmpty(tenantId))
                 {
-                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
                     catch { }
                 }
             }
@@ -229,7 +236,7 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task Tenant_Delete_MissingId()
         {
-            async Task Act() => await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = "" });
+            async Task Act() { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = "" }); }
             DescopeException result = await Assert.ThrowsAsync<DescopeException>(Act);
             Assert.Contains("The id field is required", result.Message);
         }

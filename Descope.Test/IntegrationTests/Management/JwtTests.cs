@@ -7,7 +7,6 @@ namespace Descope.Test.Integration
     public class JwtTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
-        private readonly int extraSleepTime = GetDelayBasedOnPlatform();
 
         [Fact]
         public async Task Jwt_CustomClaims()
