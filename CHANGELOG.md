@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.0.1...Descope-v1.1.0) (2025-12-29)
+
+
+### Features
+
+* AddDescopeOidcAuthentication wrapper method with demo ([#141](https://github.com/descope/descope-dotnet/issues/141)) ([057e07a](https://github.com/descope/descope-dotnet/commit/057e07a961ceba9187cba4af223f5f4959e03f99))
+
+
+### Documentation
+
+* update maintainer readme to include details about releasing 1.x.x and 0.x.x versions ([#138](https://github.com/descope/descope-dotnet/issues/138)) ([6de5148](https://github.com/descope/descope-dotnet/commit/6de5148a43c7fb1a6c005cd64be3554f8583a524))
+
 ## [1.0.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.0.0...Descope-v1.0.1) (2025-12-16)
 
 
