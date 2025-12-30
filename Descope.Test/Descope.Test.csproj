@@ -28,12 +28,12 @@
 
     <!-- net6.0 packages -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.2" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-            Version="6.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+            Version="6.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"
-            Version="6.0.0" />
+            Version="6.0.1" />
     </ItemGroup>
 
     <!-- net8.0 packages -->
@@ -48,12 +48,12 @@
 
     <!-- net9.0 packages -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.11" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+            Version="9.0.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.11" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"
-            Version="9.0.0" />
+            Version="9.0.11" />
     </ItemGroup>
 
     <!-- net10.0 packages -->
