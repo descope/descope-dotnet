@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.1.0...Descope-v1.2.0) (2025-12-30)
+
+
+### Features
+
+* add status field to CreateUserRequest ([#146](https://github.com/descope/descope-dotnet/issues/146)) ([98a28bb](https://github.com/descope/descope-dotnet/commit/98a28bb35e6818a62af51b223a18861b8c5f548e))
+
 ## [1.1.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.0.1...Descope-v1.1.0) (2025-12-29)
 
 
