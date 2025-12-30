@@ -21,12 +21,15 @@ namespace Descope.Test.Integration
                 {
                     Identifier = name,
                     Email = name + "@test.com",
+                    Status = EnumValues.UserStatus.Disabled,
                 };
                 var result = await _descopeClient.Mgmt.V1.User.Create.PostAsync(createRequest);
                 loginId = result?.User?.LoginIds?.FirstOrDefault();
+                var status = result?.User?.Status;
 
                 Assert.NotNull(result?.User);
                 Assert.NotNull(loginId);
+                Assert.Equal(EnumValues.UserStatus.Disabled, status);
             }
             finally
             {

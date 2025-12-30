@@ -149,6 +149,14 @@ namespace Descope.Mgmt.Models.Managementv1
 #else
         public List<string> SsoAppIds { get; set; }
 #endif
+        /// <summary>The status property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Status { get; set; }
+#nullable restore
+#else
+        public string Status { get; set; }
+#endif
         /// <summary>The templateId property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -223,6 +231,7 @@ namespace Descope.Mgmt.Models.Managementv1
                 { "sendMail", n => { SendMail = n.GetBoolValue(); } },
                 { "sendSMS", n => { SendSMS = n.GetBoolValue(); } },
                 { "ssoAppIds", n => { SsoAppIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "status", n => { Status = n.GetStringValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
                 { "templateOptions", n => { TemplateOptions = n.GetObjectValue<global::Descope.Mgmt.Models.Managementv1.CreateUserRequest_templateOptions>(global::Descope.Mgmt.Models.Managementv1.CreateUserRequest_templateOptions.CreateFromDiscriminatorValue); } },
                 { "test", n => { Test = n.GetBoolValue(); } },
@@ -257,6 +266,7 @@ namespace Descope.Mgmt.Models.Managementv1
             writer.WriteBoolValue("sendMail", SendMail);
             writer.WriteBoolValue("sendSMS", SendSMS);
             writer.WriteCollectionOfPrimitiveValues<string>("ssoAppIds", SsoAppIds);
+            writer.WriteStringValue("status", Status);
             writer.WriteStringValue("templateId", TemplateId);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Managementv1.CreateUserRequest_templateOptions>("templateOptions", TemplateOptions);
             writer.WriteBoolValue("test", Test);
