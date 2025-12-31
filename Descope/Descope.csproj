@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;net6.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <PackageId>Descope</PackageId>
     <Title>Descope .NET SDK</Title>
     <Description>The Descope SDK for .NET provides authentication and user management capabilities
@@ -41,7 +41,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
     <PackageReference Include="RestSharp" Version="112.1.0"/>
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0"/>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0"/>
   </ItemGroup>
 
   <!-- ASP.NET Core OIDC support for net6.0+ -->
@@ -50,20 +50,20 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.36"/>
     <!-- Explicitly upgrade to fix JSON parsing bug in 7.0.3 where id_token, token_type, and scope
     are not parsed -->
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.2"/>
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22"/>
     <!-- Explicitly upgrade to fix JSON parsing bug in 7.0.3 where id_token, token_type, and scope
     are not parsed -->
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.2"/>
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.11"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
