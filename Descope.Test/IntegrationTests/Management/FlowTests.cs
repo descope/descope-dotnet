@@ -9,7 +9,7 @@ namespace Descope.Test.Integration
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
 
         [Fact]
-        public async Task RunManagementFlowTest()
+        public async Task Flow_RunManagement_NonExistentFlow()
         {
             // This test demonstrates how to run a management flow.
             // We use a random flowId that doesn't exist, so the call will fail,
