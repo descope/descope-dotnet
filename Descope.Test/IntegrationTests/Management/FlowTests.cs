@@ -17,7 +17,7 @@ namespace Descope.Test.Integration
 
             var request = new RunManagementFlowRequest
             {
-                FlowId = "flow-id" + Guid.NewGuid().ToString("N"), // Random flowId to ensure it doesn't exist
+                FlowId = "flow-id-" + Guid.NewGuid().ToString("N"), // Random flowId to ensure it doesn't exist
                 Options = new ManagementFlowOptions
                 {
                     Input = new ManagementFlowOptions_input
