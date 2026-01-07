@@ -88,6 +88,60 @@ var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
     new SearchUsersRequest { Limit = 10 });
 ```
 
+### Management Flows
+
+Management flows allow you to run server-side flows with custom input and receive dynamic output. Since the output can contain arbitrary data, the SDK uses Kiota's `UntypedNode` types to represent dynamic values.
+
+```csharp
+using Microsoft.Kiota.Abstractions.Serialization;
+
+// Run a management flow with custom input
+var request = new RunManagementFlowRequest
+{
+    FlowId = "my-management-flow",
+    Options = new ManagementFlowOptions
+    {
+        Input = new ManagementFlowOptions_input
+        {
+            AdditionalData = new Dictionary<string, object>
+            {
+                { "email", "user@example.com" },
+                { "customParam", "customValue" }
+            }
+        }
+    }
+};
+
+var response = await client.Mgmt.V1.Flow.Run.PostAsync(request);
+
+// Access string values directly from AdditionalData
+var email = response.Output?.AdditionalData?["email"] as string;
+
+// Access nested objects using UntypedNode types
+if (response.Output?.AdditionalData?.TryGetValue("result", out var resultObj) == true)
+{
+    // Cast to UntypedObject for nested JSON objects
+    var untypedObj = (UntypedObject)resultObj;
+    var properties = untypedObj.GetValue();
+    
+    // Access string properties
+    var greeting = ((UntypedString)properties["greeting"]).GetValue();
+    
+    // Access numeric properties
+    var count = ((UntypedInteger)properties["count"]).GetValue();
+    
+    // Access boolean properties
+    var enabled = ((UntypedBoolean)properties["enabled"]).GetValue();
+}
+```
+
+**Note:** Kiota uses `UntypedNode` subtypes for dynamic data:
+- `UntypedObject` - nested objects (use `GetValue()` to get `Dictionary<string, UntypedNode>`)
+- `UntypedString` - string values
+- `UntypedInteger` / `UntypedDecimal` - numeric values
+- `UntypedBoolean` - boolean values
+- `UntypedArray` - arrays (use `GetValue()` to get `IEnumerable<UntypedNode>`)
+
 ## Token Validation
 
 The SDK provides three methods for working with session tokens:
