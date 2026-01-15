@@ -31,8 +31,8 @@ namespace Descope.Test.Integration
                     }
                 }
             };
-            // // The call will throw an exception because the flowId doesn't exist,
-            // // but this demonstrates the correct usage pattern
+            // The call will throw an exception because the flowId doesn't exist,
+            // but this demonstrates the correct usage pattern
             var exception = await Assert.ThrowsAsync<DescopeException>(async () =>
             {
                 await _descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
