@@ -18,7 +18,7 @@ namespace Descope.Test.Integration
 
             var request = new RunManagementFlowRequest
             {
-                FlowId = "mgmt-return-email" + Guid.NewGuid().ToString(), // Non-existent flowId
+                FlowId = "mgmt-return-email" + Guid.NewGuid(), // Non-existent flowId
                 Options = new ManagementFlowOptions
                 {
                     Input = new ManagementFlowOptions_input
