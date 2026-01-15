@@ -24,7 +24,7 @@ namespace Descope.Test.Integration
 
             var request = new RunManagementFlowRequest
             {
-                FlowId = "mgmt-return-email" + Guid.NewGuid().ToString("N"), // Non-existent flowId
+                FlowId = "mgmt-return-email" + Guid.NewGuid().ToString(), // Non-existent flowId
                 Options = new ManagementFlowOptions
                 {
                     Input = new ManagementFlowOptions_input
@@ -37,8 +37,8 @@ namespace Descope.Test.Integration
                     }
                 }
             };
-            // The call will throw an exception because the flowId doesn't exist,
-            // but this demonstrates the correct usage pattern
+            // // The call will throw an exception because the flowId doesn't exist,
+            // // but this demonstrates the correct usage pattern
             var exception = await Assert.ThrowsAsync<DescopeException>(async () =>
             {
                 await _descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
@@ -56,13 +56,13 @@ namespace Descope.Test.Integration
             // Assert.NotNull(response);
             // Assert.NotNull(response.OutputJson);
 
-            // // Access JSON properties directly using JsonDocument
-            // var root = response.OutputJson!.RootElement;
+            // // Access JSON properties directly using JsonElement
+            // var root = response.OutputJson!.Value;
             // var email = root.GetProperty("email").GetString();
             // Assert.NotNull(email);
             // Assert.Equal("name@example.com", email);
 
-            // // Access nested objects using standard JsonDocument methods
+            // // Access nested objects using standard JsonElement methods
             // var greeting = root.GetProperty("obj").GetProperty("greeting").GetString();
             // Assert.Equal("Hello, World!", greeting);
             // ============================================================================

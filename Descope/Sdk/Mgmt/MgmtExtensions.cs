@@ -315,8 +315,8 @@ public static class MgmtExtensions
     /// var response = await client.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
     ///
     /// // Access output as JSON
-    /// var email = response.OutputJson?.RootElement.GetProperty("email").GetString();
-    /// var nested = response.OutputJson?.RootElement.GetProperty("res").GetProperty("greeting").GetString();
+    /// var email = response.OutputJson?.GetProperty("email").GetString();
+    /// var nested = response.OutputJson?.GetProperty("res").GetProperty("greeting").GetString();
     /// </code>
     /// </example>
     public static async Task<FlowResponseWithJson?> PostWithJsonOutputAsync(
@@ -351,10 +351,11 @@ public static class MgmtExtensions
     }
 
     /// <summary>
-    /// Deserializes an IAdditionalDataHolder's AdditionalData to a JsonDocument.
-    /// This helper method converts Kiota's UntypedObject/UntypedString types to a standard JsonDocument.
+    /// Deserializes an IAdditionalDataHolder's AdditionalData to a JsonElement.
+    /// This helper method converts Kiota's UntypedObject/UntypedString types to a standard JsonElement.
+    /// The JsonDocument is disposed internally, and the cloned JsonElement is safe to use.
     /// </summary>
-    private static JsonDocument? DeserializeToJson(IAdditionalDataHolder additionalDataHolder)
+    private static JsonElement? DeserializeToJson(IAdditionalDataHolder additionalDataHolder)
     {
         if (additionalDataHolder?.AdditionalData == null || additionalDataHolder.AdditionalData.Count == 0)
         {
@@ -370,8 +371,9 @@ public static class MgmtExtensions
         // Serialize the wrapper to JSON string
         var serializedValue = KiotaJsonSerializer.SerializeAsString(wrapper);
 
-        // Parse as JsonDocument
-        return JsonDocument.Parse(serializedValue);
+        // Parse as JsonDocument, clone the root element, then dispose the document
+        using var document = JsonDocument.Parse(serializedValue);
+        return document.RootElement.Clone();
     }
 #pragma warning restore CS0618
 }
@@ -388,11 +390,11 @@ public class FlowResponseWithJson
     public RunManagementFlowResponse? Response { get; set; }
 
     /// <summary>
-    /// The flow output deserialized as a JsonDocument for easier property access.
-    /// Access nested properties using standard JsonDocument methods:
+    /// The flow output deserialized as a JsonElement for easier property access.
+    /// Access nested properties using standard JsonElement methods:
     /// <code>
-    /// var email = OutputJson?.RootElement.GetProperty("email").GetString();
+    /// var email = response.OutputJson?.GetProperty("email").GetString();
     /// </code>
     /// </summary>
-    public JsonDocument? OutputJson { get; set; }
+    public JsonElement? OutputJson { get; set; }
 }

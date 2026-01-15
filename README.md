@@ -112,16 +112,14 @@ var request = new RunManagementFlowRequest
 
 var response = await client.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
 
-// Access output as JSON using standard JsonDocument methods
-var email = response.OutputJson?.RootElement.GetProperty("email").GetString();
+// Access JSON properties directly using JsonElement
+var root = response.OutputJson!.Value;
+var email = root.GetProperty("email").GetString();
 
-// Access nested objects naturally
-if (response.OutputJson?.RootElement.TryGetProperty("result", out var result) == true)
-{
-    var greeting = result.GetProperty("greeting").GetString();
-    var count = result.GetProperty("count").GetInt32();
-    var enabled = result.GetProperty("enabled").GetBoolean();
-}
+// Access nested objects using standard JsonElement methods
+var greeting = root.GetProperty("obj").GetProperty("greeting").GetString();
+var count = root.GetProperty("obj").GetProperty("count").GetInt32();
+var enabled = root.GetProperty("obj").GetProperty("enabled").GetBoolean();
 ```
 
 ## Token Validation

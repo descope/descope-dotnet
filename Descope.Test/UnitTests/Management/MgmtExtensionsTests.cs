@@ -623,13 +623,12 @@ public class MgmtExtensionsTests
         result.OutputJson.Should().NotBeNull();
 
         // Verify JSON properties
-        var root = result.OutputJson!.RootElement;
-        root.GetProperty("email").GetString().Should().Be("test@example.com");
-        root.GetProperty("count").GetInt32().Should().Be(42);
-        root.GetProperty("enabled").GetBoolean().Should().BeTrue();
+        result.OutputJson!.Value.GetProperty("email").GetString().Should().Be("test@example.com");
+        result.OutputJson.Value.GetProperty("count").GetInt32().Should().Be(42);
+        result.OutputJson.Value.GetProperty("enabled").GetBoolean().Should().BeTrue();
 
         // Verify nested object
-        var obj = root.GetProperty("obj");
+        var obj = result.OutputJson.Value.GetProperty("obj");
         obj.GetProperty("greeting").GetString().Should().Be("Hello, World!");
         obj.GetProperty("count").GetInt32().Should().Be(100);
     }
@@ -752,7 +751,7 @@ public class MgmtExtensionsTests
         result.Should().NotBeNull();
         result!.OutputJson.Should().NotBeNull();
 
-        var items = result.OutputJson!.RootElement.GetProperty("items");
+        var items = result.OutputJson!.Value.GetProperty("items");
         items.GetArrayLength().Should().Be(3);
         items[0].GetString().Should().Be("item1");
         items[1].GetString().Should().Be("item2");
