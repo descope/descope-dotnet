@@ -315,8 +315,8 @@ public static class MgmtExtensions
     /// var response = await client.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
     ///
     /// // Access output as JSON
-    /// var email = response.OutputJson?.GetProperty("email").GetString();
-    /// var nested = response.OutputJson?.GetProperty("res").GetProperty("greeting").GetString();
+    /// var email = response.OutputJson?.Value.GetProperty("email").GetString();
+    /// var nested = response.OutputJson?.Value.GetProperty("res").GetProperty("greeting").GetString();
     /// </code>
     /// </example>
     public static async Task<FlowResponseWithJson?> PostWithJsonOutputAsync(
@@ -393,7 +393,7 @@ public class FlowResponseWithJson
     /// The flow output deserialized as a JsonElement for easier property access.
     /// Access nested properties using standard JsonElement methods:
     /// <code>
-    /// var email = response.OutputJson?.GetProperty("email").GetString();
+    /// var email = response.OutputJson?.Value.GetProperty("email").GetString();
     /// </code>
     /// </summary>
     public JsonElement? OutputJson { get; set; }
