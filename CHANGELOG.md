@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.2.0...Descope-v1.3.0) (2026-01-15)
+
+
+### Features
+
+* simplify access to management flow call results as JSON ([#154](https://github.com/descope/descope-dotnet/issues/154)) ([647a42e](https://github.com/descope/descope-dotnet/commit/647a42e6279606e9d1eb912be416ec36de914622))
+
 ## [1.2.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.1.0...Descope-v1.2.0) (2025-12-30)
 
 
