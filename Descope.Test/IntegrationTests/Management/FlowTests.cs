@@ -1,4 +1,5 @@
 using Xunit;
+using Xunit.Abstractions;
 using Descope.Mgmt.Models.Orchestrationv1;
 
 namespace Descope.Test.Integration
@@ -17,7 +18,7 @@ namespace Descope.Test.Integration
 
             var request = new RunManagementFlowRequest
             {
-                FlowId = "flow-id-" + Guid.NewGuid().ToString("N"), // Random flowId to ensure it doesn't exist
+                FlowId = "mgmt-return-email" + Guid.NewGuid(), // Non-existent flowId
                 Options = new ManagementFlowOptions
                 {
                     Input = new ManagementFlowOptions_input
@@ -34,7 +35,7 @@ namespace Descope.Test.Integration
             // but this demonstrates the correct usage pattern
             var exception = await Assert.ThrowsAsync<DescopeException>(async () =>
             {
-                await _descopeClient.Mgmt.V1.Flow.Run.PostAsync(request);
+                await _descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
             });
 
             // Verify that we got an error (since the flow doesn't exist)
@@ -43,16 +44,21 @@ namespace Descope.Test.Integration
 
             // ============================================================================
             // For demonstration, this is how you would normally check the response if the flow existed.
-            // Commented out since the flow doesn't exist in this test environment.
+            // Commented out since the flow doesn't exist in all test environments.
             // ============================================================================
-            // var response = await _descopeClient.Mgmt.V1.Flow.Run.PostAsync(request);
+            // var response = await _descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
             // Assert.NotNull(response);
-            // Assert.NotNull(response.Output);
-            // var email = response.Output.AdditionalData != null && response.Output.AdditionalData.TryGetValue("EMAIL", out var emailObj)
-            //     ? emailObj as string
-            //     : null;
+            // Assert.NotNull(response.OutputJson);
+
+            // // Access JSON properties directly using JsonElement
+            // var root = response.OutputJson!.Value;
+            // var email = root.GetProperty("email").GetString();
             // Assert.NotNull(email);
             // Assert.Equal("name@example.com", email);
+
+            // // Access nested objects using standard JsonElement methods
+            // var greeting = root.GetProperty("obj").GetProperty("greeting").GetString();
+            // Assert.Equal("Hello, World!", greeting);
             // ============================================================================
         }
     }

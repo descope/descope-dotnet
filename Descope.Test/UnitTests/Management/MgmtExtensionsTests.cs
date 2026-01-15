@@ -1,10 +1,12 @@
 using Descope;
 using Descope.Mgmt.Models;
 using Descope.Mgmt.Models.Managementv1;
+using Descope.Mgmt.Models.Orchestrationv1;
 using Descope.Mgmt.Models.Userv1;
 using Descope.Test.Helpers;
 using FluentAssertions;
 using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Serialization;
 using Xunit;
 
 namespace Descope.Test.UnitTests.Management;
@@ -564,6 +566,196 @@ public class MgmtExtensionsTests
         {
             await descopeClient.Mgmt.V1.Sso.Settings.DeleteWithTenantIdAsync("");
         });
+    }
+
+    /// <summary>
+    /// Tests that PostWithJsonOutputAsync correctly deserializes flow output to JSON.
+    /// </summary>
+    [Fact]
+    public async Task Flow_PostWithJsonOutputAsync_DeserializesOutputToJson()
+    {
+        // Arrange
+        var response = new RunManagementFlowResponse
+        {
+            Output = new RunManagementFlowResponse_output
+            {
+                AdditionalData = new Dictionary<string, object>
+                {
+                    { "email", new UntypedString("test@example.com") },
+                    { "count", new UntypedInteger(42) },
+                    { "enabled", new UntypedBoolean(true) },
+                    {
+                        "obj",
+                        new UntypedObject(new Dictionary<string, UntypedNode>
+                        {
+                            { "greeting", new UntypedString("Hello, World!") },
+                            { "count", new UntypedInteger(100) }
+                        })
+                    }
+                }
+            }
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<RunManagementFlowResponse>(
+            requestInfo => response);
+
+        var request = new RunManagementFlowRequest
+        {
+            FlowId = "test-flow",
+            Options = new ManagementFlowOptions
+            {
+                Input = new ManagementFlowOptions_input
+                {
+                    AdditionalData = new Dictionary<string, object>
+                    {
+                        { "email", "test@example.com" }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = await descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Response.Should().NotBeNull();
+        result.OutputJson.Should().NotBeNull();
+
+        // Verify JSON properties
+        result.OutputJson!.Value.GetProperty("email").GetString().Should().Be("test@example.com");
+        result.OutputJson.Value.GetProperty("count").GetInt32().Should().Be(42);
+        result.OutputJson.Value.GetProperty("enabled").GetBoolean().Should().BeTrue();
+
+        // Verify nested object
+        var obj = result.OutputJson.Value.GetProperty("obj");
+        obj.GetProperty("greeting").GetString().Should().Be("Hello, World!");
+        obj.GetProperty("count").GetInt32().Should().Be(100);
+    }
+
+    /// <summary>
+    /// Tests that PostWithJsonOutputAsync throws DescopeException when request is null.
+    /// </summary>
+    [Fact]
+    public async Task Flow_PostWithJsonOutputAsync_ThrowsDescopeException_WhenRequestIsNull()
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(null!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that PostWithJsonOutputAsync handles null output gracefully.
+    /// </summary>
+    [Fact]
+    public async Task Flow_PostWithJsonOutputAsync_HandlesNullOutput()
+    {
+        // Arrange
+        var response = new RunManagementFlowResponse
+        {
+            Output = null
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<RunManagementFlowResponse>(
+            requestInfo => response);
+
+        var request = new RunManagementFlowRequest
+        {
+            FlowId = "test-flow"
+        };
+
+        // Act
+        var result = await descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Response.Should().NotBeNull();
+        result.OutputJson.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Tests that PostWithJsonOutputAsync handles empty AdditionalData.
+    /// </summary>
+    [Fact]
+    public async Task Flow_PostWithJsonOutputAsync_HandlesEmptyAdditionalData()
+    {
+        // Arrange
+        var response = new RunManagementFlowResponse
+        {
+            Output = new RunManagementFlowResponse_output
+            {
+                AdditionalData = new Dictionary<string, object>()
+            }
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<RunManagementFlowResponse>(
+            requestInfo => response);
+
+        var request = new RunManagementFlowRequest
+        {
+            FlowId = "test-flow"
+        };
+
+        // Act
+        var result = await descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Response.Should().NotBeNull();
+        result.OutputJson.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Tests that PostWithJsonOutputAsync correctly handles arrays in output.
+    /// </summary>
+    [Fact]
+    public async Task Flow_PostWithJsonOutputAsync_HandlesArrays()
+    {
+        // Arrange
+        var response = new RunManagementFlowResponse
+        {
+            Output = new RunManagementFlowResponse_output
+            {
+                AdditionalData = new Dictionary<string, object>
+                {
+                    {
+                        "items",
+                        new UntypedArray(new List<UntypedNode>
+                        {
+                            new UntypedString("item1"),
+                            new UntypedString("item2"),
+                            new UntypedString("item3")
+                        })
+                    }
+                }
+            }
+        };
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<RunManagementFlowResponse>(
+            requestInfo => response);
+
+        var request = new RunManagementFlowRequest
+        {
+            FlowId = "test-flow"
+        };
+
+        // Act
+        var result = await descopeClient.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OutputJson.Should().NotBeNull();
+
+        var items = result.OutputJson!.Value.GetProperty("items");
+        items.GetArrayLength().Should().Be(3);
+        items[0].GetString().Should().Be("item1");
+        items[1].GetString().Should().Be("item2");
+        items[2].GetString().Should().Be("item3");
     }
 
 }
