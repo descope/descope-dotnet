@@ -8,12 +8,6 @@ namespace Descope.Test.Integration
     public class FlowTests : RateLimitedIntegrationTest
     {
         private readonly IDescopeClient _descopeClient = IntegrationTestSetup.InitDescopeClient();
-        private readonly ITestOutputHelper _output;
-
-        public FlowTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
 
         [Fact]
         public async Task Flow_RunManagement_NonExistentFlow()
