@@ -1,6 +1,8 @@
 using Descope.Mgmt.Models;
 using Descope.Mgmt.Models.Managementv1;
-using Microsoft.Kiota.Abstractions;
+using Descope.Mgmt.Models.Orchestrationv1;
+using Microsoft.Kiota.Abstractions.Serialization;
+using System.Text.Json;
 
 namespace Descope;
 
@@ -283,5 +285,114 @@ public static class MgmtExtensions
             requestConfiguration.QueryParameters.Id = id;
         }, cancellationToken: cancellationToken);
     }
+
+    /// <summary>
+    /// Runs a management flow with JSON output deserialization.
+    /// This extension method wraps the generated PostAsync method and provides convenient access
+    /// to flow output data as a JsonDocument, avoiding the need to manually work with UntypedObject types.
+    /// </summary>
+    /// <param name="requestBuilder">The run flow request builder</param>
+    /// <param name="request">The flow request containing flowId and options</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>FlowResponseWithJson containing the response with JSON-deserialized output</returns>
+    /// <example>
+    /// <code>
+    /// var request = new RunManagementFlowRequest
+    /// {
+    ///     FlowId = "my-flow",
+    ///     Options = new ManagementFlowOptions
+    ///     {
+    ///         Input = new ManagementFlowOptions_input
+    ///         {
+    ///             AdditionalData = new Dictionary&lt;string, object&gt;
+    ///             {
+    ///                 { "email", "user@example.com" }
+    ///             }
+    ///         }
+    ///     }
+    /// };
+    ///
+    /// var response = await client.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+    ///
+    /// // Access output as JSON
+    /// var email = response.OutputJson?.RootElement.GetProperty("email").GetString();
+    /// var nested = response.OutputJson?.RootElement.GetProperty("res").GetProperty("greeting").GetString();
+    /// </code>
+    /// </example>
+    public static async Task<FlowResponseWithJson?> PostWithJsonOutputAsync(
+        this Descope.Mgmt.V1.Mgmt.Flow.Run.RunRequestBuilder requestBuilder,
+        RunManagementFlowRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+        {
+            throw new DescopeException("Request is required for running a management flow");
+        }
+
+        var response = await requestBuilder.PostAsync(request, cancellationToken: cancellationToken);
+
+        if (response?.Output == null)
+        {
+            return new FlowResponseWithJson
+            {
+                Response = response,
+                OutputJson = null
+            };
+        }
+
+        // Deserialize the Output.AdditionalData to JSON
+        var outputJson = DeserializeToJson(response.Output);
+
+        return new FlowResponseWithJson
+        {
+            Response = response,
+            OutputJson = outputJson
+        };
+    }
+
+    /// <summary>
+    /// Deserializes an IAdditionalDataHolder's AdditionalData to a JsonDocument.
+    /// This helper method converts Kiota's UntypedObject/UntypedString types to a standard JsonDocument.
+    /// </summary>
+    private static JsonDocument? DeserializeToJson(IAdditionalDataHolder additionalDataHolder)
+    {
+        if (additionalDataHolder?.AdditionalData == null || additionalDataHolder.AdditionalData.Count == 0)
+        {
+            return null;
+        }
+
+        // Create a temporary UntypedObject wrapper with the AdditionalData
+        var wrapper = new RunManagementFlowResponse_output
+        {
+            AdditionalData = additionalDataHolder.AdditionalData
+        };
+
+        // Serialize the wrapper to JSON string
+        var serializedValue = KiotaJsonSerializer.SerializeAsString(wrapper);
+
+        // Parse as JsonDocument
+        return JsonDocument.Parse(serializedValue);
+    }
 #pragma warning restore CS0618
+}
+
+/// <summary>
+/// Response wrapper that includes both the original RunManagementFlowResponse and
+/// a deserialized JSON representation of the output for easier access.
+/// </summary>
+public class FlowResponseWithJson
+{
+    /// <summary>
+    /// The original response from the flow execution.
+    /// </summary>
+    public RunManagementFlowResponse? Response { get; set; }
+
+    /// <summary>
+    /// The flow output deserialized as a JsonDocument for easier property access.
+    /// Access nested properties using standard JsonDocument methods:
+    /// <code>
+    /// var email = OutputJson?.RootElement.GetProperty("email").GetString();
+    /// </code>
+    /// </summary>
+    public JsonDocument? OutputJson { get; set; }
 }

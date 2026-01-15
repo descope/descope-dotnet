@@ -88,6 +88,42 @@ var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
     new SearchUsersRequest { Limit = 10 });
 ```
 
+### Management Flows
+
+Management flows allow you to run server-side flows with custom input and receive dynamic output. The SDK provides a convenient extension method that deserializes the output as JSON for easy access.
+
+```csharp
+// Run a management flow with custom input
+var request = new RunManagementFlowRequest
+{
+    FlowId = "my-management-flow",
+    Options = new ManagementFlowOptions
+    {
+        Input = new ManagementFlowOptions_input
+        {
+            AdditionalData = new Dictionary<string, object>
+            {
+                { "email", "user@example.com" },
+                { "customParam", "customValue" }
+            }
+        }
+    }
+};
+
+var response = await client.Mgmt.V1.Flow.Run.PostWithJsonOutputAsync(request);
+
+// Access output as JSON using standard JsonDocument methods
+var email = response.OutputJson?.RootElement.GetProperty("email").GetString();
+
+// Access nested objects naturally
+if (response.OutputJson?.RootElement.TryGetProperty("result", out var result) == true)
+{
+    var greeting = result.GetProperty("greeting").GetString();
+    var count = result.GetProperty("count").GetInt32();
+    var enabled = result.GetProperty("enabled").GetBoolean();
+}
+```
+
 ## Token Validation
 
 The SDK provides three methods for working with session tokens:

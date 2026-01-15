@@ -26,3 +26,4 @@ Descope/Generated/Auth/V1/Auth/Logout/LogoutRequestBuilder.cs,PostAsync,PostWith
 Descope/Generated/Auth/V1/Auth/Tenant/Select/SelectRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Me/History/HistoryRequestBuilder.cs,GetAsync,GetWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Sso/Authorize/AuthorizeRequestBuilder.cs,PostAsync,PostWithQueryParamsAsync
+Descope/Generated/Mgmt/V1/Mgmt/Flow/Run/RunRequestBuilder.cs,PostAsync,PostWithJsonOutputAsync
