@@ -290,3 +290,13 @@ The legacy manually-generated SDK is maintained on the `main-v0` branch for crit
 - Release-please does NOT track the `main-v0` branch - releases must be created manually
 - Always ensure the version number starts with `0.` to distinguish it from the `1.x.x` line
 - NuGet package publication is handled automatically by GitHub Actions on release creation
+
+### Verifying Released Versions
+
+To verify which Descope .NET SDK versions are available on NuGet after a release completes, run:
+
+```bash
+dotnet package search Descope
+```
+
+This will list the published package versions so you can confirm that the expected version is live.
