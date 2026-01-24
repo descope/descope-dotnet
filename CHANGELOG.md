@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.0...Descope-v1.3.1) (2026-01-24)
+
+
+### Documentation
+
+* explain how to verify version releases in maintainers readme ([#156](https://github.com/descope/descope-dotnet/issues/156)) ([0783485](https://github.com/descope/descope-dotnet/commit/078348511b89b1644ab9563997dfd608b4a8c500))
+
 ## [1.3.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.2.0...Descope-v1.3.0) (2026-01-15)
 
 
