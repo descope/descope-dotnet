@@ -47,7 +47,7 @@
   <!-- ASP.NET Core OIDC support for net6.0+ -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.36"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.23"/>
     <!-- Explicitly upgrade to fix JSON parsing bug in 7.0.3 where id_token, token_type, and scope
     are not parsed -->
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0"/>
