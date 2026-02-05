@@ -831,8 +831,10 @@ namespace Descope.Test.Integration
             string? permissionName2 = null;
             string? roleName2 = null;
             string? tenantId = null;
+            string? tenantId2 = null;
             string? tenantPermissionName = null;
             string? tenantRoleName = null;
+            string? tenantRoleName2 = null;
             try
             {
                 // Create a unique permission for this test (project-level)
@@ -880,6 +882,14 @@ namespace Descope.Test.Integration
                 var tenantResponse = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest);
                 tenantId = tenantResponse?.Id;
 
+                // Create a second tenant to test multi-tenant functionality
+                var createTenantRequest2 = new CreateTenantRequest
+                {
+                    Name = Guid.NewGuid().ToString()
+                };
+                var tenantResponse2 = await _descopeClient.Mgmt.V1.Tenant.Create.PostAsync(createTenantRequest2);
+                tenantId2 = tenantResponse2?.Id;
+
                 // Create a tenant-specific permission
                 tenantPermissionName = "TestTenantPermission_" + Guid.NewGuid().ToString();
                 var createTenantPermissionRequest = new CreatePermissionRequest
@@ -899,6 +909,17 @@ namespace Descope.Test.Integration
                     TenantId = tenantId
                 };
                 await _descopeClient.Mgmt.V1.Role.Create.PostAsync(createTenantRoleRequest);
+
+                // Create a role for the second tenant (reusing the same permission for simplicity)
+                tenantRoleName2 = "TestTenantRole2_" + Guid.NewGuid().ToString();
+                var createTenantRoleRequest2 = new CreateRoleRequest
+                {
+                    Name = tenantRoleName2,
+                    Description = "Test role for second tenant",
+                    PermissionNames = new List<string> { tenantPermissionName },
+                    TenantId = tenantId2
+                };
+                await _descopeClient.Mgmt.V1.Role.Create.PostAsync(createTenantRoleRequest2);
 
                 // Create a test user
                 var name = Guid.NewGuid().ToString();
@@ -945,7 +966,7 @@ namespace Descope.Test.Integration
                 Assert.Contains(roleName, updateResult.User.RoleNames);
                 Assert.Contains(roleName2, updateResult.User.RoleNames);
 
-                // Add the tenant to the user (without roles first)
+                // Add both tenants to the user (without roles first)
                 var addTenantRequest = new UpdateUserTenantRequest
                 {
                     Identifier = loginId,
@@ -953,25 +974,46 @@ namespace Descope.Test.Integration
                 };
                 await _descopeClient.Mgmt.V1.User.Update.Tenant.Add.PostAsync(addTenantRequest);
 
-                // Add the tenant-specific role to the user
+                var addTenantRequest2 = new UpdateUserTenantRequest
+                {
+                    Identifier = loginId,
+                    TenantId = tenantId2
+                };
+                await _descopeClient.Mgmt.V1.User.Update.Tenant.Add.PostAsync(addTenantRequest2);
+
+                // Add the tenant-specific roles to the user
                 var tenantRoleRequest = new UpdateUserRolesRequest
                 {
                     Identifier = loginId,
                     RoleNames = new List<string> { tenantRoleName },
                     TenantId = tenantId
                 };
-                var tenantUpdateResult = await _descopeClient.Mgmt.V1.User.Update.Role.Add.PostAsync(tenantRoleRequest);
+                await _descopeClient.Mgmt.V1.User.Update.Role.Add.PostAsync(tenantRoleRequest);
 
-                // Verify tenant-specific role was added
+                var tenantRoleRequest2 = new UpdateUserRolesRequest
+                {
+                    Identifier = loginId,
+                    RoleNames = new List<string> { tenantRoleName2 },
+                    TenantId = tenantId2
+                };
+                await _descopeClient.Mgmt.V1.User.Update.Role.Add.PostAsync(tenantRoleRequest2);
+
+                // Verify tenant-specific roles were added
                 await RetryUntilSuccessAsync(async () =>
                 {
                     var loadResult = await _descopeClient.Mgmt.V1.User.GetWithIdentifierAsync(loginId!);
                     Assert.NotNull(loadResult?.User?.UserTenants);
-                    Assert.Single(loadResult.User.UserTenants);
+                    Assert.Equal(2, loadResult.User.UserTenants.Count);
+
                     var userTenant = loadResult.User.UserTenants.FirstOrDefault(t => t.TenantId == tenantId);
                     Assert.NotNull(userTenant);
                     Assert.NotNull(userTenant.RoleNames);
                     Assert.Contains(tenantRoleName, userTenant.RoleNames);
+
+                    var userTenant2 = loadResult.User.UserTenants.FirstOrDefault(t => t.TenantId == tenantId2);
+                    Assert.NotNull(userTenant2);
+                    Assert.NotNull(userTenant2.RoleNames);
+                    Assert.Contains(tenantRoleName2, userTenant2.RoleNames);
                 });
 
                 // Get a valid user session (JWT) - retry until role information is propagated
@@ -1005,13 +1047,14 @@ namespace Descope.Test.Integration
                         authResponse!.RefreshJwt!);
 
                     sessionToken = await _descopeClient.Auth.ValidateSessionAsync(tenantSession!.SessionJwt!);
-
                 });
                 Assert.NotNull(sessionToken);
 
-                // Verify the tenant is in the token
+                // Verify BOTH tenants are returned from GetTenants (tests multi-tenant retrieval)
                 var userTenants = sessionToken.GetTenants();
+                Assert.Equal(2, userTenants.Count);
                 Assert.Contains(tenantId, userTenants);
+                Assert.Contains(tenantId2, userTenants);
 
                 // Validate that the token has each project-level role individually
                 Assert.True(sessionToken.ValidateRoles(new List<string> { roleName }));
@@ -1084,6 +1127,15 @@ namespace Descope.Test.Integration
                 var noTenantMatches = sessionToken.GetMatchedPermissions(new List<string> { tenantPermissionName }, "NonExistentTenant");
                 Assert.Empty(noTenantMatches);
 
+                // Validate second tenant's roles and permissions
+                Assert.True(sessionToken.ValidateRoles(new List<string> { tenantRoleName2 }, tenantId2));
+                Assert.True(sessionToken.ValidatePermissions(new List<string> { tenantPermissionName }, tenantId2));
+
+                // Get matched roles for second tenant
+                var matchedTenantRoles2 = sessionToken.GetMatchedRoles(new List<string> { tenantRoleName2, "Other Role" }, tenantId2);
+                Assert.Single(matchedTenantRoles2);
+                Assert.Contains(tenantRoleName2, matchedTenantRoles2);
+
                 // Remove roles
                 var removeRequest = new UpdateUserRolesRequest
                 {
@@ -1139,6 +1191,11 @@ namespace Descope.Test.Integration
                     try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = tenantRoleName }); }
                     catch { }
                 }
+                if (!string.IsNullOrEmpty(tenantRoleName2))
+                {
+                    try { await _descopeClient.Mgmt.V1.Role.DeletePath.PostAsync(new DeleteRoleRequest { Name = tenantRoleName2 }); }
+                    catch { }
+                }
                 if (!string.IsNullOrEmpty(tenantPermissionName))
                 {
                     try { await _descopeClient.Mgmt.V1.Permission.DeletePath.PostAsync(new DeletePermissionRequest { Name = tenantPermissionName }); }
@@ -1147,6 +1204,11 @@ namespace Descope.Test.Integration
                 if (!string.IsNullOrEmpty(tenantId))
                 {
                     try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId }); }
+                    catch { }
+                }
+                if (!string.IsNullOrEmpty(tenantId2))
+                {
+                    try { await _descopeClient.Mgmt.V1.Tenant.DeletePath.PostAsync(new DeleteTenantRequest { Id = tenantId2 }); }
                     catch { }
                 }
             }
