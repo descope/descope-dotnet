@@ -11,6 +11,8 @@ internal static class DescopeHttpHeaders
 {
     /// <summary>
     /// Configures an HttpClient with required Descope headers.
+    /// This method is idempotent - calling it multiple times on the same HttpClient
+    /// will not duplicate headers.
     /// </summary>
     /// <param name="httpClient">The HttpClient to configure.</param>
     /// <param name="projectId">The Descope Project ID.</param>
@@ -26,10 +28,21 @@ internal static class DescopeHttpHeaders
             throw new ArgumentException("Project ID is required", nameof(projectId));
         }
 
-        // Add Descope SDK headers
-        httpClient.DefaultRequestHeaders.Add("x-descope-sdk-name", SdkInfo.Name);
-        httpClient.DefaultRequestHeaders.Add("x-descope-sdk-version", SdkInfo.Version);
-        httpClient.DefaultRequestHeaders.Add("x-descope-sdk-dotnet-version", SdkInfo.DotNetVersion);
-        httpClient.DefaultRequestHeaders.Add("x-descope-project-id", projectId);
+        // Add Descope SDK headers only if they don't already exist (idempotent)
+        TryAddHeader(httpClient, "x-descope-sdk-name", SdkInfo.Name);
+        TryAddHeader(httpClient, "x-descope-sdk-version", SdkInfo.Version);
+        TryAddHeader(httpClient, "x-descope-sdk-dotnet-version", SdkInfo.DotNetVersion);
+        TryAddHeader(httpClient, "x-descope-project-id", projectId);
+    }
+
+    /// <summary>
+    /// Adds a header to the HttpClient only if it doesn't already exist.
+    /// </summary>
+    private static void TryAddHeader(HttpClient httpClient, string name, string value)
+    {
+        if (!httpClient.DefaultRequestHeaders.Contains(name))
+        {
+            httpClient.DefaultRequestHeaders.Add(name, value);
+        }
     }
 }
