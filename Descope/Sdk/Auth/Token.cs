@@ -200,25 +200,16 @@ public class Token
     {
         if (tenant == null || tenant.Length == 0)
         {
-            var claimValue = _jwt.GetClaim(claim)?.Value;
-            if (claimValue != null)
-            {
-                try
-                {
-                    // Try to deserialize as an array first
-                    var list = JsonSerializer.Deserialize<List<string>>(claimValue);
-                    if (list != null) return list;
-                }
-                catch
-                {
-                    // If JSON deserialization fails, the claim might be a plain string value
-                    // This happens when there's only one role/permission
-                    if (!string.IsNullOrWhiteSpace(claimValue))
-                    {
-                        return new List<string> { claimValue };
-                    }
-                }
-            }
+            // Collect all claims with the matching type.
+            // JsonWebToken expands JSON array claims (e.g. "roles": ["a", "b"])
+            // into multiple individual Claim objects with the same type,
+            // so we must enumerate all of them rather than using GetClaim()
+            // which only returns the first match.
+            var claimValues = _jwt.Claims
+                .Where(c => c.Type == claim)
+                .Select(c => c.Value)
+                .ToList();
+            if (claimValues.Count > 0) return claimValues;
         }
         else
         {
