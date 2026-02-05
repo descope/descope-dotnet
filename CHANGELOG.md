@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.0...Descope-v1.3.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* consider all user roles in SDK token methods, not just the first role ([#162](https://github.com/descope/descope-dotnet/issues/162)) ([3f0e7dd](https://github.com/descope/descope-dotnet/commit/3f0e7dd8903a48377b9290b4440a92511d370b22))
+
+
+### Documentation
+
+* explain how to verify version releases in maintainers readme ([#156](https://github.com/descope/descope-dotnet/issues/156)) ([0783485](https://github.com/descope/descope-dotnet/commit/078348511b89b1644ab9563997dfd608b4a8c500))
+
 ## [1.3.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.2.0...Descope-v1.3.0) (2026-01-15)
 
 
