@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.1...Descope-v1.3.2) (2026-02-05)
+
+
+### Bug Fixes
+
+* do not append descope headers twice when using DI to create the SDK client ([#163](https://github.com/descope/descope-dotnet/issues/163)) ([e58a933](https://github.com/descope/descope-dotnet/commit/e58a9330a8da2ffafe40948d3bd91eff8fdcfa2e))
+
 ## [1.3.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.0...Descope-v1.3.1) (2026-02-05)
 
 
