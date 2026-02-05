@@ -47,6 +47,9 @@ public static class DescopeServiceCollectionExtensions
         // Add the FGA cache URL handler to the pipeline (innermost middleware)
         httpClientBuilder.AddHttpMessageHandler(() => new Internal.FgaCacheUrlHandler(options.FgaCacheUrl));
 
+        // Add the license header handler to inject x-descope-license for management requests
+        httpClientBuilder.AddHttpMessageHandler(() => new Internal.LicenseHeaderHandler(options.BaseUrl!, options.ProjectId, options.ManagementKey));
+
         // Add the open api application response fix handler to the pipeline
         httpClientBuilder.AddHttpMessageHandler(() => new Internal.FixRootResponseBodyHandler());
 
