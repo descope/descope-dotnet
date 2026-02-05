@@ -72,9 +72,11 @@ public static class DescopeServiceCollectionExtensions
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var httpClient = httpClientFactory.CreateClient(httpClientName);
 
+            // Configure Descope headers once for the shared HttpClient
+            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
+
             // Create management Kiota client
             var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
-            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
             var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
             {
                 BaseUrl = options.BaseUrl
@@ -83,7 +85,6 @@ public static class DescopeServiceCollectionExtensions
 
             // Create auth Kiota client
             var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
-            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
             var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
             {
                 BaseUrl = options.BaseUrl
