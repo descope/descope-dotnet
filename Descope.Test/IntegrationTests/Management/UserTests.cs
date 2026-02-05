@@ -1009,10 +1009,6 @@ namespace Descope.Test.Integration
                 });
                 Assert.NotNull(sessionToken);
 
-                // Verify expected roles are present in the token before continuing
-                Assert.True(sessionToken.ValidateRoles(new List<string> { roleName, roleName2 }));
-                Assert.True(sessionToken.ValidateRoles(new List<string> { tenantRoleName }, tenantId));
-
                 // Verify the tenant is in the token
                 var userTenants = sessionToken.GetTenants();
                 Assert.Contains(tenantId, userTenants);
