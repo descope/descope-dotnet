@@ -11,9 +11,6 @@ public class DescopeClient : IDescopeClient
 {
     private readonly DescopeMgmtClient _mgmtClient;
     private readonly DescopeAuthClient _authClient;
-    private readonly string _projectId;
-    private readonly string _baseUrl;
-    private readonly HttpClient? _httpClient;
 
     /// <summary>
     /// Initializes a new instance of the DescopeClient wrapper.
@@ -22,19 +19,16 @@ public class DescopeClient : IDescopeClient
     /// <param name="authKiotaClient">The generated Auth Kiota client to wrap.</param>
     /// <param name="projectId">The Descope project ID.</param>
     /// <param name="baseUrl">The base URL for the Descope API.</param>
-    /// <param name="httpClient">Optional HttpClient for JWT validation.</param>
+    /// <param name="fetchKeysHttpClient">An HttpClient to fetch public keys, needed for JWT validation.</param>
     internal DescopeClient(
         DescopeMgmtKiotaClient mgmtKiotaClient,
         DescopeAuthKiotaClient authKiotaClient,
         string projectId,
         string baseUrl,
-        HttpClient httpClient)
+        HttpClient fetchKeysHttpClient)
     {
         _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient);
-        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, httpClient);
-        _projectId = projectId;
-        _baseUrl = baseUrl;
-        _httpClient = httpClient;
+        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, fetchKeysHttpClient);
     }
 
     public class DescopeMgmtClient
@@ -60,10 +54,10 @@ public class DescopeClient : IDescopeClient
             DescopeAuthKiotaClient authKiotaClient,
             string projectId,
             string baseUrl,
-            HttpClient httpClient)
+            HttpClient fetchKeysHttpClient)
         {
             _authKiotaClient = authKiotaClient;
-            var jwtValidator = new JwtValidator(projectId, baseUrl, httpClient);
+            var jwtValidator = new JwtValidator(projectId, baseUrl, fetchKeysHttpClient);
             _tokenActions = new TokenActions(jwtValidator, authKiotaClient.V1.Auth);
         }
 
