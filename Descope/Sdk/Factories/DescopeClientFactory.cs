@@ -36,25 +36,49 @@ public static class DescopeManagementClientFactory
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
         var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
 
-        // Create HttpClient with optional unsafe SSL handling and error handling
-        HttpClient httpClient;
+        // Create HttpClient instances with separate handler pipelines
+        // Each HttpClient needs its own handler chain - DelegatingHandler instances cannot be shared across clients
+        HttpClient mgmtHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
+        HttpClient authHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
+        HttpClient fetchKeysHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
 
-        // Create the base handler
+        // Create separate request adapters for management and auth
+        var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: mgmtHttpClient)
+        {
+            BaseUrl = options.BaseUrl
+        };
+
+        var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: authHttpClient)
+        {
+            BaseUrl = options.BaseUrl
+        };
+
+        // Create both generated clients with their respective adapters
+        var mgmtClient = new DescopeMgmtKiotaClient(mgmtAdapter);
+        var authClient = new DescopeAuthKiotaClient(authAdapter);
+
+        // Wrap both clients with JWT validation support
+        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient);
+    }
+
+    private static HttpClient CreateDescopeHttpClient(string projectId, bool isUnsafe, string? fgaCacheUrl)
+    {
+        // Build a fresh handler pipeline for each HttpClient
+        // DelegatingHandler instances cannot be shared across multiple HttpClient instances
         HttpClientHandler baseHandler = new HttpClientHandler
         {
 #if NETSTANDARD2_0
-            ServerCertificateCustomValidationCallback = options.IsUnsafe
+            ServerCertificateCustomValidationCallback = isUnsafe
                 ? (message, cert, chain, errors) => true
                 : null
 #else
-            ServerCertificateCustomValidationCallback = options.IsUnsafe
+            ServerCertificateCustomValidationCallback = isUnsafe
                 ? HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 : null
 #endif
         };
 
-        // Build the handler pipeline: Base -> FGA Cache -> OpenAPI Fix -> Error Handler
-        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(options.FgaCacheUrl)
+        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(fgaCacheUrl)
         {
             InnerHandler = baseHandler
         };
@@ -69,28 +93,9 @@ public static class DescopeManagementClientFactory
             InnerHandler = openApiFixHandler
         };
 
-        httpClient = new HttpClient(errorHandler);
-
-        // Configure Descope headers
-        DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
-
-        // Create separate request adapters for management and auth
-        var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
-        {
-            BaseUrl = options.BaseUrl
-        };
-
-        var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
-        {
-            BaseUrl = options.BaseUrl
-        };
-
-        // Create both generated clients with their respective adapters
-        var mgmtClient = new DescopeMgmtKiotaClient(mgmtAdapter);
-        var authClient = new DescopeAuthKiotaClient(authAdapter);
-
-        // Wrap both clients with JWT validation support
-        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, httpClient);
+        HttpClient httpClient = new(errorHandler);
+        DescopeHttpHeaders.ConfigureHeaders(httpClient, projectId);
+        return httpClient;
     }
 
     /// <summary>

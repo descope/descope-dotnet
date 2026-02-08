@@ -68,16 +68,15 @@ public static class DescopeServiceCollectionExtensions
         // Create and register the Descope Client Service
         services.AddScoped<IDescopeClient>(sp =>
         {
-            // Create HttpClient from factory
-            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var httpClient = httpClientFactory.CreateClient(httpClientName);
-
-            // Configure Descope headers once for the shared HttpClient
-            DescopeHttpHeaders.ConfigureHeaders(httpClient, options.ProjectId);
+            // Create HttpClients from factory
+            // Separate HttpClient instances are needed to avoid cross contamination of http handlers, which most likely happens due to internal Kiota implementation details
+            HttpClient mgmtHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
+            HttpClient authHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
+            HttpClient fetchKeysHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
 
             // Create management Kiota client
             var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
-            var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: httpClient)
+            var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: mgmtHttpClient)
             {
                 BaseUrl = options.BaseUrl
             };
@@ -85,16 +84,24 @@ public static class DescopeServiceCollectionExtensions
 
             // Create auth Kiota client
             var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
-            var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: httpClient)
+            var authAdapter = new HttpClientRequestAdapter(authAuthProvider, httpClient: authHttpClient)
             {
                 BaseUrl = options.BaseUrl
             };
             var authClient = new DescopeAuthKiotaClient(authAdapter);
 
             // Create the wrapper client with internal Kiota clients
-            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, httpClient);
+            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient);
         });
 
         return services;
+    }
+
+    private static HttpClient CreateDescopeHttpClientFromFactory(string projectId, IServiceProvider sp, string httpClientName)
+    {
+        var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+        var httpClient = httpClientFactory.CreateClient(httpClientName);
+        DescopeHttpHeaders.ConfigureHeaders(httpClient, projectId);
+        return httpClient;
     }
 }
