@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.2...Descope-v1.3.3) (2026-02-08)
+
+
+### Bug Fixes
+
+* use isolated http client instances to avoid rare race conditions ([#165](https://github.com/descope/descope-dotnet/issues/165)) ([5567e18](https://github.com/descope/descope-dotnet/commit/5567e188ad8bded44101faad3c27bc96db4a6598))
+
 ## [1.3.2](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.1...Descope-v1.3.2) (2026-02-05)
 
 
