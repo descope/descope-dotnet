@@ -67,7 +67,7 @@ public static class DescopeManagementClientFactory
         };
 
         // Create HttpClient instances
-        // Separate HttpClient instances are needed to avoid rare race conditions when making both management and auth calls concurrently
+        // Separate HttpClient instances are needed to avoid cross contamination of http handlers, which most likely happens due to internal Kiota implementation details
         HttpClient mgmtHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);
         HttpClient authHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);
         HttpClient fetchKeysHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);

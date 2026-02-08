@@ -69,11 +69,7 @@ public static class DescopeServiceCollectionExtensions
         services.AddScoped<IDescopeClient>(sp =>
         {
             // Create HttpClients from factory
-            // Use separate HttpClient instances for mgmt/auth/key-fetch flows because DescopeHttpHeaders.ConfigureHeaders
-            // and the Kiota authentication providers both mutate request headers (including DefaultRequestHeaders).
-            // Sharing a single HttpClient caused headers/auth data from one logical client to leak into another under
-            // concurrent calls, leading to intermittent authentication failures; isolating each flow with its own
-            // HttpClient instance avoids this header/auth race.
+            // Separate HttpClient instances are needed to avoid cross contamination of http handlers, which most likely happens due to internal Kiota implementation details
             HttpClient mgmtHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
             HttpClient authHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
             HttpClient fetchKeysHttpClient = CreateDescopeHttpClientFromFactory(options.ProjectId, sp, httpClientName);
