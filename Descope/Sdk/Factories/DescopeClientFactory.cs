@@ -36,41 +36,11 @@ public static class DescopeManagementClientFactory
         var mgmtAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, options.ManagementKey);
         var authAuthProvider = new DescopeAuthenticationProvider(options.ProjectId, null, options.AuthManagementKey);
 
-        // Create the base handler
-        HttpClientHandler baseHandler = new HttpClientHandler
-        {
-#if NETSTANDARD2_0
-            ServerCertificateCustomValidationCallback = options.IsUnsafe
-                ? (message, cert, chain, errors) => true
-                : null
-#else
-            ServerCertificateCustomValidationCallback = options.IsUnsafe
-                ? HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                : null
-#endif
-        };
-
-        // Build the handler pipeline: Base -> FGA Cache -> OpenAPI Fix -> Error Handler
-        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(options.FgaCacheUrl)
-        {
-            InnerHandler = baseHandler
-        };
-
-        var openApiFixHandler = new Internal.FixRootResponseBodyHandler
-        {
-            InnerHandler = fgaCacheHandler
-        };
-
-        var errorHandler = new DescopeErrorResponseHandler
-        {
-            InnerHandler = openApiFixHandler
-        };
-
-        // Create HttpClient instances
-        // Separate HttpClient instances are needed to avoid cross contamination of http handlers, which most likely happens due to internal Kiota implementation details
-        HttpClient mgmtHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);
-        HttpClient authHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);
-        HttpClient fetchKeysHttpClient = CreateDescopeHttpClient(options.ProjectId, errorHandler);
+        // Create HttpClient instances with separate handler pipelines
+        // Each HttpClient needs its own handler chain - DelegatingHandler instances cannot be shared across clients
+        HttpClient mgmtHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
+        HttpClient authHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
+        HttpClient fetchKeysHttpClient = CreateDescopeHttpClient(options.ProjectId, options.IsUnsafe, options.FgaCacheUrl);
 
         // Create separate request adapters for management and auth
         var mgmtAdapter = new HttpClientRequestAdapter(mgmtAuthProvider, httpClient: mgmtHttpClient)
@@ -91,8 +61,38 @@ public static class DescopeManagementClientFactory
         return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient);
     }
 
-    private static HttpClient CreateDescopeHttpClient(string projectId, DescopeErrorResponseHandler errorHandler)
+    private static HttpClient CreateDescopeHttpClient(string projectId, bool isUnsafe, string? fgaCacheUrl)
     {
+        // Build a fresh handler pipeline for each HttpClient
+        // DelegatingHandler instances cannot be shared across multiple HttpClient instances
+        HttpClientHandler baseHandler = new HttpClientHandler
+        {
+#if NETSTANDARD2_0
+            ServerCertificateCustomValidationCallback = isUnsafe
+                ? (message, cert, chain, errors) => true
+                : null
+#else
+            ServerCertificateCustomValidationCallback = isUnsafe
+                ? HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                : null
+#endif
+        };
+
+        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(fgaCacheUrl)
+        {
+            InnerHandler = baseHandler
+        };
+
+        var openApiFixHandler = new Internal.FixRootResponseBodyHandler
+        {
+            InnerHandler = fgaCacheHandler
+        };
+
+        var errorHandler = new DescopeErrorResponseHandler
+        {
+            InnerHandler = openApiFixHandler
+        };
+
         HttpClient httpClient = new(errorHandler);
         DescopeHttpHeaders.ConfigureHeaders(httpClient, projectId);
         return httpClient;
