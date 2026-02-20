@@ -74,7 +74,7 @@ internal class CookieToBodyHandler : DelegatingHandler
 
                         if (needsSessionJwt || needsRefreshJwt)
                         {
-                            var ms = new System.IO.MemoryStream();
+                            using var ms = new System.IO.MemoryStream();
                             using (var writer = new Utf8JsonWriter(ms))
                             {
                                 writer.WriteStartObject();

@@ -58,6 +58,7 @@ Extension methods in `AuthExtensions.cs` and `MgmtExtensions.cs` wrap Kiota-gene
 ### HTTP Middleware
 
 Custom `DelegatingHandler` implementations in `Descope/Sdk/Internal/Middleware/`:
+- **CookieToBodyHandler** — Extracts JWTs from `Set-Cookie` headers (`DS`/`DSR`) into the response body for "Manage in cookies" mode
 - **FixRootResponseBodyHandler** — Corrects OpenAPI response body nesting inconsistencies
 - **FgaCacheUrlHandler** — Routes specific FGA POST operations to an alternate cache URL
 - **DescopeErrorResponseHandler** — Error response handling

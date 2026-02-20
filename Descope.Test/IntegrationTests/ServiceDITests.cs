@@ -430,7 +430,12 @@ namespace Descope.Test.Integration
                     {
                         _output?.WriteLine($"  < {header.Key}: {string.Join(", ", header.Value)}");
                     }
-                    var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                    string body;
+#if NETSTANDARD2_0
+                    body = await response.Content.ReadAsStringAsync();
+#else
+                    body = await response.Content.ReadAsStringAsync(cancellationToken);
+#endif
                     // Truncate very long bodies (JWTs etc.) for readability
                     var displayBody = body.Length > 500 ? body.Substring(0, 500) + "... [truncated]" : body;
                     _output?.WriteLine($"  < Body: {displayBody}");
