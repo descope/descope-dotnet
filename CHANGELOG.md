@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.3...Descope-v1.3.4) (2026-02-20)
+
+
+### Bug Fixes
+
+* Support "Manage in cookies" for RefreshJWT and SessionJWT without leaking cookies to mgmt calls and failing them ([#171](https://github.com/descope/descope-dotnet/issues/171)) ([83c9738](https://github.com/descope/descope-dotnet/commit/83c9738b92a2fcfb7882edd0efd9666d74146f8d))
+
 ## [1.3.3](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.2...Descope-v1.3.3) (2026-02-08)
 
 
