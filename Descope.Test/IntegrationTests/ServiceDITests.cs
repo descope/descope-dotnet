@@ -1,4 +1,5 @@
 using Xunit;
+using Xunit.Abstractions;
 using Descope.Auth.Models.Onetimev1;
 using Descope.Mgmt.Models.Managementv1;
 using Descope.Mgmt.Models.Onetimev1;
@@ -10,7 +11,14 @@ namespace Descope.Test.Integration
     [Collection("Integration Tests")]
     public class ServiceDITests : RateLimitedIntegrationTest
     {
-        private IDescopeClient InitDescopeClientWithDI()
+        private readonly ITestOutputHelper _output;
+
+        public ServiceDITests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
+        private IDescopeClient InitDescopeClientWithDI(HttpLoggingHandler? loggingHandler = null)
         {
             var options = IntegrationTestSetup.GetDescopeClientOptions();
 
@@ -24,7 +32,13 @@ namespace Descope.Test.Integration
             });
 
             // Configure HttpClient with HttpClientFactory
-            services.AddHttpClient("DescopeClient");
+            var httpClientBuilder = services.AddHttpClient("DescopeClient");
+
+            // Add HTTP logging handler if provided (outermost - sees all requests/responses)
+            if (loggingHandler != null)
+            {
+                httpClientBuilder.AddHttpMessageHandler(() => loggingHandler);
+            }
 
             // Register Descope Client using the extension method
             options.HttpClientFactoryName = "DescopeClient";
@@ -316,6 +330,116 @@ namespace Descope.Test.Integration
                     try { await client.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId }); }
                     catch { }
                 }
+            }
+        }
+
+        [Fact]
+        public async Task ServiceDI_MgmtCallAfterAuthVerify_ShouldNotLeakCookies()
+        {
+            var httpLogger = new HttpLoggingHandler(_output);
+            var client = InitDescopeClientWithDI(httpLogger);
+            string? loginId = null;
+
+            try
+            {
+                // 1. Create test user (mgmt call)
+                loginId = Guid.NewGuid().ToString() + "@test.descope.com";
+                _output?.WriteLine($"=== Step 1: Creating test user {loginId} ===");
+                await client.Mgmt.V1.User.Create.Test.PostAsync(new CreateUserRequest
+                {
+                    Identifier = loginId,
+                    Email = loginId,
+                    VerifiedEmail = true,
+                    Name = "Cookie Leak Test User"
+                });
+
+                // 2. Generate OTP (mgmt call)
+                _output?.WriteLine("=== Step 2: Generating OTP ===");
+                var otpResponse = await client.Mgmt.V1.Tests.Generate.Otp.PostAsync(
+                    new TestUserGenerateOTPRequest { LoginId = loginId, DeliveryMethod = "email" });
+
+                // 3. Verify OTP (auth call) - sets cookies in "Manage in cookies" mode
+                _output?.WriteLine("=== Step 3: Verifying OTP (auth call - should trigger Set-Cookie in cookies mode) ===");
+                var authResponse = await client.Auth.V1.Otp.Verify.Email.PostAsync(
+                    new Auth.Models.Onetimev1.OTPVerifyCodeRequest { LoginId = loginId, Code = otpResponse!.Code });
+                Assert.NotNull(authResponse);
+                _output?.WriteLine($"  Auth response sessionJwt present: {!string.IsNullOrEmpty(authResponse.SessionJwt)}");
+                _output?.WriteLine($"  Auth response refreshJwt present: {!string.IsNullOrEmpty(authResponse.RefreshJwt)}");
+
+                // 4. Management call AFTER auth - should succeed without cookie contamination
+                _output?.WriteLine("=== Step 4: Management call AFTER auth (should not have leaked cookies) ===");
+                var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
+                    new SearchUsersRequest { Limit = 1 });
+                Assert.NotNull(searchResponse);
+                _output?.WriteLine("=== All steps passed ===");
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await client.Mgmt.V1.User.DeletePath.PostAsync(
+                        new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// DelegatingHandler that logs raw HTTP request/response details for debugging.
+        /// Logs method, URL, request headers, status code, response headers, and response body.
+        /// </summary>
+        private class HttpLoggingHandler : DelegatingHandler
+        {
+            private readonly ITestOutputHelper? _output;
+            private int _requestCount;
+
+            public HttpLoggingHandler(ITestOutputHelper? output)
+            {
+                _output = output;
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                var requestNum = Interlocked.Increment(ref _requestCount);
+                _output?.WriteLine($"--- HTTP Request #{requestNum} ---");
+                _output?.WriteLine($"  {request.Method} {request.RequestUri}");
+                foreach (var header in request.Headers)
+                {
+                    _output?.WriteLine($"  > {header.Key}: {string.Join(", ", header.Value)}");
+                }
+                if (request.Content != null)
+                {
+                    foreach (var header in request.Content.Headers)
+                    {
+                        _output?.WriteLine($"  > {header.Key}: {string.Join(", ", header.Value)}");
+                    }
+                }
+
+                var response = await base.SendAsync(request, cancellationToken);
+
+                _output?.WriteLine($"--- HTTP Response #{requestNum} ({(int)response.StatusCode} {response.StatusCode}) ---");
+                foreach (var header in response.Headers)
+                {
+                    _output?.WriteLine($"  < {header.Key}: {string.Join(", ", header.Value)}");
+                }
+                if (response.Content != null)
+                {
+                    foreach (var header in response.Content.Headers)
+                    {
+                        _output?.WriteLine($"  < {header.Key}: {string.Join(", ", header.Value)}");
+                    }
+                    var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                    // Truncate very long bodies (JWTs etc.) for readability
+                    var displayBody = body.Length > 500 ? body.Substring(0, 500) + "... [truncated]" : body;
+                    _output?.WriteLine($"  < Body: {displayBody}");
+                    // Re-create content since ReadAsStringAsync consumed it
+                    response.Content = new StringContent(body, System.Text.Encoding.UTF8,
+                        response.Content.Headers.ContentType?.MediaType ?? "application/json");
+                }
+
+                return response;
             }
         }
 
