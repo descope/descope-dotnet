@@ -67,6 +67,7 @@ public static class DescopeManagementClientFactory
         // DelegatingHandler instances cannot be shared across multiple HttpClient instances
         HttpClientHandler baseHandler = new HttpClientHandler
         {
+            UseCookies = false,
 #if NETSTANDARD2_0
             ServerCertificateCustomValidationCallback = isUnsafe
                 ? (message, cert, chain, errors) => true
@@ -78,9 +79,14 @@ public static class DescopeManagementClientFactory
 #endif
         };
 
-        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(fgaCacheUrl)
+        var cookieToBodyHandler = new Internal.CookieToBodyHandler
         {
             InnerHandler = baseHandler
+        };
+
+        var fgaCacheHandler = new Internal.FgaCacheUrlHandler(fgaCacheUrl)
+        {
+            InnerHandler = cookieToBodyHandler
         };
 
         var openApiFixHandler = new Internal.FixRootResponseBodyHandler
