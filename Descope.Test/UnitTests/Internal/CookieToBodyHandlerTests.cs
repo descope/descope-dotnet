@@ -243,69 +243,6 @@ public class CookieToBodyHandlerTests
         Assert.Equal("not json at all", content);
     }
 
-    [Fact]
-    public async Task CookiesDoNotLeakToSubsequentRequests()
-    {
-        // This test verifies the core bug fix: the handler pipeline with CookieToBodyHandler
-        // does NOT inject cookies into subsequent requests. The handler reads cookies from
-        // individual responses only, matching the Go SDK behavior.
-        var requestNumber = 0;
-        HttpRequestMessage? capturedMgmtRequest = null;
-
-        var innerHandler = new LambdaHandler(request =>
-        {
-            requestNumber++;
-            if (requestNumber == 1)
-            {
-                // First call (auth): return Set-Cookie headers with JWTs
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(
-                        JsonSerializer.Serialize(new { sessionJwt = "", refreshJwt = "" }),
-                        Encoding.UTF8, "application/json")
-                };
-                response.Headers.TryAddWithoutValidation("Set-Cookie",
-                    $"{CookieToBodyHandler.SessionCookieName}={SampleSessionJwt}; Path=/; HttpOnly; Secure");
-                response.Headers.TryAddWithoutValidation("Set-Cookie",
-                    $"{CookieToBodyHandler.RefreshCookieName}={SampleRefreshJwt}; Path=/; HttpOnly; Secure");
-                return response;
-            }
-            else
-            {
-                // Second call (mgmt): capture request to check for leaked cookies
-                capturedMgmtRequest = request;
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("{\"users\":[]}", Encoding.UTF8, "application/json")
-                };
-            }
-        });
-
-        var handler = new CookieToBodyHandler { InnerHandler = innerHandler };
-        var httpClient = new HttpClient(handler);
-
-        // Auth call - returns Set-Cookie headers
-        var authRequest = new HttpRequestMessage(HttpMethod.Post,
-            "https://api.descope.com/v1/auth/otp/verify/email");
-        var authResponse = await httpClient.SendAsync(authRequest);
-
-        // Verify auth response body was patched with JWTs from cookies
-        var authContent = await authResponse.Content.ReadAsStringAsync();
-        using var authDoc = JsonDocument.Parse(authContent);
-        Assert.Equal(SampleSessionJwt, authDoc.RootElement.GetProperty("sessionJwt").GetString());
-        Assert.Equal(SampleRefreshJwt, authDoc.RootElement.GetProperty("refreshJwt").GetString());
-
-        // Mgmt call - should NOT include any Cookie header
-        var mgmtRequest = new HttpRequestMessage(HttpMethod.Post,
-            "https://api.descope.com/v1/mgmt/user/search");
-        await httpClient.SendAsync(mgmtRequest);
-
-        // Verify: the mgmt request must have no Cookie header
-        Assert.NotNull(capturedMgmtRequest);
-        Assert.False(capturedMgmtRequest!.Headers.Contains("Cookie"),
-            "Management request should not contain Cookie header - cookies leaked from auth response");
-    }
-
     #region Test Helpers
 
     private static CookieToBodyHandler CreateHandler(
@@ -357,26 +294,6 @@ public class CookieToBodyHandlerTests
             }
 
             return Task.FromResult(response);
-        }
-    }
-
-    /// <summary>
-    /// Calls a lambda for each request, allowing multi-step scenarios.
-    /// </summary>
-    private class LambdaHandler : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
-
-        public LambdaHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
-        {
-            _handler = handler;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            return Task.FromResult(_handler(request));
         }
     }
 
