@@ -319,6 +319,49 @@ namespace Descope.Test.Integration
             }
         }
 
+        [Fact]
+        public async Task ServiceDI_MgmtCallAfterAuthVerify_ShouldNotLeakCookies()
+        {
+            var client = InitDescopeClientWithDI();
+            string? loginId = null;
+
+            try
+            {
+                // 1. Create test user (mgmt call)
+                loginId = Guid.NewGuid().ToString() + "@test.descope.com";
+                await client.Mgmt.V1.User.Create.Test.PostAsync(new CreateUserRequest
+                {
+                    Identifier = loginId,
+                    Email = loginId,
+                    VerifiedEmail = true,
+                    Name = "Cookie Leak Test User"
+                });
+
+                // 2. Generate OTP (mgmt call)
+                var otpResponse = await client.Mgmt.V1.Tests.Generate.Otp.PostAsync(
+                    new TestUserGenerateOTPRequest { LoginId = loginId, DeliveryMethod = "email" });
+
+                // 3. Verify OTP (auth call) - sets cookies in "Manage in cookies" mode
+                var authResponse = await client.Auth.V1.Otp.Verify.Email.PostAsync(
+                    new Auth.Models.Onetimev1.OTPVerifyCodeRequest { LoginId = loginId, Code = otpResponse!.Code });
+                Assert.NotNull(authResponse);
+
+                // 4. Management call AFTER auth - should succeed without cookie contamination
+                var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
+                    new SearchUsersRequest { Limit = 1 });
+                Assert.NotNull(searchResponse);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(loginId))
+                {
+                    try { await client.Mgmt.V1.User.DeletePath.PostAsync(
+                        new DeleteUserRequest { Identifier = loginId }); }
+                    catch { }
+                }
+            }
+        }
+
         // This test relies on the FixRootResponseBodyHandler middleware to correctly parse the response for loading a tenant, makes sure it applies to DI setup as well
         [Fact]
         public async Task ServiceDI_CreateAndLoadTenant_Success()

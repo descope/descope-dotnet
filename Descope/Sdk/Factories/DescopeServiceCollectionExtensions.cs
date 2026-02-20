@@ -44,7 +44,11 @@ public static class DescopeServiceCollectionExtensions
         // Configure HttpClient with handlers and optional unsafe SSL handling
         var httpClientBuilder = services.AddHttpClient(httpClientName);
 
-        // Add the FGA cache URL handler to the pipeline (innermost middleware)
+        // Add the cookie-to-body handler to the pipeline (innermost middleware)
+        // Extracts JWTs from Set-Cookie headers into the response body for "Manage in cookies" mode
+        httpClientBuilder.AddHttpMessageHandler(() => new Internal.CookieToBodyHandler());
+
+        // Add the FGA cache URL handler to the pipeline
         httpClientBuilder.AddHttpMessageHandler(() => new Internal.FgaCacheUrlHandler(options.FgaCacheUrl));
 
         // Add the open api application response fix handler to the pipeline
@@ -53,17 +57,26 @@ public static class DescopeServiceCollectionExtensions
         // Add the error response handler to the pipeline (outermost handler)
         httpClientBuilder.AddHttpMessageHandler(() => new DescopeErrorResponseHandler());
 
-        if (options.IsUnsafe)
+        // Always configure the primary handler to disable automatic cookie handling.
+        // Cookies must never be implicitly shared between requests — the SDK reads
+        // cookies from individual HTTP responses via the CookieToBodyHandler instead.
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() =>
         {
-            httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.HttpClientHandler
+            var handler = new System.Net.Http.HttpClientHandler
+            {
+                UseCookies = false
+            };
+            if (options.IsUnsafe)
             {
 #if NETSTANDARD2_0
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 #else
-                ServerCertificateCustomValidationCallback = System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                handler.ServerCertificateCustomValidationCallback =
+                    System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 #endif
-            });
-        }
+            }
+            return handler;
+        });
 
         // Create and register the Descope Client Service
         services.AddScoped<IDescopeClient>(sp =>
