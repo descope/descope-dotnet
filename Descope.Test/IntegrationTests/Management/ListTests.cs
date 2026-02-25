@@ -16,7 +16,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var response = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -51,7 +50,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var response = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -89,7 +87,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var response = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -118,7 +115,6 @@ namespace Descope.Test.Integration
             {
                 var name = Guid.NewGuid().ToString();
                 var desc = "test description";
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -130,7 +126,6 @@ namespace Descope.Test.Integration
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var loadResponse = await _descopeClient.Mgmt.V1.List[listId!].GetAsync();
                     Assert.NotNull(loadResponse?.List);
                     Assert.Equal(listId, loadResponse.List.Id);
@@ -156,7 +151,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -167,7 +161,6 @@ namespace Descope.Test.Integration
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var loadResponse = await _descopeClient.Mgmt.V1.List.Name[name].GetAsync();
                     Assert.NotNull(loadResponse?.List);
                     Assert.Equal(listId, loadResponse.List.Id);
@@ -195,19 +188,16 @@ namespace Descope.Test.Integration
                 var name1 = Guid.NewGuid().ToString();
                 var name2 = Guid.NewGuid().ToString();
 
-                await Task.Delay(extraSleepTime);
                 var create1 = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest { Name = name1, Type = "texts" });
                 listId1 = create1?.List?.Id;
                 Assert.NotNull(listId1);
 
-                await Task.Delay(extraSleepTime);
                 var create2 = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest { Name = name2, Type = "texts" });
                 listId2 = create2?.List?.Id;
                 Assert.NotNull(listId2);
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var allResponse = await _descopeClient.Mgmt.V1.List.All.GetAsync();
                     Assert.NotNull(allResponse?.Lists);
                     Assert.Contains(allResponse.Lists, l => l.Id == listId1);
@@ -236,7 +226,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -281,7 +270,6 @@ namespace Descope.Test.Integration
         public async Task List_Delete()
         {
             var name = Guid.NewGuid().ToString();
-            await Task.Delay(extraSleepTime);
             var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
             {
                 Name = name,
@@ -290,12 +278,10 @@ namespace Descope.Test.Integration
             var listId = createResponse?.List?.Id;
             Assert.NotNull(listId);
 
-            await Task.Delay(extraSleepTime);
             await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId });
 
             await RetryUntilSuccessAsync(async () =>
             {
-                await Task.Delay(extraSleepTime);
                 await Assert.ThrowsAsync<DescopeException>(async () =>
                     await _descopeClient.Mgmt.V1.List[listId!].GetAsync());
             });
@@ -356,7 +342,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var response = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -390,7 +375,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -406,7 +390,6 @@ namespace Descope.Test.Integration
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     // Check existing IP
                     var existsResponse = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
@@ -416,7 +399,6 @@ namespace Descope.Test.Integration
                     Assert.True(existsResponse?.Exists);
 
                     // Check non-existing IP
-                    await Task.Delay(extraSleepTime);
                     var notExistsResponse = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
                         Id = listId,
@@ -438,7 +420,6 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task List_Error_LoadNotFound()
         {
-            await Task.Delay(extraSleepTime);
             async Task Act() => await _descopeClient.Mgmt.V1.List["nonexistent-id-that-does-not-exist"].GetAsync();
             await Assert.ThrowsAsync<DescopeException>(Act);
         }
@@ -446,7 +427,6 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task List_Error_LoadByNameNotFound()
         {
-            await Task.Delay(extraSleepTime);
             async Task Act() => await _descopeClient.Mgmt.V1.List.Name["nonexistent-name-that-does-not-exist"].GetAsync();
             await Assert.ThrowsAsync<DescopeException>(Act);
         }
@@ -454,7 +434,6 @@ namespace Descope.Test.Integration
         [Fact]
         public async Task List_Error_DeleteNotFound()
         {
-            await Task.Delay(extraSleepTime);
             async Task Act() => await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = "nonexistent-id-that-does-not-exist" });
             await Assert.ThrowsAsync<DescopeException>(Act);
         }
@@ -466,7 +445,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -479,7 +457,6 @@ namespace Descope.Test.Integration
                 listId = createResponse?.List?.Id;
                 Assert.NotNull(listId);
 
-                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.List.Ip.Add.PostAsync(new AddIPsToListRequest
                 {
                     Id = listId,
@@ -488,7 +465,6 @@ namespace Descope.Test.Integration
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var checkResponse = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
                         Id = listId,
@@ -520,7 +496,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -534,7 +509,6 @@ namespace Descope.Test.Integration
                 listId = createResponse?.List?.Id;
                 Assert.NotNull(listId);
 
-                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.List.Ip.Remove.PostAsync(new RemoveIPsFromListRequest
                 {
                     Id = listId,
@@ -543,7 +517,6 @@ namespace Descope.Test.Integration
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var removedCheck = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
                         Id = listId,
@@ -551,7 +524,6 @@ namespace Descope.Test.Integration
                     });
                     Assert.False(removedCheck?.Exists);
 
-                    await Task.Delay(extraSleepTime);
                     var remainingCheck = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
                         Id = listId,
@@ -577,7 +549,6 @@ namespace Descope.Test.Integration
             try
             {
                 var name = Guid.NewGuid().ToString();
-                await Task.Delay(extraSleepTime);
                 var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
                 {
                     Name = name,
@@ -591,12 +562,10 @@ namespace Descope.Test.Integration
                 listId = createResponse?.List?.Id;
                 Assert.NotNull(listId);
 
-                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.List.Clear.PostAsync(new ClearListRequest { Id = listId });
 
                 await RetryUntilSuccessAsync(async () =>
                 {
-                    await Task.Delay(extraSleepTime);
                     var checkResponse = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
                     {
                         Id = listId,
