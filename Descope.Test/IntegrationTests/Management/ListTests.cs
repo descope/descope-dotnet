@@ -38,7 +38,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -76,7 +76,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -104,7 +104,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -143,7 +143,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -179,7 +179,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -218,12 +218,12 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId1))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId1 }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId1 }); }
                     catch { }
                 }
                 if (!string.IsNullOrEmpty(listId2))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId2 }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId2 }); }
                     catch { }
                 }
             }
@@ -271,7 +271,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -332,22 +332,18 @@ namespace Descope.Test.Integration
                 // Load by name to get IDs for cleanup
                 try
                 {
-                    await Task.Delay(extraSleepTime);
                     var r1 = await _descopeClient.Mgmt.V1.List.Name[name1].GetAsync();
                     if (!string.IsNullOrEmpty(r1?.List?.Id))
                     {
-                        await Task.Delay(extraSleepTime);
                         await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = r1.List.Id });
                     }
                 }
                 catch { }
                 try
                 {
-                    await Task.Delay(extraSleepTime);
                     var r2 = await _descopeClient.Mgmt.V1.List.Name[name2].GetAsync();
                     if (!string.IsNullOrEmpty(r2?.List?.Id))
                     {
-                        await Task.Delay(extraSleepTime);
                         await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = r2.List.Id });
                     }
                 }
@@ -383,7 +379,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -435,7 +431,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -513,7 +509,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -570,7 +566,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
@@ -615,7 +611,7 @@ namespace Descope.Test.Integration
             {
                 if (!string.IsNullOrEmpty(listId))
                 {
-                    try { await Task.Delay(extraSleepTime); await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
                     catch { }
                 }
             }
