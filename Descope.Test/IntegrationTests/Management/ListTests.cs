@@ -301,7 +301,7 @@ namespace Descope.Test.Integration
             });
         }
 
-        [Fact(Skip = "Too flaky in CI")]
+        [Fact]
         public async Task List_Import()
         {
             var name1 = Guid.NewGuid().ToString();
@@ -321,10 +321,10 @@ namespace Descope.Test.Integration
                 await RetryUntilSuccessAsync(async () =>
                 {
                     await Task.Delay(extraSleepTime);
-                    var allResponse = await _descopeClient.Mgmt.V1.List.All.GetAsync();
-                    Assert.NotNull(allResponse?.Lists);
-                    Assert.Contains(allResponse.Lists, l => l.Name == name1);
-                    Assert.Contains(allResponse.Lists, l => l.Name == name2);
+                    var r1 = await _descopeClient.Mgmt.V1.List.Name[name1].GetAsync();
+                    Assert.NotNull(r1?.List?.Id);
+                    var r2 = await _descopeClient.Mgmt.V1.List.Name[name2].GetAsync();
+                    Assert.NotNull(r2?.List?.Id);
                 });
             }
             finally
