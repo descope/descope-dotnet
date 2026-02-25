@@ -124,6 +124,7 @@ namespace Descope.Test.Integration
                 listId = createResponse?.List?.Id;
                 Assert.NotNull(listId);
 
+                await Task.Delay(extraSleepTime);
                 await RetryUntilSuccessAsync(async () =>
                 {
                     var loadResponse = await _descopeClient.Mgmt.V1.List[listId!].GetAsync();
@@ -303,6 +304,7 @@ namespace Descope.Test.Integration
                     },
                 });
 
+                await Task.Delay(extraSleepTime);
                 await RetryUntilSuccessAsync(async () =>
                 {
                     var r1 = await _descopeClient.Mgmt.V1.List.Name[name1].GetAsync();
@@ -562,8 +564,10 @@ namespace Descope.Test.Integration
                 listId = createResponse?.List?.Id;
                 Assert.NotNull(listId);
 
+                await Task.Delay(extraSleepTime);
                 await _descopeClient.Mgmt.V1.List.Clear.PostAsync(new ClearListRequest { Id = listId });
 
+                await Task.Delay(extraSleepTime);
                 await RetryUntilSuccessAsync(async () =>
                 {
                     var checkResponse = await _descopeClient.Mgmt.V1.List.Ip.Check.PostAsync(new CheckIPInListRequest
