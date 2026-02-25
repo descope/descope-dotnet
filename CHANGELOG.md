@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.4...Descope-v1.4.0) (2026-02-25)
+
+
+### Features
+
+* add lists CRUD APIs ([#174](https://github.com/descope/descope-dotnet/issues/174)) ([25d386e](https://github.com/descope/descope-dotnet/commit/25d386e602c0447838e3bfc16a54f0b619db2a70))
+
 ## [1.3.4](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.3...Descope-v1.3.4) (2026-02-20)
 
 
