@@ -8,6 +8,7 @@ using Descope.Mgmt.V1.Mgmt.List.Import;
 using Descope.Mgmt.V1.Mgmt.List.Ip;
 using Descope.Mgmt.V1.Mgmt.List.Item;
 using Descope.Mgmt.V1.Mgmt.List.Name;
+using Descope.Mgmt.V1.Mgmt.List.Text;
 using Descope.Mgmt.V1.Mgmt.List.Update;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
@@ -54,6 +55,11 @@ namespace Descope.Mgmt.V1.Mgmt.List
         public global::Descope.Mgmt.V1.Mgmt.List.Name.NameRequestBuilder Name
         {
             get => new global::Descope.Mgmt.V1.Mgmt.List.Name.NameRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The text property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.List.Text.TextRequestBuilder Text
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.List.Text.TextRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The update property</summary>
         public global::Descope.Mgmt.V1.Mgmt.List.Update.UpdateRequestBuilder Update
