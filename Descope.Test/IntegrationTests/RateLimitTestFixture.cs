@@ -20,7 +20,7 @@ namespace Descope.Test.Integration
 
         protected static int GetDelayBasedOnPlatform()
         {
-            return OperatingSystem.IsMacOS() ? 0 : 1000; // We do not need rate limiting on macOS for local dev
+            return OperatingSystem.IsMacOS() ? 0 : 2000; // We do not need rate limiting on macOS for local dev
         }
 
         protected RateLimitedIntegrationTest()
