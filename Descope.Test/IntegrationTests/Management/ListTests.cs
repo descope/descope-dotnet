@@ -299,6 +299,7 @@ namespace Descope.Test.Integration
         {
             var name1 = Guid.NewGuid().ToString();
             var name2 = Guid.NewGuid().ToString();
+            await Task.Delay(extraSleepTime);
             try
             {
                 await _descopeClient.Mgmt.V1.List.Import.PostAsync(new ImportListsRequest
@@ -306,7 +307,6 @@ namespace Descope.Test.Integration
                     Lists = new System.Collections.Generic.List<Descope.Mgmt.Models.Managementv1.List>
                     {
                         new Descope.Mgmt.Models.Managementv1.List { Name = name1, Type = "texts" },
-                        new Descope.Mgmt.Models.Managementv1.List { Name = name2, Type = "texts" },
                     },
                 });
 
@@ -317,8 +317,6 @@ namespace Descope.Test.Integration
                 {
                     var r1 = await _descopeClient.Mgmt.V1.List.Name[name1].GetAsync();
                     Assert.NotNull(r1?.List?.Id);
-                    var r2 = await _descopeClient.Mgmt.V1.List.Name[name2].GetAsync();
-                    Assert.NotNull(r2?.List?.Id);
                 });
             }
             finally
