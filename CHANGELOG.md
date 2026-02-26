@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.4.0...Descope-v1.5.0) (2026-02-26)
+
+
+### Features
+
+* add text lists CRUD methods ([#177](https://github.com/descope/descope-dotnet/issues/177)) ([d8294b7](https://github.com/descope/descope-dotnet/commit/d8294b77638c7b468d5a6ec32698ac090b6f7fa5))
+
 ## [1.4.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.3.4...Descope-v1.4.0) (2026-02-25)
 
 
