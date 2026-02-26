@@ -551,6 +551,159 @@ namespace Descope.Test.Integration
         }
 
         [Fact]
+        public async Task List_CheckText()
+        {
+            string? listId = null;
+            try
+            {
+                var name = Guid.NewGuid().ToString();
+                var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
+                {
+                    Name = name,
+                    Type = "texts",
+                    Data = new UntypedArray(new List<UntypedNode>
+                    {
+                        new UntypedString("value1"),
+                        new UntypedString("value2"),
+                    }),
+                });
+                listId = createResponse?.List?.Id;
+                Assert.NotNull(listId);
+
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    // Check existing text
+                    var existsResponse = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "value1",
+                    });
+                    Assert.True(existsResponse?.Exists);
+
+                    // Check non-existing text
+                    var notExistsResponse = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "nonexistent",
+                    });
+                    Assert.False(notExistsResponse?.Exists);
+                });
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(listId))
+                {
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task List_AddTexts()
+        {
+            string? listId = null;
+            try
+            {
+                var name = Guid.NewGuid().ToString();
+                var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
+                {
+                    Name = name,
+                    Type = "texts",
+                    Data = new UntypedArray(new List<UntypedNode>
+                    {
+                        new UntypedString("value1"),
+                    }),
+                });
+                listId = createResponse?.List?.Id;
+                Assert.NotNull(listId);
+
+                await _descopeClient.Mgmt.V1.List.Text.Add.PostAsync(new AddTextsToListRequest
+                {
+                    Id = listId,
+                    Texts = new System.Collections.Generic.List<string> { "value2", "value3" },
+                });
+
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var checkResponse = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "value2",
+                    });
+                    Assert.True(checkResponse?.Exists);
+                    checkResponse = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "value1",
+                    });
+                    Assert.True(checkResponse?.Exists);
+                });
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(listId))
+                {
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task List_RemoveTexts()
+        {
+            string? listId = null;
+            try
+            {
+                var name = Guid.NewGuid().ToString();
+                var createResponse = await _descopeClient.Mgmt.V1.List.PostAsync(new CreateListRequest
+                {
+                    Name = name,
+                    Type = "texts",
+                    Data = new UntypedArray(new List<UntypedNode>
+                    {
+                        new UntypedString("value1"),
+                        new UntypedString("value2"),
+                    }),
+                });
+                listId = createResponse?.List?.Id;
+                Assert.NotNull(listId);
+
+                await _descopeClient.Mgmt.V1.List.Text.Remove.PostAsync(new RemoveTextsFromListRequest
+                {
+                    Id = listId,
+                    Texts = new System.Collections.Generic.List<string> { "value1" },
+                });
+
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var removedCheck = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "value1",
+                    });
+                    Assert.False(removedCheck?.Exists);
+
+                    var remainingCheck = await _descopeClient.Mgmt.V1.List.Text.Check.PostAsync(new CheckTextInListRequest
+                    {
+                        Id = listId,
+                        Text = "value2",
+                    });
+                    Assert.True(remainingCheck?.Exists);
+                });
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(listId))
+                {
+                    try { await _descopeClient.Mgmt.V1.List.DeletePath.PostAsync(new DeleteListRequest { Id = listId }); }
+                    catch { }
+                }
+            }
+        }
+
+        [Fact]
         public async Task List_Clear()
         {
             string? listId = null;
