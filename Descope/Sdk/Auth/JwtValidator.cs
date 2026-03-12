@@ -11,13 +11,17 @@ namespace Descope;
 /// Handles JWT validation using locally cached public keys.
 /// This class is thread-safe and can be used concurrently from multiple threads.
 /// </summary>
-internal class JwtValidator
+internal class JwtValidator : IDisposable
 {
     private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
     private readonly ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
     private readonly string _projectId;
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
+    private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
+    private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
+    private DateTimeOffset _lastKeyFetch = DateTimeOffset.MinValue;
+    private bool _disposed;
 
     public JwtValidator(string projectId, string baseUrl, HttpClient httpClient)
     {
@@ -71,29 +75,59 @@ internal class JwtValidator
 
     private async Task FetchKeyIfNeeded()
     {
-        if (!_securityKeys.IsEmpty) return;
+        // Check if keys need refresh based on TTL
+        var now = DateTimeOffset.UtcNow;
+        var elapsed = now - _lastKeyFetch;
 
-        var url = $"{_baseUrl.TrimEnd('/')}/v2/keys/{_projectId}";
-        var response = await _httpClient.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-        var keyResponse = JsonSerializer.Deserialize<JwtKeyResponse>(content);
-
-        if (keyResponse?.Keys == null) return;
-
-        foreach (var key in keyResponse.Keys)
+        // If keys are fresh (within TTL), no need to fetch
+        if (!_securityKeys.IsEmpty && elapsed < _keyRefreshInterval)
         {
-            var rsa = RSA.Create();
-            rsa.ImportParameters(key.ToRsaParameters());
+            return;
+        }
 
-            _securityKeys.AddOrUpdate(
-                key.Kid,
-                _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
-                (_, existingKeys) =>
-                {
-                    return existingKeys.Concat(new[] { new RsaSecurityKey(rsa) }).ToList();
-                });
+        // Use semaphore to ensure only one thread fetches at a time
+        await _fetchSemaphore.WaitAsync();
+        try
+        {
+            // Double-check after acquiring lock - another thread might have fetched
+            var recheckElapsed = DateTimeOffset.UtcNow - _lastKeyFetch;
+            if (!_securityKeys.IsEmpty && recheckElapsed < _keyRefreshInterval)
+            {
+                return;
+            }
+
+            var url = $"{_baseUrl.TrimEnd('/')}/v2/keys/{_projectId}";
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var keyResponse = JsonSerializer.Deserialize<JwtKeyResponse>(content);
+
+            if (keyResponse?.Keys == null) return;
+
+            // Clear old keys to prevent unbounded accumulation
+            _securityKeys.Clear();
+
+            foreach (var key in keyResponse.Keys)
+            {
+                var rsa = RSA.Create();
+                rsa.ImportParameters(key.ToRsaParameters());
+
+                _securityKeys.AddOrUpdate(
+                    key.Kid,
+                    _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
+                    (_, existingKeys) =>
+                    {
+                        return existingKeys.Concat(new[] { new RsaSecurityKey(rsa) }).ToList();
+                    });
+            }
+
+            // Update last fetch time AFTER successful fetch
+            _lastKeyFetch = DateTimeOffset.UtcNow;
+        }
+        finally
+        {
+            _fetchSemaphore.Release();
         }
     }
 
@@ -135,6 +169,15 @@ internal class JwtValidator
                 Modulus = modulusBytes,
                 Exponent = Convert.FromBase64String(E)
             };
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _fetchSemaphore.Dispose();
+            _disposed = true;
         }
     }
 }
