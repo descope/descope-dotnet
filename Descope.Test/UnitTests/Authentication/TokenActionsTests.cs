@@ -233,7 +233,7 @@ public class TokenActionsTests
     }
 
     [Fact]
-    public async Task ValidateSession_CalledConsecutively_ShouldFetchPublicKeysOnlyOnce()
+    public async Task ValidateSession_CalledConsecutively_ShouldCachePublicKeysWithinTTL()
     {
         // Arrange
         var requestCount = 0;
@@ -291,7 +291,7 @@ public class TokenActionsTests
             // Expected to fail due to invalid signature, but keys should be cached
         }
 
-        // Second call - should use cached keys
+        // Second call - should use cached keys (within default 10 minute TTL)
         try
         {
             await client.Auth.ValidateSessionAsync(testJwt);
@@ -303,6 +303,7 @@ public class TokenActionsTests
 
         // Assert
         // The HTTP client should have been called exactly once to fetch the keys
+        // (second call uses cached keys since it's within the TTL period)
         Assert.Equal(1, requestCount);
     }
 
