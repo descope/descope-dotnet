@@ -14,7 +14,7 @@ namespace Descope;
 internal class JwtValidator
 {
     private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
-    private volatile ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
+    private ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
     private readonly string _projectId;
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
