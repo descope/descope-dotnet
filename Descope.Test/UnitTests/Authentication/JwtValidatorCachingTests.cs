@@ -322,8 +322,8 @@ public class JwtValidatorCachingTests
         var httpClient = new HttpClient(mockHandler.Object);
         var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
 
-        // Act & Assert - HttpRequestException is wrapped in DescopeException by ValidateToken
-        var exception = await Assert.ThrowsAsync<DescopeException>(async () =>
+        // Act & Assert - FetchKeyIfNeeded throws HttpRequestException before try/catch in ValidateToken
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
         {
             await client.Auth.ValidateSessionAsync(TestJwt);
         });
