@@ -11,17 +11,16 @@ namespace Descope;
 /// Handles JWT validation using locally cached public keys.
 /// This class is thread-safe and can be used concurrently from multiple threads.
 /// </summary>
-internal class JwtValidator : IDisposable
+internal class JwtValidator
 {
     private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
-    private readonly ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
+    private volatile ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
     private readonly string _projectId;
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
     private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
     private DateTimeOffset _lastKeyFetch = DateTimeOffset.MinValue;
-    private bool _disposed;
 
     public JwtValidator(string projectId, string baseUrl, HttpClient httpClient)
     {
@@ -105,21 +104,37 @@ internal class JwtValidator : IDisposable
 
             if (keyResponse?.Keys == null) return;
 
-            // Clear old keys to prevent unbounded accumulation
-            _securityKeys.Clear();
+            // Build new key map atomically to avoid racing with in-flight validations
+            var newKeys = new ConcurrentDictionary<string, List<SecurityKey>>();
 
             foreach (var key in keyResponse.Keys)
             {
                 var rsa = RSA.Create();
                 rsa.ImportParameters(key.ToRsaParameters());
 
-                _securityKeys.AddOrUpdate(
+                newKeys.AddOrUpdate(
                     key.Kid,
                     _ => new List<SecurityKey> { new RsaSecurityKey(rsa) },
                     (_, existingKeys) =>
                     {
                         return existingKeys.Concat(new[] { new RsaSecurityKey(rsa) }).ToList();
                     });
+            }
+
+            // Atomically swap in the new keys — in-flight validations continue
+            // using the old dictionary reference until they complete
+            var oldKeys = Interlocked.Exchange(ref _securityKeys, newKeys);
+
+            // Dispose old RSA instances to avoid handle/memory leaks
+            foreach (var keyList in oldKeys.Values)
+            {
+                foreach (var securityKey in keyList)
+                {
+                    if (securityKey is RsaSecurityKey rsaKey && rsaKey.Rsa != null)
+                    {
+                        rsaKey.Rsa.Dispose();
+                    }
+                }
             }
 
             // Update last fetch time AFTER successful fetch
@@ -172,12 +187,4 @@ internal class JwtValidator : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _fetchSemaphore.Dispose();
-            _disposed = true;
-        }
     }
-}

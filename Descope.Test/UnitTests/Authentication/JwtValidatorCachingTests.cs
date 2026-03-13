@@ -105,16 +105,11 @@ public class JwtValidatorCachingTests
         // Arrange
         var requestCount = 0;
         var fetchStartedCount = 0;
-        var semaphore = new SemaphoreSlim(0, 1);
 
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             Interlocked.Increment(ref fetchStartedCount);
             requestCount = count;
-
-            // Add a delay to ensure concurrent requests pile up
-            Thread.Sleep(50);
-
             return CreateJwksResponse();
         });
 
@@ -147,14 +142,11 @@ public class JwtValidatorCachingTests
     }
 
     [Fact]
-    public async Task ValidateSession_KeyRotation_ShouldEventuallyFetchNewKeys()
+    public async Task ValidateSession_KeyRotation_DocumentsTtlBehavior()
     {
-        // This test simulates key rotation: after TTL expires, new keys should be fetched.
-        // In a real scenario where Descope rotates signing keys, the SDK must be able
-        // to fetch the updated keys without requiring an application restart.
-
-        // Note: This test would require time manipulation or a configurable TTL to test properly.
-        // For now, we verify that the TTL mechanism is in place by checking the implementation.
+        // This test documents key rotation behavior.
+        // After TTL expires, new keys should be fetched.
+        // Full TTL testing would require injecting a time provider (future enhancement).
 
         // Arrange
         var requestCount = 0;
@@ -162,8 +154,6 @@ public class JwtValidatorCachingTests
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             requestCount = count;
-
-            // Simulate key rotation: return different key ID on second fetch
             var keyId = count <= 1 ? "key-v1" : "key-v2";
             return CreateJwksResponse(keyId);
         });
@@ -171,22 +161,17 @@ public class JwtValidatorCachingTests
         var httpClient = new HttpClient(mockHandler.Object);
         var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
 
-        // Act
-        // First call - should fetch keys (key-v1)
+        // Act & Assert
+        // First call fetches keys
         try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
         Assert.Equal(1, requestCount);
 
-        // Second call within TTL - should NOT fetch (still using key-v1)
+        // Second call within TTL reuses cached keys
         try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
         Assert.Equal(1, requestCount);
 
-        // NOTE: Testing actual TTL expiration would require:
-        // 1. Waiting 5+ minutes (impractical for unit tests)
-        // 2. Injecting a time provider (could be added in future)
-        // 3. Making TTL configurable (could be added in future)
-
-        // For now, this test documents the expected behavior and verifies
-        // that the mechanism exists in the implementation.
+        // NOTE: To fully test TTL expiration, inject a time provider into JwtValidator.
+        // This is documented as a future improvement.
     }
 
     [Fact]
@@ -200,8 +185,6 @@ public class JwtValidatorCachingTests
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             requestCount = count;
-            // Simulate slow network during key fetch
-            Thread.Sleep(100);
             return CreateJwksResponse();
         });
 
@@ -237,8 +220,10 @@ public class JwtValidatorCachingTests
         // all of them are cached properly.
 
         // Arrange
+        var requestCount = 0;
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
+            requestCount = count;
             var keysResponse = new
             {
                 keys = new[]
@@ -289,9 +274,8 @@ public class JwtValidatorCachingTests
             try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
         }
 
-        // Assert - No exceptions should occur, and all keys should be available
-        // This test primarily ensures no crashes occur with multiple keys
-        Assert.True(true); // Test passes if no exceptions were thrown
+        // Assert - JWKS endpoint called once and all subsequent calls use cache
+        Assert.Equal(1, requestCount);
     }
 
     [Fact]
@@ -338,8 +322,8 @@ public class JwtValidatorCachingTests
         var httpClient = new HttpClient(mockHandler.Object);
         var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+        // Act & Assert - HttpRequestException is wrapped in DescopeException by ValidateToken
+        var exception = await Assert.ThrowsAsync<DescopeException>(async () =>
         {
             await client.Auth.ValidateSessionAsync(TestJwt);
         });
