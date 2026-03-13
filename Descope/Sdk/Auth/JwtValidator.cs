@@ -20,7 +20,7 @@ internal class JwtValidator
     private readonly string _baseUrl;
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
     private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
-    private DateTimeOffset _lastKeyFetch = DateTimeOffset.MinValue;
+    private long _lastKeyFetchTicks = 0;
 
     public JwtValidator(string projectId, string baseUrl, HttpClient httpClient)
     {
@@ -75,8 +75,8 @@ internal class JwtValidator
     private async Task FetchKeyIfNeeded()
     {
         // Check if keys need refresh based on TTL
-        var now = DateTimeOffset.UtcNow;
-        var elapsed = now - _lastKeyFetch;
+        var lastFetchTicks = Interlocked.Read(ref _lastKeyFetchTicks);
+        var elapsed = TimeSpan.FromTicks(DateTimeOffset.UtcNow.Ticks - lastFetchTicks);
 
         // If keys are fresh (within TTL), no need to fetch
         if (!_securityKeys.IsEmpty && elapsed < _keyRefreshInterval)
@@ -89,7 +89,8 @@ internal class JwtValidator
         try
         {
             // Double-check after acquiring lock - another thread might have fetched
-            var recheckElapsed = DateTimeOffset.UtcNow - _lastKeyFetch;
+            var recheckTicks = Interlocked.Read(ref _lastKeyFetchTicks);
+            var recheckElapsed = TimeSpan.FromTicks(DateTimeOffset.UtcNow.Ticks - recheckTicks);
             if (!_securityKeys.IsEmpty && recheckElapsed < _keyRefreshInterval)
             {
                 return;
@@ -138,7 +139,7 @@ internal class JwtValidator
             }
 
             // Update last fetch time AFTER successful fetch
-            _lastKeyFetch = DateTimeOffset.UtcNow;
+            Interlocked.Exchange(ref _lastKeyFetchTicks, DateTimeOffset.UtcNow.Ticks);
         }
         finally
         {
