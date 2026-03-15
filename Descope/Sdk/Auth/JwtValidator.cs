@@ -52,23 +52,7 @@ internal class JwtValidator
             // Extract the kid (key ID) from the token header
             var kid = token.Kid;
 
-            var result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, new TokenValidationParameters
-            {
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-                {
-                    if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
-                    {
-                        return keys;
-                    }
-                    return new List<SecurityKey>();
-                },
-                ValidateIssuerSigningKey = true,
-                RequireExpirationTime = true,
-                RequireSignedTokens = true,
-                ClockSkew = TimeSpan.FromSeconds(5),
-            });
+            var result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, BuildValidationParameters());
 
             // Cache-miss immediate re-fetch: if validation failed and the kid is NOT in the cache,
             // force a key re-fetch (bypassing TTL) and retry validation once.
@@ -79,23 +63,7 @@ internal class JwtValidator
                 await ForceKeyFetch();
 
                 // Retry validation once with the newly fetched keys
-                result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-                    {
-                        if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
-                        {
-                            return keys;
-                        }
-                        return new List<SecurityKey>();
-                    },
-                    ValidateIssuerSigningKey = true,
-                    RequireExpirationTime = true,
-                    RequireSignedTokens = true,
-                    ClockSkew = TimeSpan.FromSeconds(5),
-                });
+                result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, BuildValidationParameters());
             }
 
             if (result.Exception != null) throw new DescopeException("JWT validation failed");
@@ -106,6 +74,24 @@ internal class JwtValidator
             throw new DescopeException("JWT validation failed", ex);
         }
     }
+
+    private TokenValidationParameters BuildValidationParameters() => new()
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+        {
+            if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
+            {
+                return keys;
+            }
+            return new List<SecurityKey>();
+        },
+        ValidateIssuerSigningKey = true,
+        RequireExpirationTime = true,
+        RequireSignedTokens = true,
+        ClockSkew = TimeSpan.FromSeconds(5),
+    };
 
     private async Task FetchKeyIfNeeded()
     {
@@ -122,15 +108,7 @@ internal class JwtValidator
         await FetchKeys(force: false);
     }
 
-    /// <summary>
-    /// Forces a key fetch regardless of TTL, used for cache-miss immediate re-fetch.
-    /// When a token validation fails because the kid is not in the cache,
-    /// this method is called to immediately fetch the latest keys.
-    /// </summary>
-    private async Task ForceKeyFetch()
-    {
-        await FetchKeys(force: true);
-    }
+    private async Task ForceKeyFetch() => await FetchKeys(force: true);
 
     private async Task FetchKeys(bool force)
     {

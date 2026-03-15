@@ -154,7 +154,10 @@ public class JwtValidatorCachingTests
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             requestCount = count;
-            var keyId = count <= 1 ? "key-v1" : "key-v2";
+            // First fetch returns the key matching TestJwt's kid so validation succeeds (no cache-miss re-fetch).
+            // Subsequent fetches (after TTL expiry) would return a new key — not exercised here since TTL injection
+            // is a future enhancement.
+            var keyId = count == 1 ? "test-key" : "test-key-v2";
             return CreateJwksResponse(keyId);
         });
 
