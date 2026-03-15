@@ -1,0 +1,392 @@
+using Descope.Test.Helpers;
+using Moq;
+using Moq.Protected;
+using System.Net;
+using Xunit;
+
+namespace Descope.Test.UnitTests.Authentication;
+
+/// <summary>
+/// Tests for JwtValidator JWKS caching behavior, key rotation, and TTL-based refresh.
+/// These tests verify fixes for the security vulnerabilities:
+/// - CRITICAL: Keys fetched once and never refreshed
+/// - HIGH: No concurrent fetch deduplication
+/// - HIGH: Unbounded key accumulation
+/// </summary>
+public class JwtValidatorCachingTests
+{
+    private const string TestJwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3Qta2V5IiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.test";
+
+    private static Mock<HttpMessageHandler> CreateMockHttpHandler(
+        Func<HttpRequestMessage, int, HttpResponseMessage> responseFactory)
+    {
+        var requestCount = 0;
+        var mockHandler = new Mock<HttpMessageHandler>();
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync((HttpRequestMessage request, CancellationToken ct) =>
+            {
+                return responseFactory(request, Interlocked.Increment(ref requestCount));
+            });
+
+        return mockHandler;
+    }
+
+    private static HttpResponseMessage CreateJwksResponse(string keyId = "test-key")
+    {
+        var keysResponse = new
+        {
+            keys = new[]
+            {
+                new
+                {
+                    alg = "RS256",
+                    e = "AQAB",
+                    kid = keyId,
+                    kty = "RSA",
+                    n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
+                    use = "sig"
+                }
+            }
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(keysResponse);
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+        };
+    }
+
+    [Fact]
+    public async Task ValidateSession_CalledWithinTtl_ShouldNotRefetchKeys()
+    {
+        // Arrange
+        var requestCount = 0;
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            return CreateJwksResponse();
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act
+        // First call - should fetch keys
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
+        var firstRequestCount = requestCount;
+
+        // Second call within TTL (< 5 minutes) - should NOT fetch keys
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
+        var secondRequestCount = requestCount;
+
+        // Third call within TTL - should still NOT fetch keys
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
+        var thirdRequestCount = requestCount;
+
+        // Assert
+        Assert.Equal(1, firstRequestCount);
+        Assert.Equal(1, secondRequestCount); // No additional fetch
+        Assert.Equal(1, thirdRequestCount); // Still no additional fetch
+    }
+
+    [Fact]
+    public async Task ValidateSession_CalledConcurrently_ShouldFetchKeysOnlyOnce()
+    {
+        // This test verifies that the semaphore-based deduplication works correctly.
+        // Multiple concurrent calls should only result in a single JWKS fetch.
+
+        // Arrange
+        var requestCount = 0;
+        var fetchStartedCount = 0;
+
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            Interlocked.Increment(ref fetchStartedCount);
+            Interlocked.Exchange(ref requestCount, count);
+            return CreateJwksResponse();
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act - Launch 10 concurrent validation requests
+        const int concurrentCalls = 10;
+        var tasks = Enumerable.Range(0, concurrentCalls).Select(async _ =>
+        {
+            try
+            {
+                await client.Auth.ValidateSessionAsync(TestJwt);
+            }
+            catch (DescopeException)
+            {
+                // Expected - invalid JWT signature
+            }
+        }).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        // Assert
+        // Despite 10 concurrent calls, only 1 should have fetched keys
+        Assert.Equal(1, requestCount);
+
+        // Verify that concurrent access didn't cause multiple fetch attempts
+        Assert.True(fetchStartedCount <= 2,
+            $"Expected at most 2 fetch attempts (due to double-check), but got {fetchStartedCount}");
+    }
+
+    [Fact]
+    public async Task ValidateToken_TtlExpired_ShouldRefetchKeys()
+    {
+        // Arrange
+        var requestCount = 0;
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            return CreateJwksResponse(); // always returns "test-key", matching TestJwt
+        });
+
+        var fakeNow = DateTimeOffset.UtcNow;
+        var validator = new JwtValidator(
+            "test_project_id",
+            "https://api.descope.com",
+            new HttpClient(mockHandler.Object),
+            () => fakeNow);
+
+        // Act: first validation — fetches keys
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Within TTL — no re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Advance time past the 5-minute TTL
+        fakeNow = fakeNow.AddMinutes(5).AddSeconds(1);
+
+        // After TTL expiry — should re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(2, requestCount);
+
+        // Next call within new TTL window — no further re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(2, requestCount);
+    }
+
+    [Fact]
+    public async Task ValidateSession_ConcurrentCallsDuringKeyRotation_ShouldBeThreadSafe()
+    {
+        // This test verifies that concurrent calls during key refresh don't cause
+        // race conditions, especially when keys are being cleared and repopulated.
+
+        // Arrange
+        var requestCount = 0;
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            Interlocked.Exchange(ref requestCount, count);
+            return CreateJwksResponse();
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act - Launch many concurrent requests
+        const int concurrentCalls = 50;
+        var tasks = Enumerable.Range(0, concurrentCalls).Select(async _ =>
+        {
+            try
+            {
+                await client.Auth.ValidateSessionAsync(TestJwt);
+            }
+            catch (DescopeException)
+            {
+                // Expected - invalid JWT
+            }
+        }).ToArray();
+
+        // Assert - Should complete without race conditions or exceptions
+        var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(tasks));
+        Assert.Null(exception);
+
+        // Should have fetched keys only once despite concurrent access
+        Assert.Equal(1, requestCount);
+    }
+
+    [Fact]
+    public async Task ValidateSession_MultipleKeysInResponse_ShouldCacheAllKeys()
+    {
+        // This test verifies that when JWKS endpoint returns multiple keys,
+        // all of them are cached and don't trigger cache-miss re-fetches.
+
+        // Arrange
+        var requestCount = 0;
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            var keysResponse = new
+            {
+                keys = new[]
+                {
+                    new
+                    {
+                        alg = "RS256",
+                        e = "AQAB",
+                        kid = "key-1",
+                        kty = "RSA",
+                        n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
+                        use = "sig"
+                    },
+                    new
+                    {
+                        alg = "RS256",
+                        e = "AQAB",
+                        kid = "key-2",
+                        kty = "RSA",
+                        n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
+                        use = "sig"
+                    },
+                    new
+                    {
+                        alg = "RS256",
+                        e = "AQAB",
+                        kid = "key-3",
+                        kty = "RSA",
+                        n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
+                        use = "sig"
+                    }
+                }
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(keysResponse);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // JWTs with kid matching each key in the response
+        var jwtKey1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0xIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
+        var jwtKey2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0yIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
+        var jwtKey3 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0zIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
+
+        // Act — first call fetches all 3 keys
+        try { await client.Auth.ValidateSessionAsync(jwtKey1); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Subsequent calls with different kids should NOT trigger re-fetches
+        // because all keys were cached from the single JWKS response
+        try { await client.Auth.ValidateSessionAsync(jwtKey2); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        try { await client.Auth.ValidateSessionAsync(jwtKey3); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+    }
+
+    [Fact]
+    public async Task ValidateSession_EmptyKeysResponse_ShouldNotCrash()
+    {
+        // Arrange
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            var keysResponse = new
+            {
+                keys = Array.Empty<object>()
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(keysResponse);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act & Assert - Should throw DescopeException (no keys to validate with)
+        // but should NOT crash or throw unexpected exceptions
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await client.Auth.ValidateSessionAsync(TestJwt);
+        });
+    }
+
+    [Fact]
+    public async Task ValidateSession_HttpError_ShouldPropagateException()
+    {
+        // Arrange
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("Service Unavailable", System.Text.Encoding.UTF8, "text/plain")
+            };
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act & Assert - FetchKeyIfNeeded throws HttpRequestException before try/catch in ValidateToken
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+        {
+            await client.Auth.ValidateSessionAsync(TestJwt);
+        });
+
+        Assert.NotNull(exception);
+    }
+
+    [Fact]
+    public async Task ValidateSession_KeyRotation_ShouldImmediatelyRefetchOnCacheMiss()
+    {
+        // This test verifies cache-miss immediate re-fetch behavior:
+        // When a token is signed with a kid that's not in the cache,
+        // the validator should immediately re-fetch keys (bypassing TTL) and retry validation.
+        // This ensures tokens signed with newly rotated keys are accepted without waiting.
+
+        // Arrange
+        var requestCount = 0;
+        var currentKeyId = "key-v1";
+
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            // Return keys based on current rotation state
+            return CreateJwksResponse(currentKeyId);
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act & Assert
+        // Step 1: First validation with key-v1 (fetches and caches key-v1)
+        var jwt1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig1";
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount); // Initial fetch
+
+        // Step 2: Rotate keys to key-v2
+        currentKeyId = "key-v2";
+
+        // Step 3: Validate token with key-v2 kid (not in cache)
+        // This should trigger immediate re-fetch (bypassing TTL) because kid is missing
+        var jwt2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig2";
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
+
+        // Should have triggered immediate re-fetch (requestCount = 2)
+        // WITHOUT waiting for TTL to expire
+        Assert.Equal(2, requestCount);
+
+        // Step 4: Validate another token with key-v2 (now in cache)
+        // Should NOT trigger another fetch (still within TTL)
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
+        Assert.Equal(2, requestCount); // No additional fetch
+    }
+}
