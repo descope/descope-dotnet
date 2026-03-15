@@ -142,39 +142,41 @@ public class JwtValidatorCachingTests
     }
 
     [Fact]
-    public async Task ValidateSession_KeyRotation_DocumentsTtlBehavior()
+    public async Task ValidateToken_TtlExpired_ShouldRefetchKeys()
     {
-        // This test documents key rotation behavior.
-        // After TTL expires, new keys should be fetched.
-        // Full TTL testing would require injecting a time provider (future enhancement).
-
         // Arrange
         var requestCount = 0;
-
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             requestCount = count;
-            // First fetch returns the key matching TestJwt's kid so validation succeeds (no cache-miss re-fetch).
-            // Subsequent fetches (after TTL expiry) would return a new key — not exercised here since TTL injection
-            // is a future enhancement.
-            var keyId = count == 1 ? "test-key" : "test-key-v2";
-            return CreateJwksResponse(keyId);
+            return CreateJwksResponse(); // always returns "test-key", matching TestJwt
         });
 
-        var httpClient = new HttpClient(mockHandler.Object);
-        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+        var fakeNow = DateTimeOffset.UtcNow;
+        var validator = new JwtValidator(
+            "test_project_id",
+            "https://api.descope.com",
+            new HttpClient(mockHandler.Object),
+            () => fakeNow);
 
-        // Act & Assert
-        // First call fetches keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        // Act: first validation — fetches keys
+        try { await validator.ValidateToken(TestJwt); } catch { }
         Assert.Equal(1, requestCount);
 
-        // Second call within TTL reuses cached keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        // Within TTL — no re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch { }
         Assert.Equal(1, requestCount);
 
-        // NOTE: To fully test TTL expiration, inject a time provider into JwtValidator.
-        // This is documented as a future improvement.
+        // Advance time past the 5-minute TTL
+        fakeNow = fakeNow.AddMinutes(5).AddSeconds(1);
+
+        // After TTL expiry — should re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch { }
+        Assert.Equal(2, requestCount);
+
+        // Next call within new TTL window — no further re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch { }
+        Assert.Equal(2, requestCount);
     }
 
     [Fact]

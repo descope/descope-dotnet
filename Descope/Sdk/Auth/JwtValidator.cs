@@ -21,12 +21,14 @@ internal class JwtValidator
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
     private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
     private long _lastKeyFetchTicks = 0;
+    private readonly Func<DateTimeOffset> _timeProvider;
 
-    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient)
+    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, Func<DateTimeOffset>? timeProvider = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _timeProvider = timeProvider ?? (() => DateTimeOffset.UtcNow);
     }
 
     /// <summary>
@@ -93,19 +95,16 @@ internal class JwtValidator
         ClockSkew = TimeSpan.FromSeconds(5),
     };
 
+    private bool KeysAreFresh() =>
+        !_securityKeys.IsEmpty &&
+        TimeSpan.FromTicks(_timeProvider().Ticks - Interlocked.Read(ref _lastKeyFetchTicks)) < _keyRefreshInterval;
+
     private async Task FetchKeyIfNeeded()
     {
-        // Check if keys need refresh based on TTL
-        var lastFetchTicks = Interlocked.Read(ref _lastKeyFetchTicks);
-        var elapsed = TimeSpan.FromTicks(DateTimeOffset.UtcNow.Ticks - lastFetchTicks);
-
-        // If keys are fresh (within TTL), no need to fetch
-        if (!_securityKeys.IsEmpty && elapsed < _keyRefreshInterval)
+        if (!KeysAreFresh())
         {
-            return;
+            await FetchKeys(force: false);
         }
-
-        await FetchKeys(force: false);
     }
 
     private async Task ForceKeyFetch() => await FetchKeys(force: true);
@@ -118,14 +117,9 @@ internal class JwtValidator
         {
             // Double-check after acquiring lock - another thread might have fetched
             // Skip this check if force is true (cache-miss immediate re-fetch)
-            if (!force)
+            if (!force && KeysAreFresh())
             {
-                var recheckTicks = Interlocked.Read(ref _lastKeyFetchTicks);
-                var recheckElapsed = TimeSpan.FromTicks(DateTimeOffset.UtcNow.Ticks - recheckTicks);
-                if (!_securityKeys.IsEmpty && recheckElapsed < _keyRefreshInterval)
-                {
-                    return;
-                }
+                return;
             }
 
             var url = $"{_baseUrl.TrimEnd('/')}/v2/keys/{_projectId}";
@@ -171,7 +165,7 @@ internal class JwtValidator
             }
 
             // Update last fetch time AFTER successful fetch
-            Interlocked.Exchange(ref _lastKeyFetchTicks, DateTimeOffset.UtcNow.Ticks);
+            Interlocked.Exchange(ref _lastKeyFetchTicks, _timeProvider().Ticks);
         }
         finally
         {
