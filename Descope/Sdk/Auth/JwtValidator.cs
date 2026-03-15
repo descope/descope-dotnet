@@ -150,19 +150,7 @@ internal class JwtValidator
 
             // Atomically swap in the new keys — in-flight validations continue
             // using the old dictionary reference until they complete
-            var oldKeys = Interlocked.Exchange(ref _securityKeys, newKeys);
-
-            // Dispose old RSA instances to avoid handle/memory leaks
-            foreach (var keyList in oldKeys.Values)
-            {
-                foreach (var securityKey in keyList)
-                {
-                    if (securityKey is RsaSecurityKey rsaKey && rsaKey.Rsa != null)
-                    {
-                        rsaKey.Rsa.Dispose();
-                    }
-                }
-            }
+            Interlocked.Exchange(ref _securityKeys, newKeys);
 
             // Update last fetch time AFTER successful fetch
             Interlocked.Exchange(ref _lastKeyFetchTicks, _timeProvider().Ticks);

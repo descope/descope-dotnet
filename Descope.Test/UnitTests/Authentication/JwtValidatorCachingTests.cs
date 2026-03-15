@@ -79,15 +79,15 @@ public class JwtValidatorCachingTests
 
         // Act
         // First call - should fetch keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
         var firstRequestCount = requestCount;
 
         // Second call within TTL (< 5 minutes) - should NOT fetch keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
         var secondRequestCount = requestCount;
 
         // Third call within TTL - should still NOT fetch keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
         var thirdRequestCount = requestCount;
 
         // Assert
@@ -109,7 +109,7 @@ public class JwtValidatorCachingTests
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
             Interlocked.Increment(ref fetchStartedCount);
-            requestCount = count;
+            Interlocked.Exchange(ref requestCount, count);
             return CreateJwksResponse();
         });
 
@@ -160,22 +160,22 @@ public class JwtValidatorCachingTests
             () => fakeNow);
 
         // Act: first validation — fetches keys
-        try { await validator.ValidateToken(TestJwt); } catch { }
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
         Assert.Equal(1, requestCount);
 
         // Within TTL — no re-fetch
-        try { await validator.ValidateToken(TestJwt); } catch { }
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
         Assert.Equal(1, requestCount);
 
         // Advance time past the 5-minute TTL
         fakeNow = fakeNow.AddMinutes(5).AddSeconds(1);
 
         // After TTL expiry — should re-fetch
-        try { await validator.ValidateToken(TestJwt); } catch { }
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
         Assert.Equal(2, requestCount);
 
         // Next call within new TTL window — no further re-fetch
-        try { await validator.ValidateToken(TestJwt); } catch { }
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
         Assert.Equal(2, requestCount);
     }
 
@@ -189,7 +189,7 @@ public class JwtValidatorCachingTests
         var requestCount = 0;
         var mockHandler = CreateMockHttpHandler((request, count) =>
         {
-            requestCount = count;
+            Interlocked.Exchange(ref requestCount, count);
             return CreateJwksResponse();
         });
 
@@ -222,7 +222,7 @@ public class JwtValidatorCachingTests
     public async Task ValidateSession_MultipleKeysInResponse_ShouldCacheAllKeys()
     {
         // This test verifies that when JWKS endpoint returns multiple keys,
-        // all of them are cached properly.
+        // all of them are cached and don't trigger cache-miss re-fetches.
 
         // Arrange
         var requestCount = 0;
@@ -273,15 +273,22 @@ public class JwtValidatorCachingTests
         var httpClient = new HttpClient(mockHandler.Object);
         var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
 
-        // Act - Call multiple times to ensure all keys are cached
-        for (int i = 0; i < 5; i++)
-        {
-            try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
-        }
+        // JWTs with kid matching each key in the response
+        var jwtKey1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0xIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
+        var jwtKey2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0yIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
+        var jwtKey3 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0zIiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig";
 
-        // Assert - JWKS endpoint should be called at most once per validation call
-        // (caching prevents refetching within TTL)
-        Assert.True(requestCount >= 1, "JWKS endpoint should be called at least once");
+        // Act — first call fetches all 3 keys
+        try { await client.Auth.ValidateSessionAsync(jwtKey1); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Subsequent calls with different kids should NOT trigger re-fetches
+        // because all keys were cached from the single JWKS response
+        try { await client.Auth.ValidateSessionAsync(jwtKey2); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        try { await client.Auth.ValidateSessionAsync(jwtKey3); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
     }
 
     [Fact]
@@ -362,7 +369,7 @@ public class JwtValidatorCachingTests
         // Act & Assert
         // Step 1: First validation with key-v1 (fetches and caches key-v1)
         var jwt1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig1";
-        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch (DescopeException) { }
         Assert.Equal(1, requestCount); // Initial fetch
 
         // Step 2: Rotate keys to key-v2
@@ -371,7 +378,7 @@ public class JwtValidatorCachingTests
         // Step 3: Validate token with key-v2 kid (not in cache)
         // This should trigger immediate re-fetch (bypassing TTL) because kid is missing
         var jwt2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig2";
-        try { await client.Auth.ValidateSessionAsync(jwt2); } catch { }
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
 
         // Should have triggered immediate re-fetch (requestCount = 2)
         // WITHOUT waiting for TTL to expire
@@ -379,7 +386,7 @@ public class JwtValidatorCachingTests
 
         // Step 4: Validate another token with key-v2 (now in cache)
         // Should NOT trigger another fetch (still within TTL)
-        try { await client.Auth.ValidateSessionAsync(jwt2); } catch { }
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
         Assert.Equal(2, requestCount); // No additional fetch
     }
 }
