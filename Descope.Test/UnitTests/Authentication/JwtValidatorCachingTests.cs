@@ -248,7 +248,7 @@ public class JwtValidatorCachingTests
                         e = "AQAB",
                         kid = "key-2",
                         kty = "RSA",
-                        n = "yHPs-I8B-QXd9HH9-mKh_8Kd0K9tC2qQ9uUmw4QdR0E0Ld5z_2T_i0MIQi-7gZuA8Y9_2UAZ9WlCM2Si-5uE_Z0K2uL6_6GAz5F1P9Z5z0u4z1_6tA5F9z4u_5L0z2u6z5L2z4u9z3F5z0u6z5F2z4u9z3L5z0u6z5L2z4u9z3F5z0u6z5F2z4u9z3L5z0u",
+                        n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
                         use = "sig"
                     },
                     new
@@ -257,7 +257,7 @@ public class JwtValidatorCachingTests
                         e = "AQAB",
                         kid = "key-3",
                         kty = "RSA",
-                        n = "zIQt-J9C-RYe0II0-nLi_9Le1L0uD3rR0vVnx5ReS1F1Me6z_3U_j1NJRj-8hAvB9Z0_3VBA0XmDN3Tj-6vF_a1L3vM7_7HBz6G2Q0a6z1v5z2_7uB6G0z5v_6M1z3v7z6M3z5v0z4G6z1v7z6G3z5v0z4M6z1v7z6M3z5v0z4G6z1v7z6G3z5v0z4M6z1v",
+                        n = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t",
                         use = "sig"
                     }
                 }
