@@ -15,11 +15,13 @@ internal class JwtValidator
 {
     private readonly JsonWebTokenHandler _jsonWebTokenHandler = new();
     private ConcurrentDictionary<string, List<SecurityKey>> _securityKeys = new();
+    private readonly ConcurrentDictionary<string, long> _lastForcedFetchByKid = new();
     private readonly string _projectId;
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
     private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _forcedFetchCooldown = TimeSpan.FromMinutes(1);
     private long _lastKeyFetchTicks = 0;
 
     public JwtValidator(string projectId, string baseUrl, HttpClient httpClient)
@@ -73,29 +75,48 @@ internal class JwtValidator
             // Cache-miss immediate re-fetch: if validation failed and the kid is NOT in the cache,
             // force a key re-fetch (bypassing TTL) and retry validation once.
             // This handles key rotation scenarios where a token is signed with a newly rotated key.
+            // To prevent repeated re-fetches for invalid/old kids, we only re-fetch if we haven't
+            // recently attempted a forced fetch for this specific kid (within 1 minute cooldown).
             if (!result.IsValid && kid != null && !_securityKeys.ContainsKey(kid))
             {
-                // Kid not in cache - this might be a newly rotated key
-                await ForceKeyFetch();
-
-                // Retry validation once with the newly fetched keys
-                result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, new TokenValidationParameters
+                // Check if we've recently attempted a forced fetch for this kid
+                var shouldFetch = true;
+                if (_lastForcedFetchByKid.TryGetValue(kid, out var lastFetchTicks))
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+                    var timeSinceLastFetch = TimeSpan.FromTicks(DateTimeOffset.UtcNow.Ticks - lastFetchTicks);
+                    if (timeSinceLastFetch < _forcedFetchCooldown)
                     {
-                        if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
+                        shouldFetch = false; // Already attempted recently, don't re-fetch
+                    }
+                }
+
+                if (shouldFetch)
+                {
+                    // Kid not in cache and we haven't fetched recently - this might be a newly rotated key
+                    // Record the attempt timestamp BEFORE fetching to prevent concurrent attempts
+                    _lastForcedFetchByKid[kid] = DateTimeOffset.UtcNow.Ticks;
+
+                    await FetchKeys(force: true);
+
+                    // Retry validation once with the newly fetched keys
+                    result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
                         {
-                            return keys;
-                        }
-                        return new List<SecurityKey>();
-                    },
-                    ValidateIssuerSigningKey = true,
-                    RequireExpirationTime = true,
-                    RequireSignedTokens = true,
-                    ClockSkew = TimeSpan.FromSeconds(5),
-                });
+                            if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
+                            {
+                                return keys;
+                            }
+                            return new List<SecurityKey>();
+                        },
+                        ValidateIssuerSigningKey = true,
+                        RequireExpirationTime = true,
+                        RequireSignedTokens = true,
+                        ClockSkew = TimeSpan.FromSeconds(5),
+                    });
+                }
             }
 
             if (result.Exception != null) throw new DescopeException("JWT validation failed");
@@ -120,16 +141,6 @@ internal class JwtValidator
         }
 
         await FetchKeys(force: false);
-    }
-
-    /// <summary>
-    /// Forces a key fetch regardless of TTL, used for cache-miss immediate re-fetch.
-    /// When a token validation fails because the kid is not in the cache,
-    /// this method is called to immediately fetch the latest keys.
-    /// </summary>
-    private async Task ForceKeyFetch()
-    {
-        await FetchKeys(force: true);
     }
 
     private async Task FetchKeys(bool force)

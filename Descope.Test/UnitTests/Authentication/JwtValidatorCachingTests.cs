@@ -161,13 +161,16 @@ public class JwtValidatorCachingTests
         var httpClient = new HttpClient(mockHandler.Object);
         var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
 
+        // Use a JWT with kid that matches the mock response (key-v1)
+        var jwt1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig1";
+
         // Act & Assert
         // First call fetches keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
         Assert.Equal(1, requestCount);
 
-        // Second call within TTL reuses cached keys
-        try { await client.Auth.ValidateSessionAsync(TestJwt); } catch { }
+        // Second call within TTL reuses cached keys (no cache-miss re-fetch because kid matches)
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
         Assert.Equal(1, requestCount);
 
         // NOTE: To fully test TTL expiration, inject a time provider into JwtValidator.
@@ -339,6 +342,7 @@ public class JwtValidatorCachingTests
         // When a token is signed with a kid that's not in the cache,
         // the validator should immediately re-fetch keys (bypassing TTL) and retry validation.
         // This ensures tokens signed with newly rotated keys are accepted without waiting.
+        // It also verifies that old/rotated-out keys don't trigger repeated re-fetches.
 
         // Arrange
         var requestCount = 0;
@@ -360,7 +364,7 @@ public class JwtValidatorCachingTests
         try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
         Assert.Equal(1, requestCount); // Initial fetch
 
-        // Step 2: Rotate keys to key-v2
+        // Step 2: Rotate keys to key-v2 (key-v1 is now rotated out)
         currentKeyId = "key-v2";
 
         // Step 3: Validate token with key-v2 kid (not in cache)
@@ -376,5 +380,23 @@ public class JwtValidatorCachingTests
         // Should NOT trigger another fetch (still within TTL)
         try { await client.Auth.ValidateSessionAsync(jwt2); } catch { }
         Assert.Equal(2, requestCount); // No additional fetch
+
+        // Step 5: Try to validate old token with key-v1 (rotated out, no longer in JWKS)
+        // This should trigger ONE re-fetch attempt (to check if key-v1 is back)
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
+        Assert.Equal(3, requestCount); // One re-fetch attempt for missing key-v1
+
+        // Step 6: Try to validate old token with key-v1 AGAIN
+        // Should NOT trigger another re-fetch (cooldown period prevents repeated attempts)
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
+        Assert.Equal(3, requestCount); // No additional fetch (cooldown active)
+
+        // Step 7: Try MULTIPLE times with key-v1
+        // All should be blocked by cooldown
+        for (int i = 0; i < 5; i++)
+        {
+            try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
+        }
+        Assert.Equal(3, requestCount); // Still no additional fetches
     }
 }
