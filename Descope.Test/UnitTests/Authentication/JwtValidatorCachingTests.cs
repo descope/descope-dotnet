@@ -331,4 +331,50 @@ public class JwtValidatorCachingTests
 
         Assert.NotNull(exception);
     }
+
+    [Fact]
+    public async Task ValidateSession_KeyRotation_ShouldImmediatelyRefetchOnCacheMiss()
+    {
+        // This test verifies cache-miss immediate re-fetch behavior:
+        // When a token is signed with a kid that's not in the cache,
+        // the validator should immediately re-fetch keys (bypassing TTL) and retry validation.
+        // This ensures tokens signed with newly rotated keys are accepted without waiting.
+
+        // Arrange
+        var requestCount = 0;
+        var currentKeyId = "key-v1";
+
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            // Return keys based on current rotation state
+            return CreateJwksResponse(currentKeyId);
+        });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+
+        // Act & Assert
+        // Step 1: First validation with key-v1 (fetches and caches key-v1)
+        var jwt1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig1";
+        try { await client.Auth.ValidateSessionAsync(jwt1); } catch { }
+        Assert.Equal(1, requestCount); // Initial fetch
+
+        // Step 2: Rotate keys to key-v2
+        currentKeyId = "key-v2";
+
+        // Step 3: Validate token with key-v2 kid (not in cache)
+        // This should trigger immediate re-fetch (bypassing TTL) because kid is missing
+        var jwt2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig2";
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch { }
+
+        // Should have triggered immediate re-fetch (requestCount = 2)
+        // WITHOUT waiting for TTL to expire
+        Assert.Equal(2, requestCount);
+
+        // Step 4: Validate another token with key-v2 (now in cache)
+        // Should NOT trigger another fetch (still within TTL)
+        try { await client.Auth.ValidateSessionAsync(jwt2); } catch { }
+        Assert.Equal(2, requestCount); // No additional fetch
+    }
 }
