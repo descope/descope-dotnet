@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.5.0...Descope-v1.5.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* JWT key rotation with TTL-based refresh and cache-miss re-fetch ([#186](https://github.com/descope/descope-dotnet/issues/186)) ([da304b9](https://github.com/descope/descope-dotnet/commit/da304b99cada75391f06a906b1f512e15d2c7ac6))
+
 ## [1.5.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.4.0...Descope-v1.5.0) (2026-02-26)
 
 
