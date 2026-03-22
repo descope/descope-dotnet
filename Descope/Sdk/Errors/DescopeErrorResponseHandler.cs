@@ -25,14 +25,25 @@ internal class DescopeErrorResponseHandler : DelegatingHandler
     // 530: Cloudflare error
     private static readonly HashSet<int> RetryableStatusCodes = new HashSet<int> { 503, 521, 522, 524, 530 };
 
-    // Retry delays: first retry after 100ms, subsequent retries after 5s each.
-    // Internal so tests can override with zero delays to avoid real waits.
-    internal static TimeSpan[] RetryDelays =
+    // Default retry delays: first retry after 100ms, subsequent retries after 5s each.
+    // Exposed as internal so tests can assert on the production values.
+    internal static readonly TimeSpan[] DefaultRetryDelays =
     {
         TimeSpan.FromMilliseconds(100),
         TimeSpan.FromSeconds(5),
         TimeSpan.FromSeconds(5),
     };
+
+    private readonly TimeSpan[] _retryDelays;
+
+    /// <summary>
+    /// Initializes the handler with optional retry delays. Defaults to
+    /// <see cref="DefaultRetryDelays"/> when not provided.
+    /// </summary>
+    internal DescopeErrorResponseHandler(TimeSpan[]? retryDelays = null)
+    {
+        _retryDelays = retryDelays ?? DefaultRetryDelays;
+    }
 
     /// <summary>
     /// Sends an HTTP request, retrying on transient errors, and converts non-success
@@ -44,7 +55,7 @@ internal class DescopeErrorResponseHandler : DelegatingHandler
     {
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        foreach (var delay in RetryDelays)
+        foreach (var delay in _retryDelays)
         {
             if (!RetryableStatusCodes.Contains((int)response.StatusCode))
             {

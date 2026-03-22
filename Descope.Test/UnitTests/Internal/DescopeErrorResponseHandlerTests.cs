@@ -7,34 +7,24 @@ using Xunit;
 
 namespace Descope.Test.UnitTests.Internal;
 
-public class DescopeErrorResponseHandlerTests : IDisposable
+public class DescopeErrorResponseHandlerTests
 {
-    private readonly TimeSpan[] _originalDelays;
-
-    public DescopeErrorResponseHandlerTests()
+    // Zero delays are passed to the constructor so tests don't wait for real retry delays.
+    private static readonly TimeSpan[] ZeroDelays =
     {
-        // Save the original delays and replace with zero-length delays so tests don't wait
-        _originalDelays = DescopeErrorResponseHandler.RetryDelays;
-        DescopeErrorResponseHandler.RetryDelays = new[]
-        {
-            TimeSpan.Zero,
-            TimeSpan.Zero,
-            TimeSpan.Zero,
-        };
-    }
-
-    public void Dispose()
-    {
-        DescopeErrorResponseHandler.RetryDelays = _originalDelays;
-    }
+        TimeSpan.Zero,
+        TimeSpan.Zero,
+        TimeSpan.Zero,
+    };
 
     [Fact]
     public void RetryDelayConfig_ShouldHaveExpectedValues()
     {
-        Assert.Equal(3, _originalDelays.Length);
-        Assert.Equal(TimeSpan.FromMilliseconds(100), _originalDelays[0]);
-        Assert.Equal(TimeSpan.FromSeconds(5), _originalDelays[1]);
-        Assert.Equal(TimeSpan.FromSeconds(5), _originalDelays[2]);
+        var defaults = DescopeErrorResponseHandler.DefaultRetryDelays;
+        Assert.Equal(3, defaults.Length);
+        Assert.Equal(TimeSpan.FromMilliseconds(100), defaults[0]);
+        Assert.Equal(TimeSpan.FromSeconds(5), defaults[1]);
+        Assert.Equal(TimeSpan.FromSeconds(5), defaults[2]);
     }
 
     [Theory]
@@ -51,7 +41,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             new HttpResponseMessage(HttpStatusCode.OK)
         );
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(ZeroDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
@@ -73,7 +63,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
     public async Task SendAsync_OnNonRetryableStatusCode_DoesNotRetry(int statusCode)
     {
         // Arrange: non-retryable error response with valid error body
-        var errorJson = """{"errorCode":"E0","errorDescription":"error"}""";
+        var errorJson = """{\"errorCode\":\"E0\",\"errorDescription\":\"error\"}""";
         var innerHandler = new SequentialMessageHandler(
             new HttpResponseMessage((HttpStatusCode)statusCode)
             {
@@ -81,7 +71,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             }
         );
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(ZeroDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
@@ -95,7 +85,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
     public async Task SendAsync_OnRetryableStatusCode_RetriesUpToThreeTimes()
     {
         // Arrange: all four responses (1 original + 3 retries) return 503
-        var errorJson = """{"errorCode":"E503","errorDescription":"service unavailable"}""";
+        var errorJson = """{\"errorCode\":\"E503\",\"errorDescription\":\"service unavailable\"}""";
         var innerHandler = new SequentialMessageHandler(
             new HttpResponseMessage((HttpStatusCode)503)
             {
@@ -115,7 +105,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             }
         );
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(ZeroDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
@@ -138,7 +128,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             new HttpResponseMessage(HttpStatusCode.OK)
         );
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(ZeroDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
@@ -158,7 +148,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             new HttpResponseMessage(HttpStatusCode.OK)
         );
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(ZeroDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
@@ -174,7 +164,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
     public async Task SendAsync_WhenCancelledDuringRetryDelay_ThrowsOperationCancelled()
     {
         // Use real delays so the cancellation fires during the wait
-        DescopeErrorResponseHandler.RetryDelays = new[]
+        var longDelays = new[]
         {
             TimeSpan.FromSeconds(10),
             TimeSpan.FromSeconds(10),
@@ -188,7 +178,7 @@ public class DescopeErrorResponseHandlerTests : IDisposable
             return new HttpResponseMessage((HttpStatusCode)503);
         });
 
-        var handler = new DescopeErrorResponseHandler { InnerHandler = innerHandler };
+        var handler = new DescopeErrorResponseHandler(longDelays) { InnerHandler = innerHandler };
         var invoker = new HttpMessageInvoker(handler);
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.descope.com/test");
 
