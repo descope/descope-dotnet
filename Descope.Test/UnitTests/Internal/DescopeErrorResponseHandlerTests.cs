@@ -63,7 +63,7 @@ public class DescopeErrorResponseHandlerTests
     public async Task SendAsync_OnNonRetryableStatusCode_DoesNotRetry(int statusCode)
     {
         // Arrange: non-retryable error response with valid error body
-        var errorJson = """{\"errorCode\":\"E0\",\"errorDescription\":\"error\"}""";
+        var errorJson = "{\"errorCode\":\"E0\",\"errorDescription\":\"error\"}";
         var innerHandler = new SequentialMessageHandler(
             new HttpResponseMessage((HttpStatusCode)statusCode)
             {
@@ -85,7 +85,7 @@ public class DescopeErrorResponseHandlerTests
     public async Task SendAsync_OnRetryableStatusCode_RetriesUpToThreeTimes()
     {
         // Arrange: all four responses (1 original + 3 retries) return 503
-        var errorJson = """{\"errorCode\":\"E503\",\"errorDescription\":\"service unavailable\"}""";
+        var errorJson = "{\"errorCode\":\"E503\",\"errorDescription\":\"service unavailable\"}";
         var innerHandler = new SequentialMessageHandler(
             new HttpResponseMessage((HttpStatusCode)503)
             {
