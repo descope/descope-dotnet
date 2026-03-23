@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.5.1...Descope-v1.6.0) (2026-03-23)
+
+
+### Features
+
+* add automatic retry on transient HTTP errors ([#190](https://github.com/descope/descope-dotnet/issues/190)) ([ffe5901](https://github.com/descope/descope-dotnet/commit/ffe5901b709e8f50d45cd3ef42bdf55d34d9b426))
+
 ## [1.5.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.5.0...Descope-v1.5.1) (2026-03-15)
 
 
