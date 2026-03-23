@@ -16,19 +16,20 @@ type User
         [Fact]
         public async Task FgaTest()
         {
-            try
-            {
-                // Save schema with simple DSL
-                var saveSchemaRequest = new SaveDSLSchemaRequest
-                {
-                    Dsl = SimpleFgaSchema
-                };
-                await _descopeClient.Mgmt.V1.Fga.Schema.PostAsync(saveSchemaRequest);
+            // Delay test to avoid hitting rate limits in CI
+            await Task.Delay(extraSleepTime * 3);
 
-                // Create a relation u1->u2
-                var createRelationsRequest = new CreateTuplesRequest
-                {
-                    Tuples = new List<TupleObject>
+            // Save schema with simple DSL
+            var saveSchemaRequest = new SaveDSLSchemaRequest
+            {
+                Dsl = SimpleFgaSchema
+            };
+            await _descopeClient.Mgmt.V1.Fga.Schema.PostAsync(saveSchemaRequest);
+
+            // Create a relation u1->u2
+            var createRelationsRequest = new CreateTuplesRequest
+            {
+                Tuples = new List<TupleObject>
                     {
                         new TupleObject
                         {
@@ -39,76 +40,73 @@ type User
                             Target = "u2"
                         }
                     }
-                };
-                await _descopeClient.Mgmt.V1.Fga.Relations.PostAsync(createRelationsRequest);
+            };
 
-                // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime * 3);
+            // Delay test to avoid hitting rate limits in CI and to allow schema to propagate before creating relations
+            await Task.Delay(extraSleepTime * 3);
 
-                // Check that the relation exists
-                await RetryUntilSuccessAsync(async () =>
-                {
-                    var checkRequest = new CheckRequest
-                    {
-                        Tuples = new List<TupleObject>
-                        {
-                            new TupleObject
-                            {
-                                ResourceType = "User",
-                                Resource = "u1",
-                                Relation = "friend",
-                                TargetType = "User",
-                                Target = "u2"
-                            }
-                        }
-                    };
-                    var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
+            await _descopeClient.Mgmt.V1.Fga.Relations.PostAsync(createRelationsRequest);
 
-                    // Verify the relation was found
-                    Assert.NotNull(checkResponse);
-                    Assert.NotNull(checkResponse.Tuples);
-                    Assert.Single(checkResponse.Tuples);
-                    Assert.True(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be allowed");
-                });
+            // Wait for eventual consistency in CI
+            await Task.Delay(extraSleepTime * 3);
 
-                // Delete the relations (verifies DeleteRelations works)
-                await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync();
-
-                // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime * 3);
-
-                // Check that the relation no longer exists
-                await RetryUntilSuccessAsync(async () =>
-                {
-                    var checkRequest = new CheckRequest
-                    {
-                        Tuples = new List<TupleObject>
-                        {
-                            new TupleObject
-                            {
-                                ResourceType = "User",
-                                Resource = "u1",
-                                Relation = "friend",
-                                TargetType = "User",
-                                Target = "u2"
-                            }
-                        }
-                    };
-                    var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
-
-                    // Verify the relation was deleted
-                    Assert.NotNull(checkResponse);
-                    Assert.NotNull(checkResponse.Tuples);
-                    Assert.Single(checkResponse.Tuples);
-                    Assert.False(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be deleted");
-                });
-            }
-            finally
+            // Check that the relation exists
+            await RetryUntilSuccessAsync(async () =>
             {
-                // Best-effort cleanup
-                try { await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync(); }
-                catch { }
-            }
+                var checkRequest = new CheckRequest
+                {
+                    Tuples = new List<TupleObject>
+                    {
+                            new TupleObject
+                            {
+                                ResourceType = "User",
+                                Resource = "u1",
+                                Relation = "friend",
+                                TargetType = "User",
+                                Target = "u2"
+                            }
+                    }
+                };
+                var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
+
+                // Verify the relation was found
+                Assert.NotNull(checkResponse);
+                Assert.NotNull(checkResponse.Tuples);
+                Assert.Single(checkResponse.Tuples);
+                Assert.True(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be allowed");
+            });
+
+            // Delete the relations (verifies DeleteRelations works)
+            await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync();
+
+            // Wait for eventual consistency in CI
+            await Task.Delay(extraSleepTime * 3);
+
+            // Check that the relation no longer exists
+            await RetryUntilSuccessAsync(async () =>
+            {
+                var checkRequest = new CheckRequest
+                {
+                    Tuples = new List<TupleObject>
+                    {
+                            new TupleObject
+                            {
+                                ResourceType = "User",
+                                Resource = "u1",
+                                Relation = "friend",
+                                TargetType = "User",
+                                Target = "u2"
+                            }
+                    }
+                };
+                var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
+
+                // Verify the relation was deleted
+                Assert.NotNull(checkResponse);
+                Assert.NotNull(checkResponse.Tuples);
+                Assert.Single(checkResponse.Tuples);
+                Assert.False(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be deleted");
+            });
         }
 
         [Fact(Skip = "Manual test - set FgaCacheUrl to inspect network traffic")]
