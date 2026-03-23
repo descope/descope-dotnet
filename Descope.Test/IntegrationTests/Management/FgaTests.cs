@@ -43,7 +43,7 @@ type User
                 await _descopeClient.Mgmt.V1.Fga.Relations.PostAsync(createRelationsRequest);
 
                 // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime);
+                await Task.Delay(extraSleepTime * 3);
 
                 // Check that the relation exists
                 await RetryUntilSuccessAsync(async () =>
@@ -75,7 +75,7 @@ type User
                 await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync();
 
                 // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime);
+                await Task.Delay(extraSleepTime * 3);
 
                 // Check that the relation no longer exists
                 await RetryUntilSuccessAsync(async () =>
