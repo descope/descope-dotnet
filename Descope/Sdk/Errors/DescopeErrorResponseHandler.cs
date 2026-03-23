@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -11,17 +12,60 @@ namespace Descope;
 /// <summary>
 /// HTTP middleware that intercepts error responses and converts them to DescopeException.
 /// This handler parses the error response body for Descope-specific error details.
+/// Automatically retries requests that receive transient error status codes before
+/// raising exceptions.
 /// </summary>
 internal class DescopeErrorResponseHandler : DelegatingHandler
 {
+    // HTTP status codes that should trigger automatic retries:
+    // 503: Service Unavailable
+    // 521: Web Server Is Down (Cloudflare)
+    // 522: Connection Timed Out (Cloudflare)
+    // 524: A Timeout Occurred (Cloudflare)
+    // 530: Cloudflare error
+    private static readonly HashSet<int> RetryableStatusCodes = new HashSet<int> { 503, 521, 522, 524, 530 };
+
+    // Default retry delays: first retry after 100ms, subsequent retries after 5s each.
+    // Exposed as internal so tests can assert on the production values.
+    internal static readonly TimeSpan[] DefaultRetryDelays =
+    {
+        TimeSpan.FromMilliseconds(100),
+        TimeSpan.FromSeconds(5),
+        TimeSpan.FromSeconds(5),
+    };
+
+    private readonly TimeSpan[] _retryDelays;
+
     /// <summary>
-    /// Sends an HTTP request and handles error responses by converting them to DescopeException.
+    /// Initializes the handler with optional retry delays. Defaults to
+    /// <see cref="DefaultRetryDelays"/> when not provided.
+    /// </summary>
+    internal DescopeErrorResponseHandler(TimeSpan[]? retryDelays = null)
+    {
+        _retryDelays = retryDelays ?? DefaultRetryDelays;
+    }
+
+    /// <summary>
+    /// Sends an HTTP request, retrying on transient errors, and converts non-success
+    /// responses to DescopeException.
     /// </summary>
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        foreach (var delay in _retryDelays)
+        {
+            if (!RetryableStatusCodes.Contains((int)response.StatusCode))
+            {
+                break;
+            }
+
+            response.Dispose();
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+            response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
 
         // If the response is not successful, try to parse it as a Descope error
         if (!response.IsSuccessStatusCode)
