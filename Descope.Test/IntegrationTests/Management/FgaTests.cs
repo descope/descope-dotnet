@@ -42,6 +42,9 @@ type User
                 };
                 await _descopeClient.Mgmt.V1.Fga.Relations.PostAsync(createRelationsRequest);
 
+                // Wait for eventual consistency in CI
+                await Task.Delay(extraSleepTime);
+
                 // Check that the relation exists
                 await RetryUntilSuccessAsync(async () =>
                 {
@@ -67,11 +70,13 @@ type User
                     Assert.Single(checkResponse.Tuples);
                     Assert.True(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be allowed");
                 });
-            }
-            finally
-            {
-                // Delete the relations (cleanup, but also verifies DeleteRelations works)
+
+                // Delete the relations (verifies DeleteRelations works)
                 await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync();
+
+                // Wait for eventual consistency in CI
+                await Task.Delay(extraSleepTime);
+
                 // Check that the relation no longer exists
                 await RetryUntilSuccessAsync(async () =>
                 {
@@ -91,12 +96,18 @@ type User
                     };
                     var checkResponse = await _descopeClient.Mgmt.V1.Fga.Check.PostAsync(checkRequest);
 
-                    // Verify the relation was found
+                    // Verify the relation was deleted
                     Assert.NotNull(checkResponse);
                     Assert.NotNull(checkResponse.Tuples);
                     Assert.Single(checkResponse.Tuples);
                     Assert.False(checkResponse.Tuples[0].Allowed, "Expected relation u1->u2 to be deleted");
                 });
+            }
+            finally
+            {
+                // Best-effort cleanup
+                try { await _descopeClient.Mgmt.V1.Fga.Relations.DeleteAsync(); }
+                catch { }
             }
         }
 
