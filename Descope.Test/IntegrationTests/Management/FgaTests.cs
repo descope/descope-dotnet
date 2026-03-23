@@ -28,14 +28,8 @@ type User
                 Target = target
             };
 
-            // Delay test to avoid hitting rate limits in CI
-            await Task.Delay(extraSleepTime * 3);
-
             // Save schema with simple DSL
             await _descopeClient.Mgmt.V1.Fga.Schema.PostAsync(new SaveDSLSchemaRequest { Dsl = SimpleFgaSchema });
-
-            // Delay to allow schema to propagate before creating relations
-            await Task.Delay(extraSleepTime * 3);
 
             try
             {
@@ -44,9 +38,6 @@ type User
                 {
                     Tuples = new List<TupleObject> { tuple }
                 });
-
-                // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime * 3);
 
                 // Check that the relation exists
                 await RetryUntilSuccessAsync(async () =>
@@ -66,9 +57,6 @@ type User
                 {
                     Tuples = new List<TupleObject> { tuple }
                 });
-
-                // Wait for eventual consistency in CI
-                await Task.Delay(extraSleepTime * 3);
 
                 // Check that the relation no longer exists
                 await RetryUntilSuccessAsync(async () =>
