@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.6.0...Descope-v1.6.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* **test:** fix flaky FgaTest by setting unique names to avoid race conditions in CI ([#193](https://github.com/descope/descope-dotnet/issues/193)) ([4627dba](https://github.com/descope/descope-dotnet/commit/4627dbaf5bee30bffb4dd552ebeb03358e9bcb24))
+
 ## [1.6.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.5.1...Descope-v1.6.0) (2026-03-23)
 
 
