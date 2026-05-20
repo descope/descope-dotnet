@@ -21,7 +21,6 @@ internal static class DPoPValidator
         "RS256", "RS384", "RS512",
         "ES256", "ES384", "ES512",
         "PS256", "PS384", "PS512",
-        "EdDSA"
     };
 
     /// <summary>
@@ -172,23 +171,25 @@ internal static class DPoPValidator
 
     /// <summary>
     /// Extracts the cnf.jkt claim from a raw session JWT string without full validation.
-    /// Returns empty string if not present or on any parse error.
+    /// Throws if the session token is null/empty or cannot be parsed (fail-closed).
+    /// Returns empty string only when the token is valid but has no cnf.jkt claim,
+    /// which means the token is not DPoP-bound and validation should be skipped.
     /// </summary>
     public static string GetJktFromToken(string sessionToken)
     {
         if (string.IsNullOrEmpty(sessionToken))
-            return string.Empty;
+            throw new DescopeException("session token is required for DPoP validation");
+
+        var parts = sessionToken.Split('.');
+        if (parts.Length < 2)
+            throw new DescopeException("malformed session token");
 
         try
         {
-            var parts = sessionToken.Split('.');
-            if (parts.Length < 2)
-                return string.Empty;
-
             var payloadBytes = Base64UrlDecode(parts[1]);
             var payload = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(payloadBytes);
             if (payload == null)
-                return string.Empty;
+                throw new DescopeException("failed to parse session token payload");
 
             if (!TryGetObject(payload, "cnf", out var cnf) || cnf == null)
                 return string.Empty;
@@ -198,9 +199,13 @@ internal static class DPoPValidator
 
             return jkt ?? string.Empty;
         }
-        catch
+        catch (DescopeException)
         {
-            return string.Empty;
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new DescopeException("failed to parse session token", ex);
         }
     }
 
@@ -223,13 +228,6 @@ internal static class DPoPValidator
             else if (alg.StartsWith("ES", StringComparison.Ordinal))
             {
                 VerifyEcSignature(alg, jwk, signingInput, signature);
-            }
-            else if (alg == "EdDSA")
-            {
-                // EdDSA (Ed25519) is listed as an allowed algorithm in RFC 9449, but .NET does not
-                // expose a stable public API for Ed25519 signature verification across all target
-                // frameworks. Support may be added in a future release.
-                throw new DescopeException("EdDSA DPoP proofs are not yet supported by this SDK");
             }
             else
             {
@@ -291,13 +289,17 @@ internal static class DPoPValidator
         if (!TryGetString(jwk, "crv", out var crv) || string.IsNullOrEmpty(crv))
             throw new DescopeException("EC jwk missing crv");
 
-        var (curve, hashAlg) = crv switch
+        // Drive curve and hash from alg; validate crv matches to catch mismatch attacks.
+        var (expectedCrv, curve, hashAlg) = alg switch
         {
-            "P-256" => (ECCurve.NamedCurves.nistP256, HashAlgorithmName.SHA256),
-            "P-384" => (ECCurve.NamedCurves.nistP384, HashAlgorithmName.SHA384),
-            "P-521" => (ECCurve.NamedCurves.nistP521, HashAlgorithmName.SHA512),
-            _ => throw new DescopeException($"unsupported EC curve: {crv}")
+            "ES256" => ("P-256", ECCurve.NamedCurves.nistP256, HashAlgorithmName.SHA256),
+            "ES384" => ("P-384", ECCurve.NamedCurves.nistP384, HashAlgorithmName.SHA384),
+            "ES512" => ("P-521", ECCurve.NamedCurves.nistP521, HashAlgorithmName.SHA512),
+            _ => throw new DescopeException($"unsupported EC algorithm: {alg}")
         };
+
+        if (!string.Equals(crv, expectedCrv, StringComparison.Ordinal))
+            throw new DescopeException($"EC alg/curve mismatch: alg {alg} requires {expectedCrv} but jwk has crv={crv}");
 
         using var ec = ECDsa.Create();
         ec.ImportParameters(new ECParameters
@@ -323,7 +325,23 @@ internal static class DPoPValidator
     }
 
     /// <summary>
+    /// Encodes a DER length field using short-form (1 byte) or long-form (multi-byte) as required.
+    /// Per X.690, lengths > 127 must use long-form: 0x80|numBytes followed by the length bytes.
+    /// For ES512 (P-521), the SEQUENCE content is ~134 bytes so long-form is required.
+    /// </summary>
+    private static byte[] EncodeDerLength(int len)
+    {
+        if (len < 128)
+            return new[] { (byte)len };
+        if (len < 256)
+            return new byte[] { 0x81, (byte)len };
+        return new byte[] { 0x82, (byte)(len >> 8), (byte)(len & 0xFF) };
+    }
+
+    /// <summary>
     /// Converts a raw R||S EC signature to DER format (for netstandard2.0 compatibility).
+    /// Handles ES512 (P-521) where the SEQUENCE content exceeds 127 bytes and requires
+    /// DER long-form length encoding.
     /// </summary>
     private static byte[] ConvertRawToDer(byte[] rawSig)
     {
@@ -338,16 +356,21 @@ internal static class DPoPValidator
         s = TrimAndPadInteger(s);
 
         int seqContentLen = 2 + r.Length + 2 + s.Length;
-        var der = new byte[2 + seqContentLen];
+        var seqLen = EncodeDerLength(seqContentLen);
+        var rLen = EncodeDerLength(r.Length);
+        var sLen = EncodeDerLength(s.Length);
+
+        // Total: 1 (0x30) + seqLen + 1 (0x02) + rLen + r + 1 (0x02) + sLen + s
+        int totalLen = 1 + seqLen.Length + 1 + rLen.Length + r.Length + 1 + sLen.Length + s.Length;
+        var der = new byte[totalLen];
         int pos = 0;
         der[pos++] = 0x30; // SEQUENCE
-        der[pos++] = (byte)seqContentLen;
-        der[pos++] = 0x02; // INTEGER
-        der[pos++] = (byte)r.Length;
-        Array.Copy(r, 0, der, pos, r.Length);
-        pos += r.Length;
-        der[pos++] = 0x02; // INTEGER
-        der[pos++] = (byte)s.Length;
+        Array.Copy(seqLen, 0, der, pos, seqLen.Length); pos += seqLen.Length;
+        der[pos++] = 0x02; // INTEGER r
+        Array.Copy(rLen, 0, der, pos, rLen.Length); pos += rLen.Length;
+        Array.Copy(r, 0, der, pos, r.Length); pos += r.Length;
+        der[pos++] = 0x02; // INTEGER s
+        Array.Copy(sLen, 0, der, pos, sLen.Length); pos += sLen.Length;
         Array.Copy(s, 0, der, pos, s.Length);
         return der;
     }
