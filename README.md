@@ -155,6 +155,29 @@ var token = await client.Auth.ValidateAndRefreshSession(sessionJwt, refreshJwt);
 
 **Performance Note:** Validation calls (`ValidateSessionAsync`, `ValidateAndRefreshSession`) are highly efficient as they use locally cached public keys. Only `RefreshSessionAsync` and the refresh fallback in `ValidateAndRefreshSession` make remote API calls.
 
+### DPoP Sender-Constrained Tokens
+
+When a session token contains a `cnf.jkt` claim it is DPoP-bound (RFC 9449). The client must prove possession of the corresponding private key on every resource-server request by including a signed `DPoP` proof JWT in the `DPoP` HTTP header. Use `ValidateDPoP` on the resource server to verify the proof before granting access:
+
+```csharp
+// On the resource server, after validating the session JWT:
+var token = await client.Auth.ValidateSessionAsync(sessionJwt);
+
+// Retrieve the DPoP proof from the incoming request header (e.g. in ASP.NET Core):
+var dpopProof = httpContext.Request.Headers["DPoP"].ToString();
+
+// Validate the proof — throws DescopeException if invalid.
+// No-ops if the token is not DPoP-bound (no cnf.jkt claim).
+client.Auth.ValidateDPoP(sessionJwt, dpopProof, httpContext.Request.Method, $"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.Path}");
+```
+
+`ValidateDPoP` verifies:
+- The DPoP JWT header (`typ`, `alg`, `jwk`) and signature
+- The `htm` (HTTP method) and `htu` (URL) claims match the request
+- The `iat` is within a ±60/5 second window
+- The `ath` claim matches SHA-256 of the access token
+- The JWK thumbprint matches the `cnf.jkt` claim in the session token
+
 ## Authenticated User Operations
 
 Some authentication operations require an authenticated user context and must be called with a refresh JWT. For these operations, use the `PostWithJwt` extension methods that explicitly require the refresh token.
