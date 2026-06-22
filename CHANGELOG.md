@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.6.1...Descope-v1.7.0) (2026-06-22)
+
+
+### Features
+
+* **http:** also retry on transient status code 520 ([#224](https://github.com/descope/descope-dotnet/issues/224)) ([7fac385](https://github.com/descope/descope-dotnet/commit/7fac385ce9ed0aecf320720e63865095fdeaf92e))
+
 ## [1.6.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.6.0...Descope-v1.6.1) (2026-05-12)
 
 
