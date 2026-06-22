@@ -19,11 +19,12 @@ internal class DescopeErrorResponseHandler : DelegatingHandler
 {
     // HTTP status codes that should trigger automatic retries:
     // 503: Service Unavailable
+    // 520: Web Server Returned an Unknown Error (Cloudflare)
     // 521: Web Server Is Down (Cloudflare)
     // 522: Connection Timed Out (Cloudflare)
     // 524: A Timeout Occurred (Cloudflare)
     // 530: Cloudflare error
-    private static readonly HashSet<int> RetryableStatusCodes = new HashSet<int> { 503, 521, 522, 524, 530 };
+    private static readonly HashSet<int> RetryableStatusCodes = new HashSet<int> { 503, 520, 521, 522, 524, 530 };
 
     // Default retry delays: first retry after 100ms, subsequent retries after 5s each.
     // Exposed as internal so tests can assert on the production values.

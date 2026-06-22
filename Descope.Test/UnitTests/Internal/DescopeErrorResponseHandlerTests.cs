@@ -29,6 +29,7 @@ public class DescopeErrorResponseHandlerTests
 
     [Theory]
     [InlineData(503)]
+    [InlineData(520)]
     [InlineData(521)]
     [InlineData(522)]
     [InlineData(524)]
