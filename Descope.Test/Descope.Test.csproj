@@ -28,12 +28,12 @@
 
     <!-- net6.0 packages -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-            Version="6.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.1" />
+            Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"
-            Version="6.0.1" />
+            Version="8.0.0" />
     </ItemGroup>
 
     <!-- net8.0 packages -->
