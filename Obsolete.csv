@@ -8,6 +8,9 @@ Descope/Generated/Mgmt/V2/Mgmt/Sso/Settings/SettingsRequestBuilder.cs,GetAsync,G
 Descope/Generated/Mgmt/V1/Mgmt/Thirdparty/App/Load/LoadRequestBuilder.cs,GetAsync,GetWithIdAsync or GetWithClientIdAsync
 Descope/Generated/Mgmt/V1/Mgmt/Sso/Settings/SettingsRequestBuilder.cs,DeleteAsync,DeleteWithTenantIdAsync
 Descope/Generated/Mgmt/V1/Mgmt/Tenant/TenantRequestBuilder.cs,GetAsync,GetWithIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/Settings/SettingsRequestBuilder.cs,GetAsync,GetWithTenantIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/User/Provider/Token/TokenRequestBuilder.cs,GetAsync,GetWithLoginIdAndProviderAsync
+Descope/Generated/Mgmt/V1/Mgmt/Thirdparty/App/Secret/SecretRequestBuilder.cs,GetAsync,GetWithIdAsync
 Descope/Generated/Auth/V1/Auth/Magiclink/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Whatsapp/WhatsappRequestBuilder.cs,PostAsync,PostWithJwtAsync

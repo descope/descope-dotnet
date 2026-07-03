@@ -287,6 +287,85 @@ public static class MgmtExtensions
     }
 
     /// <summary>
+    /// Loads tenant settings by tenant ID.
+    /// This is a convenience method that simplifies the common pattern of loading settings for a tenant.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant settings request builder</param>
+    /// <param name="tenantId">The tenant ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>GetTenantSettingsResponse containing the tenant settings information</returns>
+    public static async Task<GetTenantSettingsResponse?> GetWithTenantIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.Settings.SettingsRequestBuilder requestBuilder,
+        string tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(tenantId))
+        {
+            throw new DescopeException("Tenant ID is required for loading tenant settings");
+        }
+
+        return await requestBuilder.GetAsync(requestConfiguration =>
+        {
+            requestConfiguration.QueryParameters.Id = tenantId;
+        }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads an outbound provider token for a user by login ID and provider.
+    /// This is a convenience method that simplifies the common pattern of fetching a stored provider token.
+    /// </summary>
+    /// <param name="requestBuilder">The user provider token request builder</param>
+    /// <param name="loginId">The user login ID</param>
+    /// <param name="provider">The provider name</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>UserProviderTokenResponse containing the provider token information</returns>
+    public static async Task<UserProviderTokenResponse?> GetWithLoginIdAndProviderAsync(
+        this Descope.Mgmt.V1.Mgmt.User.Provider.Token.TokenRequestBuilder requestBuilder,
+        string loginId,
+        string provider,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(loginId))
+        {
+            throw new DescopeException("Login ID is required for loading a user provider token");
+        }
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new DescopeException("Provider is required for loading a user provider token");
+        }
+
+        return await requestBuilder.GetAsync(requestConfiguration =>
+        {
+            requestConfiguration.QueryParameters.LoginId = loginId;
+            requestConfiguration.QueryParameters.Provider = provider;
+        }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads a third-party application's secret by ID.
+    /// This is a convenience method that simplifies the common pattern of loading a third-party application secret by its ID.
+    /// </summary>
+    /// <param name="requestBuilder">The third-party app secret request builder</param>
+    /// <param name="id">The third-party application ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>GetThirdPartyApplicationSecretResponse containing the application secret information</returns>
+    public static async Task<GetThirdPartyApplicationSecretResponse?> GetWithIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Thirdparty.App.Secret.SecretRequestBuilder requestBuilder,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new DescopeException("ID is required for loading a third-party application secret");
+        }
+
+        return await requestBuilder.GetAsync(requestConfiguration =>
+        {
+            requestConfiguration.QueryParameters.Id = id;
+        }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
     /// Runs a management flow with JSON output deserialization.
     /// This extension method wraps the generated PostAsync method and provides convenient access
     /// to flow output data as a JsonDocument, avoiding the need to manually work with UntypedObject types.

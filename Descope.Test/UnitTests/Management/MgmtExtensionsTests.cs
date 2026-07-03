@@ -569,6 +569,128 @@ public class MgmtExtensionsTests
     }
 
     /// <summary>
+    /// Tests that GetWithTenantIdAsync for Tenant Settings correctly passes the tenant ID.
+    /// </summary>
+    [Fact]
+    public async Task TenantSettings_GetWithTenantIdAsync_PassesTenantIdCorrectly()
+    {
+        // Arrange
+        var testTenantId = "test-tenant-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<GetTenantSettingsResponse>(
+            requestInfo =>
+            {
+                requestInfo.QueryParameters.Should().ContainKey("id", "The tenant ID should be in query parameters");
+                requestInfo.QueryParameters["id"].Should().Be(testTenantId, "The tenant ID should match");
+                return new GetTenantSettingsResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Tenant.Settings.GetWithTenantIdAsync(testTenantId);
+    }
+
+    /// <summary>
+    /// Tests that GetWithTenantIdAsync for Tenant Settings throws when tenant ID is null or empty.
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task TenantSettings_GetWithTenantIdAsync_ThrowsDescopeException_WhenTenantIdIsMissing(string? tenantId)
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Tenant.Settings.GetWithTenantIdAsync(tenantId!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that GetWithLoginIdAndProviderAsync for User Provider Token passes both parameters.
+    /// </summary>
+    [Fact]
+    public async Task UserProviderToken_GetWithLoginIdAndProviderAsync_PassesParametersCorrectly()
+    {
+        // Arrange
+        var testLoginId = "user@example.com";
+        var testProvider = "google";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<UserProviderTokenResponse>(
+            requestInfo =>
+            {
+                requestInfo.QueryParameters.Should().ContainKey("loginId", "The login ID should be in query parameters");
+                requestInfo.QueryParameters["loginId"].Should().Be(testLoginId, "The login ID should match");
+                requestInfo.QueryParameters.Should().ContainKey("provider", "The provider should be in query parameters");
+                requestInfo.QueryParameters["provider"].Should().Be(testProvider, "The provider should match");
+                return new UserProviderTokenResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.User.Provider.Token.GetWithLoginIdAndProviderAsync(testLoginId, testProvider);
+    }
+
+    /// <summary>
+    /// Tests that GetWithLoginIdAndProviderAsync throws when login ID or provider is missing.
+    /// </summary>
+    [Theory]
+    [InlineData(null, "google")]
+    [InlineData("", "google")]
+    [InlineData("user@example.com", null)]
+    [InlineData("user@example.com", "")]
+    public async Task UserProviderToken_GetWithLoginIdAndProviderAsync_ThrowsDescopeException_WhenParameterIsMissing(string? loginId, string? provider)
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.User.Provider.Token.GetWithLoginIdAndProviderAsync(loginId!, provider!);
+        });
+    }
+
+    /// <summary>
+    /// Tests that GetWithIdAsync for Third Party Application Secret passes the ID.
+    /// </summary>
+    [Fact]
+    public async Task ThirdPartyAppSecret_GetWithIdAsync_PassesIdCorrectly()
+    {
+        // Arrange
+        var testId = "test-app-id";
+
+        var descopeClient = TestDescopeClientFactory.CreateWithAsserter<GetThirdPartyApplicationSecretResponse>(
+            requestInfo =>
+            {
+                requestInfo.QueryParameters.Should().ContainKey("id", "The ID should be in query parameters");
+                requestInfo.QueryParameters["id"].Should().Be(testId, "The ID should match");
+                return new GetThirdPartyApplicationSecretResponse();
+            });
+
+        // Act
+        await descopeClient.Mgmt.V1.Thirdparty.App.Secret.GetWithIdAsync(testId);
+    }
+
+    /// <summary>
+    /// Tests that GetWithIdAsync for Third Party Application Secret throws when ID is null or empty.
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task ThirdPartyAppSecret_GetWithIdAsync_ThrowsDescopeException_WhenIdIsMissing(string? id)
+    {
+        // Arrange
+        var descopeClient = TestDescopeClientFactory.CreateWithEmptyResponse();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DescopeException>(async () =>
+        {
+            await descopeClient.Mgmt.V1.Thirdparty.App.Secret.GetWithIdAsync(id!);
+        });
+    }
+
+    /// <summary>
     /// Tests that PostWithJsonOutputAsync correctly deserializes flow output to JSON.
     /// </summary>
     [Fact]

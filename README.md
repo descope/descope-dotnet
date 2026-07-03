@@ -122,6 +122,30 @@ var count = root.GetProperty("obj").GetProperty("count").GetInt32();
 var enabled = root.GetProperty("obj").GetProperty("enabled").GetBoolean();
 ```
 
+### Management Convenience Methods
+
+Every management endpoint is available directly on the generated `client.Mgmt.V1` / `client.Mgmt.V2` request builders. For common lookups that require a query parameter, the SDK adds extension methods that make the required inputs explicit:
+
+```csharp
+// Load by identifier / ID
+var user      = await client.Mgmt.V1.User.GetWithIdentifierAsync("user@example.com");
+var tenant    = await client.Mgmt.V1.Tenant.GetWithIdAsync("tenant-id");
+var accessKey = await client.Mgmt.V1.Accesskey.GetWithIdAsync("key-id");
+var ssoApp    = await client.Mgmt.V1.Sso.Idp.App.Load.GetWithIdAsync("app-id");
+var tpApp     = await client.Mgmt.V1.Thirdparty.App.Load.GetWithIdAsync("app-id");
+var tpAppByClient = await client.Mgmt.V1.Thirdparty.App.Load.GetWithClientIdAsync("client-id");
+
+// Settings lookups
+var tenantSettings = await client.Mgmt.V1.Tenant.Settings.GetWithTenantIdAsync("tenant-id");
+var pwdSettings    = await client.Mgmt.V1.Password.Settings.GetWithTenantIdAsync("tenant-id");
+var projectPwd     = await client.Mgmt.V1.Password.Settings.GetForProjectAsync();
+var ssoSettings    = await client.Mgmt.V2.Sso.Settings.GetWithTenantIdAsync("tenant-id");
+
+// Outbound provider token + third-party app secret
+var providerToken = await client.Mgmt.V1.User.Provider.Token.GetWithLoginIdAndProviderAsync("user@example.com", "google");
+var appSecret     = await client.Mgmt.V1.Thirdparty.App.Secret.GetWithIdAsync("app-id");
+```
+
 ## Token Validation
 
 The SDK provides three methods for working with session tokens:
