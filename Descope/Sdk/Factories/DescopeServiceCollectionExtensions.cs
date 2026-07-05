@@ -78,8 +78,8 @@ public static class DescopeServiceCollectionExtensions
             return handler;
         });
 
-        // Create and register the Descope Client Service
-        services.AddScoped<IDescopeClient>(sp =>
+        // Singleton so the JwtValidator's JWKS cache is shared across DI scopes (descope/etc#16677).
+        services.AddSingleton<IDescopeClient>(sp =>
         {
             // Create HttpClients from factory
             // Separate HttpClient instances are needed to avoid cross contamination of http handlers, which most likely happens due to internal Kiota implementation details
