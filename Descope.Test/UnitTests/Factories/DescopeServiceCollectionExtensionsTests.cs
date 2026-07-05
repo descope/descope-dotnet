@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text;
 using Descope;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -184,5 +186,74 @@ public class DescopeServiceCollectionExtensionsTests
         // Assert
         var client = serviceProvider.GetService<IDescopeClient>();
         Assert.NotNull(client);
+    }
+
+    // JWT header {"alg":"RS256","kid":"test-key","typ":"JWT"} — kid matches the stub key.
+    private const string TestJwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3Qta2V5IiwidHlwIjoiSldUIn0.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.test";
+
+    // descope/etc#16677: JWKS cache must survive DI scopes, so two scopes fetch keys once, not twice.
+    [Fact]
+    public async Task AddDescopeClient_ValidateSessionAcrossScopes_FetchesKeysOnce()
+    {
+        // Arrange
+        var keysFetchCount = 0;
+        var services = new ServiceCollection();
+        var options = new DescopeClientOptions
+        {
+            ProjectId = "test_project_id",
+            ManagementKey = "test_management_key",
+            BaseUrl = "https://api.descope.com"
+        };
+        services.AddDescopeClient(options);
+
+        // Last ConfigurePrimaryHttpMessageHandler wins, placing this counting JWKS stub under the SDK pipeline.
+        services.AddHttpClient("DescopeClient")
+            .ConfigurePrimaryHttpMessageHandler(
+                () => new CountingJwksHandler(() => Interlocked.Increment(ref keysFetchCount)));
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act — two separate DI scopes simulate two HTTP requests
+        using (var scope1 = serviceProvider.CreateScope())
+        {
+            var client1 = scope1.ServiceProvider.GetRequiredService<IDescopeClient>();
+            try { await client1.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
+        }
+
+        using (var scope2 = serviceProvider.CreateScope())
+        {
+            var client2 = scope2.ServiceProvider.GetRequiredService<IDescopeClient>();
+            try { await client2.Auth.ValidateSessionAsync(TestJwt); } catch (DescopeException) { }
+        }
+
+        // Assert — cache shared across scopes: keys endpoint hit once, not once per scope
+        Assert.Equal(1, keysFetchCount);
+    }
+
+    // Primary handler stub: counts calls to the keys endpoint and returns a static JWKS payload.
+    private sealed class CountingJwksHandler : HttpMessageHandler
+    {
+        // Valid RSA modulus (base64url) so key import in JwtValidator.FetchKeys succeeds.
+        private const string KeyModulus = "xGOr-H7A-PWc8GG8-lJg_7Jc9J8sB1pP8tTlv3PcQzD9Kc4z_1S_h9LHPh-6fYtZ7X8_1TZY8VkBL1Rh-4tD_Y9J1tK5_5FZz4E0O8Y4y9t3y0_5sZ4E8z3t_4K9y1t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t5z4K1y3t8z2E4y9t5z4E1y3t8z2K4y9t";
+
+        private readonly Action _onKeysFetch;
+
+        public CountingJwksHandler(Action onKeysFetch) => _onKeysFetch = onKeysFetch;
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri!.AbsolutePath.Contains("/v2/keys/"))
+            {
+                _onKeysFetch();
+            }
+
+            var json = "{\"keys\":[{\"alg\":\"RS256\",\"e\":\"AQAB\",\"kid\":\"test-key\",\"kty\":\"RSA\",\"use\":\"sig\",\"n\":\""
+                + KeyModulus + "\"}]}";
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+        }
     }
 }

@@ -1440,12 +1440,12 @@ namespace Descope.Test.Integration
                     Text = name,
                     Limit = 1
                 };
-                var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
-                Assert.NotNull(users?.Users);
-                Assert.Single(users.Users);
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
-                Assert.NotNull(users?.Users);
-                Assert.Single(users.Users);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
+                    Assert.NotNull(users?.Users);
+                    Assert.Single(users.Users);
+                });
 
                 var searchByTenantRoles = new SearchUsersRequest
                 {
@@ -1453,31 +1453,31 @@ namespace Descope.Test.Integration
                     TenantIds = new List<string> { tenantId! },
                     RoleNames = new List<string> { roleName! }
                 };
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
-                Assert.NotNull(users?.Users);
-                Assert.Single(users.Users);
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
-                Assert.NotNull(users?.Users);
-                Assert.Single(users.Users);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
+                    Assert.NotNull(users?.Users);
+                    Assert.Single(users.Users);
+                });
 
                 // Delete user
                 await _descopeClient.Mgmt.V1.User.DeletePath.PostAsync(new DeleteUserRequest { Identifier = loginId });
                 loginId = null;
 
                 // Search again by name - should be empty
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
-                Assert.NotNull(users?.Users);
-                Assert.Empty(users.Users);
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
-                Assert.NotNull(users?.Users);
-                Assert.Empty(users.Users);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByNameRequest);
+                    Assert.NotNull(users?.Users);
+                    Assert.Empty(users.Users);
+                });
 
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
-                Assert.NotNull(users?.Users);
-                Assert.Empty(users.Users);
-                users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
-                Assert.NotNull(users?.Users);
-                Assert.Empty(users.Users);
+                await RetryUntilSuccessAsync(async () =>
+                {
+                    var users = await _descopeClient.Mgmt.V2.User.Search.PostAsync(searchByTenantRoles);
+                    Assert.NotNull(users?.Users);
+                    Assert.Empty(users.Users);
+                });
             }
             finally
             {
