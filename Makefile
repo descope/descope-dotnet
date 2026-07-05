@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := build
 
 # Management API OpenAPI spec file location
-MGMT_OPENAPI_SPEC := $(GODESCOPE)/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml
+MGMT_OPENAPI_SPEC := $(GODESCOPE)/backend/managementservice/pkg/managementservice/proto/v1/doc/management.openapi.yaml
 
 # Management API Kiota generation parameters
 MGMT_KIOTA_LANG := CSharp
@@ -14,7 +14,7 @@ MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
 # Exclude paths are defined in the command itself, to allow supporting multiple excludes
 
 # Auth API OpenAPI spec file location
-AUTH_OPENAPI_SPEC := $(GODESCOPE)/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
+AUTH_OPENAPI_SPEC := $(GODESCOPE)/backend/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
 
 # Auth API Kiota generation parameters
 AUTH_KIOTA_LANG := CSharp
