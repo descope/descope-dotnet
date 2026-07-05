@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.7.0...Descope-v1.7.1) (2026-07-05)
+
+
+### Bug Fixes
+
+* **di:** singleton IDescopeClient to persist JWKS cache (+ build/CI fixes) ([#230](https://github.com/descope/descope-dotnet/issues/230)) ([7a0af9b](https://github.com/descope/descope-dotnet/commit/7a0af9bc787043632fb962a70ec5112def588df8))
+
 ## [1.7.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.6.1...Descope-v1.7.0) (2026-06-22)
 
 
