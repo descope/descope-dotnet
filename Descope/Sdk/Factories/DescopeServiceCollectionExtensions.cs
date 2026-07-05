@@ -78,7 +78,7 @@ public static class DescopeServiceCollectionExtensions
             return handler;
         });
 
-        // Singleton so the JwtValidator's JWKS cache is shared across DI scopes (descope/etc#16677).
+        // Create and register the Descope Client Service Singleton
         services.AddSingleton<IDescopeClient>(sp =>
         {
             // Create HttpClients from factory
