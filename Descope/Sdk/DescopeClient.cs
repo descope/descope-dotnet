@@ -79,6 +79,10 @@ public class DescopeClient : IDescopeClient
         public async Task<Token> ExchangeAccessKey(string accessKey, Auth.Models.Onetimev1.AccessKeyLoginOptions? loginOptions = null) =>
             await _tokenActions.ExchangeAccessKey(accessKey, loginOptions);
 
+        /// <inheritdoc/>
+        public void ValidateDPoP(string sessionToken, string dpopProof, string method, string requestUrl) =>
+            _tokenActions.ValidateDPoP(sessionToken, dpopProof, method, requestUrl);
+
     }
 
     /// <inheritdoc/>
