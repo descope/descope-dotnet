@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.7.1...Descope-v1.8.0) (2026-07-15)
+
+
+### Features
+
+* make JWKS cache duration configurable via DescopeClientOptions ([#233](https://github.com/descope/descope-dotnet/issues/233)) ([70fee45](https://github.com/descope/descope-dotnet/commit/70fee4507b478e655fe0f5a11457daee28fa1f18))
+
 ## [1.7.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.7.0...Descope-v1.7.1) (2026-07-05)
 
 
