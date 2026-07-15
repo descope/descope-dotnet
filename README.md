@@ -20,7 +20,8 @@ var options = new DescopeClientOptions
     AuthManagementKey = "your-auth-key",     // Optional, for accessing disabled auth APIs
     BaseUrl = "https://api.descope.com",     // Optional, auto-detected from project ID
     FgaCacheUrl = "https://fga.example.com", // Optional, if using the Descope FGA Cache Docker Container
-    IsUnsafe = false                         // Optional, for dev/test only
+    IsUnsafe = false,                        // Optional, for dev/test only
+    JwksCacheDuration = TimeSpan.FromMinutes(5) // Optional, how long public signing keys are cached (default: 5 minutes)
 };
 ```
 
@@ -128,12 +129,28 @@ The SDK provides three methods for working with session tokens:
 
 ### ValidateSessionAsync
 
-Validates a session JWT **locally** using cached public keys. The public key is fetched from the server only once and then cached for subsequent validations.
+Validates a session JWT **locally** using cached public keys. The public signing keys (JWKS) are fetched from the server and cached, so most validations do not make a network call.
 
 ```csharp
 var token = await client.Auth.ValidateSessionAsync(sessionJwt);
 // Returns Token with claims, subject, expiration, etc.
 ```
+
+#### Public key (JWKS) caching
+
+Fetched keys are cached for `DescopeClientOptions.JwksCacheDuration` (default **5 minutes**). Once the duration elapses, the next validation refreshes the keys; refreshes are lazy (triggered on the next validation), not on a background timer. To reduce key-fetch requests on high-traffic services, increase the duration:
+
+```csharp
+var options = new DescopeClientOptions
+{
+    ProjectId = "your-project-id",
+    JwksCacheDuration = TimeSpan.FromMinutes(30)
+};
+```
+
+Raising this value is safe even during key rotation: if a token is signed with a key ID that is not already cached, the SDK performs an immediate key re-fetch (bypassing the cache duration) and retries validation once, so tokens from newly rotated keys are accepted right away. `JwksCacheDuration` must be greater than zero.
+
+> **Note:** For the cache to persist across requests, reuse a single `IDescopeClient` instance. The DI registration (`AddDescopeClient`) registers it as a singleton for you.
 
 ### RefreshSessionAsync
 

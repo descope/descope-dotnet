@@ -52,6 +52,20 @@ public class DescopeClientOptions
     public bool IsUnsafe { get; set; } = false;
 
     /// <summary>
+    /// How long the public signing keys (JWKS) fetched from <c>/v2/keys/{projectId}</c>
+    /// are cached before the next session validation triggers a refresh.
+    /// Increasing this reduces the number of key-fetch requests for high-traffic services.
+    /// Default: 5 minutes.
+    /// </summary>
+    /// <remarks>
+    /// Raising this value is safe even during key rotation: session validation performs an
+    /// immediate key re-fetch (bypassing this TTL) whenever a token is signed with a key ID
+    /// that is not already cached, so tokens from newly rotated keys are still accepted right away.
+    /// Must be greater than zero.
+    /// </remarks>
+    public TimeSpan JwksCacheDuration { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Validates that required options are set.
     /// </summary>
     public void Validate()
@@ -59,6 +73,11 @@ public class DescopeClientOptions
         if (string.IsNullOrWhiteSpace(ProjectId))
         {
             throw new DescopeException("ProjectId is required");
+        }
+
+        if (JwksCacheDuration <= TimeSpan.Zero)
+        {
+            throw new DescopeException("JwksCacheDuration must be greater than zero");
         }
 
         if (!string.IsNullOrWhiteSpace(FgaCacheUrl))
