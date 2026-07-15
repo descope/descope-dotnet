@@ -157,7 +157,7 @@ public class JwtValidatorCachingTests
             "test_project_id",
             "https://api.descope.com",
             new HttpClient(mockHandler.Object),
-            () => fakeNow);
+            timeProvider: () => fakeNow);
 
         // Act: first validation — fetches keys
         try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
@@ -175,6 +175,40 @@ public class JwtValidatorCachingTests
         Assert.Equal(2, requestCount);
 
         // Next call within new TTL window — no further re-fetch
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(2, requestCount);
+    }
+
+    [Fact]
+    public async Task ValidateToken_CustomKeyRefreshInterval_ShouldRespectConfiguredTtl()
+    {
+        // Arrange
+        var requestCount = 0;
+        var mockHandler = CreateMockHttpHandler((request, count) =>
+        {
+            requestCount = count;
+            return CreateJwksResponse(); // always returns "test-key", matching TestJwt
+        });
+
+        var fakeNow = DateTimeOffset.UtcNow;
+        var validator = new JwtValidator(
+            "test_project_id",
+            "https://api.descope.com",
+            new HttpClient(mockHandler.Object),
+            keyRefreshInterval: TimeSpan.FromMinutes(30),
+            timeProvider: () => fakeNow);
+
+        // Act: first validation — fetches keys
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Past the default 5-minute TTL but within the configured 30-minute TTL — no re-fetch
+        fakeNow = fakeNow.AddMinutes(10);
+        try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
+        Assert.Equal(1, requestCount);
+
+        // Past the configured 30-minute TTL — should re-fetch
+        fakeNow = fakeNow.AddMinutes(21);
         try { await validator.ValidateToken(TestJwt); } catch (DescopeException) { }
         Assert.Equal(2, requestCount);
     }

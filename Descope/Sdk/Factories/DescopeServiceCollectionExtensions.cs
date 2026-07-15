@@ -104,7 +104,7 @@ public static class DescopeServiceCollectionExtensions
             var authClient = new DescopeAuthKiotaClient(authAdapter);
 
             // Create the wrapper client with internal Kiota clients
-            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient);
+            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient, options.JwksCacheDuration);
         });
 
         return services;

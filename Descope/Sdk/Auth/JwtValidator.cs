@@ -19,15 +19,16 @@ internal class JwtValidator
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
-    private readonly TimeSpan _keyRefreshInterval = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _keyRefreshInterval;
     private long _lastKeyFetchTicks = 0;
     private readonly Func<DateTimeOffset> _timeProvider;
 
-    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, Func<DateTimeOffset>? timeProvider = null)
+    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _keyRefreshInterval = keyRefreshInterval ?? TimeSpan.FromMinutes(5);
         _timeProvider = timeProvider ?? (() => DateTimeOffset.UtcNow);
     }
 

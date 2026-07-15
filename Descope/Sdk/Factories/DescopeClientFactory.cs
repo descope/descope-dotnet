@@ -58,7 +58,7 @@ public static class DescopeManagementClientFactory
         var authClient = new DescopeAuthKiotaClient(authAdapter);
 
         // Wrap both clients with JWT validation support
-        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient);
+        return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient, options.JwksCacheDuration);
     }
 
     private static HttpClient CreateDescopeHttpClient(string projectId, bool isUnsafe, string? fgaCacheUrl)
@@ -149,6 +149,6 @@ public static class DescopeManagementClientFactory
         var mgmtKiotaClient = new DescopeMgmtKiotaClient(mgmtAdapter);
 
         // Create and return the wrapper client with optional HttpClient for HTTP-level testing
-        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl!, httpClient);
+        return new DescopeClient(mgmtKiotaClient, authKiotaClient, options.ProjectId, options.BaseUrl!, httpClient, options.JwksCacheDuration);
     }
 }

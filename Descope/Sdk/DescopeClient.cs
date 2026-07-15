@@ -20,15 +20,17 @@ public class DescopeClient : IDescopeClient
     /// <param name="projectId">The Descope project ID.</param>
     /// <param name="baseUrl">The base URL for the Descope API.</param>
     /// <param name="fetchKeysHttpClient">An HttpClient to fetch public keys, needed for JWT validation.</param>
+    /// <param name="jwksCacheDuration">How long fetched public signing keys are cached before the next validation triggers a refresh. Defaults to 5 minutes when null.</param>
     internal DescopeClient(
         DescopeMgmtKiotaClient mgmtKiotaClient,
         DescopeAuthKiotaClient authKiotaClient,
         string projectId,
         string baseUrl,
-        HttpClient fetchKeysHttpClient)
+        HttpClient fetchKeysHttpClient,
+        TimeSpan? jwksCacheDuration = null)
     {
         _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient);
-        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, fetchKeysHttpClient);
+        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration);
     }
 
     public class DescopeMgmtClient
@@ -54,10 +56,11 @@ public class DescopeClient : IDescopeClient
             DescopeAuthKiotaClient authKiotaClient,
             string projectId,
             string baseUrl,
-            HttpClient fetchKeysHttpClient)
+            HttpClient fetchKeysHttpClient,
+            TimeSpan? jwksCacheDuration = null)
         {
             _authKiotaClient = authKiotaClient;
-            var jwtValidator = new JwtValidator(projectId, baseUrl, fetchKeysHttpClient);
+            var jwtValidator = new JwtValidator(projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration);
             _tokenActions = new TokenActions(jwtValidator, authKiotaClient.V1.Auth);
         }
 
