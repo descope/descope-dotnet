@@ -46,4 +46,16 @@ public interface ITokenActions
     /// <exception cref="Exception">Thrown when the exchange fails or token parsing fails.</exception>
     Task<Token> ExchangeAccessKey(string accessKey, Auth.Models.Onetimev1.AccessKeyLoginOptions? loginOptions = null);
 
+    /// <summary>
+    /// Validates a DPoP (Demonstrated Proof of Possession) proof JWT against a session token (RFC 9449).
+    /// If the session token does not have a <c>cnf.jkt</c> claim it is not DPoP-bound and this method
+    /// returns immediately without error.
+    /// </summary>
+    /// <param name="sessionToken">The validated session JWT string.</param>
+    /// <param name="dpopProof">The DPoP proof JWT from the <c>DPoP</c> HTTP header.</param>
+    /// <param name="method">The HTTP method of the request (e.g. "GET", "POST").</param>
+    /// <param name="requestUrl">The full request URL.</param>
+    /// <exception cref="DescopeException">Thrown when the DPoP proof is missing or invalid.</exception>
+    void ValidateDPoP(string sessionToken, string dpopProof, string method, string requestUrl);
+
 }
