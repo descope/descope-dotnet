@@ -490,6 +490,37 @@ public static class AuthExtensions
             cancellationToken);
     }
 
+    /// <summary>
+    /// Logs out from all sessions of the user with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Logoutall request builder.</param>
+    /// <param name="request">The logout request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The JWT response.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// await client.Auth.V1.Logoutall.PostWithJwtAsync(new LogoutRequest(), refreshToken);
+    /// </code>
+    /// </example>
+    public static async Task<JWTResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Logoutall.LogoutallRequestBuilder requestBuilder,
+        LogoutRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for logout");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
     #endregion
 
     #region Tenant Selection Extensions
