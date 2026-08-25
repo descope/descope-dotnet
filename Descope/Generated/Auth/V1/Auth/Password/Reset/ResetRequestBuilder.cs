@@ -49,7 +49,7 @@ namespace Descope.Auth.V1.Auth.Password.Reset
         public async Task<global::Descope.Auth.Models.Onetimev1.PasswordResetSendResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.PasswordResetSendResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.PasswordResetSendResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -68,7 +68,7 @@ namespace Descope.Auth.V1.Auth.Password.Reset
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");

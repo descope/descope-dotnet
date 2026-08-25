@@ -14,6 +14,8 @@ namespace Descope.Auth.Models.Userv1
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The consentExpiration property</summary>
+        public int? ConsentExpiration { get; set; }
         /// <summary>The createdTime property</summary>
         public int? CreatedTime { get; set; }
         /// <summary>The customAttributes property</summary>
@@ -74,6 +76,8 @@ namespace Descope.Auth.Models.Userv1
 #else
         public string MiddleName { get; set; }
 #endif
+        /// <summary>The modifiedTime property</summary>
+        public int? ModifiedTime { get; set; }
         /// <summary>The name property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -120,6 +124,32 @@ namespace Descope.Auth.Models.Userv1
 #endif
         /// <summary>The push property</summary>
         public bool? Push { get; set; }
+        /// <summary>whether the user has set up recovery codes</summary>
+        public bool? RecoveryCodes { get; set; }
+        /// <summary>The recoveryEmail property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RecoveryEmail { get; set; }
+#nullable restore
+#else
+        public string RecoveryEmail { get; set; }
+#endif
+        /// <summary>The recoveryPhone property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RecoveryPhone { get; set; }
+#nullable restore
+#else
+        public string RecoveryPhone { get; set; }
+#endif
+        /// <summary>roleIds holds the IDs of this entry&apos;s roles. Order is NOT guaranteed to match roleNames — do not pair them by index. Use roleIds or roleNames independently.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? RoleIds { get; set; }
+#nullable restore
+#else
+        public List<string> RoleIds { get; set; }
+#endif
         /// <summary>The roleNames property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -172,6 +202,10 @@ namespace Descope.Auth.Models.Userv1
         public bool? VerifiedEmail { get; set; }
         /// <summary>The verifiedPhone property</summary>
         public bool? VerifiedPhone { get; set; }
+        /// <summary>The verifiedRecoveryEmail property</summary>
+        public bool? VerifiedRecoveryEmail { get; set; }
+        /// <summary>The verifiedRecoveryPhone property</summary>
+        public bool? VerifiedRecoveryPhone { get; set; }
         /// <summary>The webauthn property</summary>
         public bool? Webauthn { get; set; }
         /// <summary>
@@ -188,7 +222,7 @@ namespace Descope.Auth.Models.Userv1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Userv1.ResponseUser CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Userv1.ResponseUser();
         }
         /// <summary>
@@ -199,6 +233,7 @@ namespace Descope.Auth.Models.Userv1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "consentExpiration", n => { ConsentExpiration = n.GetIntValue(); } },
                 { "createdTime", n => { CreatedTime = n.GetIntValue(); } },
                 { "customAttributes", n => { CustomAttributes = n.GetObjectValue<global::Descope.Auth.Models.Userv1.ResponseUser_customAttributes>(global::Descope.Auth.Models.Userv1.ResponseUser_customAttributes.CreateFromDiscriminatorValue); } },
                 { "editable", n => { Editable = n.GetBoolValue(); } },
@@ -208,6 +243,7 @@ namespace Descope.Auth.Models.Userv1
                 { "givenName", n => { GivenName = n.GetStringValue(); } },
                 { "loginIds", n => { LoginIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "middleName", n => { MiddleName = n.GetStringValue(); } },
+                { "modifiedTime", n => { ModifiedTime = n.GetIntValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "OAuth", n => { OAuth = n.GetObjectValue<global::Descope.Auth.Models.Userv1.ResponseUser_OAuth>(global::Descope.Auth.Models.Userv1.ResponseUser_OAuth.CreateFromDiscriminatorValue); } },
                 { "OIDC", n => { OIDC = n.GetBoolValue(); } },
@@ -216,6 +252,10 @@ namespace Descope.Auth.Models.Userv1
                 { "phone", n => { Phone = n.GetStringValue(); } },
                 { "picture", n => { Picture = n.GetStringValue(); } },
                 { "push", n => { Push = n.GetBoolValue(); } },
+                { "recoveryCodes", n => { RecoveryCodes = n.GetBoolValue(); } },
+                { "recoveryEmail", n => { RecoveryEmail = n.GetStringValue(); } },
+                { "recoveryPhone", n => { RecoveryPhone = n.GetStringValue(); } },
+                { "roleIds", n => { RoleIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "roleNames", n => { RoleNames = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "SAML", n => { SAML = n.GetBoolValue(); } },
                 { "SCIM", n => { SCIM = n.GetBoolValue(); } },
@@ -227,6 +267,8 @@ namespace Descope.Auth.Models.Userv1
                 { "userTenants", n => { UserTenants = n.GetCollectionOfObjectValues<global::Descope.Auth.Models.Userv1.UserTenants>(global::Descope.Auth.Models.Userv1.UserTenants.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "verifiedEmail", n => { VerifiedEmail = n.GetBoolValue(); } },
                 { "verifiedPhone", n => { VerifiedPhone = n.GetBoolValue(); } },
+                { "verifiedRecoveryEmail", n => { VerifiedRecoveryEmail = n.GetBoolValue(); } },
+                { "verifiedRecoveryPhone", n => { VerifiedRecoveryPhone = n.GetBoolValue(); } },
                 { "webauthn", n => { Webauthn = n.GetBoolValue(); } },
             };
         }
@@ -236,7 +278,8 @@ namespace Descope.Auth.Models.Userv1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteIntValue("consentExpiration", ConsentExpiration);
             writer.WriteIntValue("createdTime", CreatedTime);
             writer.WriteObjectValue<global::Descope.Auth.Models.Userv1.ResponseUser_customAttributes>("customAttributes", CustomAttributes);
             writer.WriteBoolValue("editable", Editable);
@@ -246,6 +289,7 @@ namespace Descope.Auth.Models.Userv1
             writer.WriteStringValue("givenName", GivenName);
             writer.WriteCollectionOfPrimitiveValues<string>("loginIds", LoginIds);
             writer.WriteStringValue("middleName", MiddleName);
+            writer.WriteIntValue("modifiedTime", ModifiedTime);
             writer.WriteStringValue("name", Name);
             writer.WriteObjectValue<global::Descope.Auth.Models.Userv1.ResponseUser_OAuth>("OAuth", OAuth);
             writer.WriteBoolValue("OIDC", OIDC);
@@ -254,6 +298,10 @@ namespace Descope.Auth.Models.Userv1
             writer.WriteStringValue("phone", Phone);
             writer.WriteStringValue("picture", Picture);
             writer.WriteBoolValue("push", Push);
+            writer.WriteBoolValue("recoveryCodes", RecoveryCodes);
+            writer.WriteStringValue("recoveryEmail", RecoveryEmail);
+            writer.WriteStringValue("recoveryPhone", RecoveryPhone);
+            writer.WriteCollectionOfPrimitiveValues<string>("roleIds", RoleIds);
             writer.WriteCollectionOfPrimitiveValues<string>("roleNames", RoleNames);
             writer.WriteBoolValue("SAML", SAML);
             writer.WriteBoolValue("SCIM", SCIM);
@@ -265,6 +313,8 @@ namespace Descope.Auth.Models.Userv1
             writer.WriteCollectionOfObjectValues<global::Descope.Auth.Models.Userv1.UserTenants>("userTenants", UserTenants);
             writer.WriteBoolValue("verifiedEmail", VerifiedEmail);
             writer.WriteBoolValue("verifiedPhone", VerifiedPhone);
+            writer.WriteBoolValue("verifiedRecoveryEmail", VerifiedRecoveryEmail);
+            writer.WriteBoolValue("verifiedRecoveryPhone", VerifiedRecoveryPhone);
             writer.WriteBoolValue("webauthn", Webauthn);
             writer.WriteAdditionalData(AdditionalData);
         }

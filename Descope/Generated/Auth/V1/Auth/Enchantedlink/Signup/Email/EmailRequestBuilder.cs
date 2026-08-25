@@ -36,22 +36,22 @@ namespace Descope.Auth.V1.Auth.Enchantedlink.Signup.Email
         /// <summary>
         /// Create a new user based on the given identifier or email
         /// </summary>
-        /// <returns>A <see cref="global::Descope.Auth.Models.Onetimev1.EnchantedLinkResponse"/></returns>
+        /// <returns>A <see cref="global::Descope.Auth.Models.Onetimev1.EmailEnchantedLinkResponse"/></returns>
         /// <param name="body">The request body</param>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Descope.Auth.Models.Onetimev1.EnchantedLinkResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.EnchantedLinkSignUpEmailRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Auth.Models.Onetimev1.EmailEnchantedLinkResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.EnchantedLinkSignUpEmailRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Descope.Auth.Models.Onetimev1.EnchantedLinkResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.EnchantedLinkSignUpEmailRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Descope.Auth.Models.Onetimev1.EmailEnchantedLinkResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.EnchantedLinkSignUpEmailRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
-            return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.EnchantedLinkResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.EnchantedLinkResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
+            return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.EmailEnchantedLinkResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.EmailEnchantedLinkResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
         /// Create a new user based on the given identifier or email
@@ -68,7 +68,7 @@ namespace Descope.Auth.V1.Auth.Enchantedlink.Signup.Email
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.EnchantedLinkSignUpEmailRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");

@@ -49,7 +49,7 @@ namespace Descope.Auth.V1.Auth.Otp.Signin.Email
         public async Task<global::Descope.Auth.Models.Onetimev1.EmailOperationResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.OTPSignInRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.EmailOperationResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.EmailOperationResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -68,7 +68,7 @@ namespace Descope.Auth.V1.Auth.Otp.Signin.Email
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.OTPSignInRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");

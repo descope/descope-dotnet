@@ -1,8 +1,8 @@
 {
-  "descriptionHash": "9DEA52D71C1FFBC769068DF55B11A6BE7B49E81E937106C0775D84449496F4BBE393CF9F05AC15837BDF4D41A166F086930D447AA3738E33B09D5100A99BF1B2",
-  "descriptionLocation": "../../../../../go/src/github.com/descope/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml",
+  "descriptionHash": "AC82A58B17692207DE528F9302857E5F9882885D65E753EC76EDBC6279CFF8FA9FD3E5FDE897C15EBA31ED141ED3725B7F4C9A7389822039BC1A02199D9C4DAE",
+  "descriptionLocation": "../../../../backend/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml",
   "lockFileVersion": "1.0.0",
-  "kiotaVersion": "1.28.0",
+  "kiotaVersion": "1.34.1",
   "clientClassName": "DescopeAuthKiotaClient",
   "typeAccessModifier": "Public",
   "clientNamespaceName": "Descope.Auth",
@@ -34,5 +34,6 @@
   "excludePatterns": [
     "/v1/auth/validate"
   ],
-  "disabledValidationRules": []
+  "disabledValidationRules": [],
+  "allowedExternalOrigins": []
 }

@@ -62,6 +62,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest_templateOptions TemplateOptions { get; set; }
 #endif
+        /// <summary>The useRecovery property</summary>
+        public bool? UseRecovery { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest"/> and sets the default values.
         /// </summary>
@@ -76,7 +78,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest();
         }
         /// <summary>
@@ -93,6 +95,7 @@ namespace Descope.Auth.Models.Onetimev1
                 { "redirectUrl", n => { RedirectUrl = n.GetStringValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
                 { "templateOptions", n => { TemplateOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest_templateOptions>(global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest_templateOptions.CreateFromDiscriminatorValue); } },
+                { "useRecovery", n => { UseRecovery = n.GetBoolValue(); } },
             };
         }
         /// <summary>
@@ -101,13 +104,14 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("locale", Locale);
             writer.WriteStringValue("loginId", LoginId);
             writer.WriteStringValue("providerId", ProviderId);
             writer.WriteStringValue("redirectUrl", RedirectUrl);
             writer.WriteStringValue("templateId", TemplateId);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.PasswordResetSendRequest_templateOptions>("templateOptions", TemplateOptions);
+            writer.WriteBoolValue("useRecovery", UseRecovery);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

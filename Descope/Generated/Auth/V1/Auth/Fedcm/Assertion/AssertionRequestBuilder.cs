@@ -46,7 +46,7 @@ namespace Descope.Auth.V1.Auth.Fedcm.Assertion
         public async Task<global::Descope.Auth.Models.Onetimev1.FedCMAssertionResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.FedCMAssertionRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.FedCMAssertionResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.FedCMAssertionResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -62,7 +62,7 @@ namespace Descope.Auth.V1.Auth.Fedcm.Assertion
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.FedCMAssertionRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");

@@ -40,7 +40,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize{?initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", pathParameters)
+        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize{?doNotCreateUser*,initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", pathParameters)
         {
         }
         /// <summary>
@@ -48,7 +48,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize{?initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", rawUrl)
+        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/oauth/authorize{?doNotCreateUser*,initiatedEmail*,loginHint*,prompt*,provider*,rawResponse*,redirectUrl*,test*}", rawUrl)
         {
         }
         /// <summary>
@@ -67,7 +67,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize
         public async Task<global::Descope.Auth.Models.Onetimev1.OAuthRedirectResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Oauth.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.OAuthRedirectResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.OAuthRedirectResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -86,7 +86,7 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Oauth.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");
@@ -108,6 +108,9 @@ namespace Descope.Auth.V1.Auth.Oauth.Authorize
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class AuthorizeRequestBuilderPostQueryParameters 
         {
+            /// <summary>Authenticate against the IdP without creating, updating, or signing in a Descope user. The exchange returns the IdP attributes/claims but no session JWTs. Internal flow-action option — should not be documented in open api file or exposed in SDKs.</summary>
+            [QueryParameter("doNotCreateUser")]
+            public bool? DoNotCreateUser { get; set; }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("initiatedEmail")]

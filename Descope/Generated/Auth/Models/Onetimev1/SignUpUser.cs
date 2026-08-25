@@ -70,6 +70,22 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string Phone { get; set; }
 #endif
+        /// <summary>The recoveryEmail property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RecoveryEmail { get; set; }
+#nullable restore
+#else
+        public string RecoveryEmail { get; set; }
+#endif
+        /// <summary>The recoveryPhone property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RecoveryPhone { get; set; }
+#nullable restore
+#else
+        public string RecoveryPhone { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.SignUpUser"/> and sets the default values.
         /// </summary>
@@ -84,7 +100,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.SignUpUser CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.SignUpUser();
         }
         /// <summary>
@@ -102,6 +118,8 @@ namespace Descope.Auth.Models.Onetimev1
                 { "middleName", n => { MiddleName = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "phone", n => { Phone = n.GetStringValue(); } },
+                { "recoveryEmail", n => { RecoveryEmail = n.GetStringValue(); } },
+                { "recoveryPhone", n => { RecoveryPhone = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -110,7 +128,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("email", Email);
             writer.WriteStringValue("familyName", FamilyName);
             writer.WriteStringValue("givenName", GivenName);
@@ -118,6 +136,8 @@ namespace Descope.Auth.Models.Onetimev1
             writer.WriteStringValue("middleName", MiddleName);
             writer.WriteStringValue("name", Name);
             writer.WriteStringValue("phone", Phone);
+            writer.WriteStringValue("recoveryEmail", RecoveryEmail);
+            writer.WriteStringValue("recoveryPhone", RecoveryPhone);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

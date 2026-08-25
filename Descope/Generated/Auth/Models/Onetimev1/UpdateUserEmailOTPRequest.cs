@@ -24,6 +24,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string Email { get; set; }
 #endif
+        /// <summary>The failOnConflict property</summary>
+        public bool? FailOnConflict { get; set; }
         /// <summary>The locale property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -40,6 +42,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string LoginId { get; set; }
 #endif
+        /// <summary>When true, the existing refresh token&apos;s auth methods are preserved and the verified email is added to them (MFA), instead of replacing the amr with a single factor. Requires a valid refresh token on the request.</summary>
+        public bool? Mfa { get; set; }
         /// <summary>The onMergeUseExisting property</summary>
         public bool? OnMergeUseExisting { get; set; }
         /// <summary>The providerId property</summary>
@@ -80,7 +84,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.UpdateUserEmailOTPRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.UpdateUserEmailOTPRequest();
         }
         /// <summary>
@@ -93,8 +97,10 @@ namespace Descope.Auth.Models.Onetimev1
             {
                 { "addToLoginIDs", n => { AddToLoginIDs = n.GetBoolValue(); } },
                 { "email", n => { Email = n.GetStringValue(); } },
+                { "failOnConflict", n => { FailOnConflict = n.GetBoolValue(); } },
                 { "locale", n => { Locale = n.GetStringValue(); } },
                 { "loginId", n => { LoginId = n.GetStringValue(); } },
+                { "mfa", n => { Mfa = n.GetBoolValue(); } },
                 { "onMergeUseExisting", n => { OnMergeUseExisting = n.GetBoolValue(); } },
                 { "providerId", n => { ProviderId = n.GetStringValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
@@ -107,11 +113,13 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteBoolValue("addToLoginIDs", AddToLoginIDs);
             writer.WriteStringValue("email", Email);
+            writer.WriteBoolValue("failOnConflict", FailOnConflict);
             writer.WriteStringValue("locale", Locale);
             writer.WriteStringValue("loginId", LoginId);
+            writer.WriteBoolValue("mfa", Mfa);
             writer.WriteBoolValue("onMergeUseExisting", OnMergeUseExisting);
             writer.WriteStringValue("providerId", ProviderId);
             writer.WriteStringValue("templateId", TemplateId);

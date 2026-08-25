@@ -14,6 +14,14 @@ namespace Descope.Auth.Models.Onetimev1
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>Populated only when the matching update/start set mfa and a valid refresh token was provided: carries a session token whose amr merges the prior factors with the new passkey. Empty for the default enrollment flow (backward compatible).</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Descope.Auth.Models.Onetimev1.JWTResponse? Jwt { get; set; }
+#nullable restore
+#else
+        public global::Descope.Auth.Models.Onetimev1.JWTResponse Jwt { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.WebauthnAddDeviceFinishResponse"/> and sets the default values.
         /// </summary>
@@ -28,7 +36,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.WebauthnAddDeviceFinishResponse CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.WebauthnAddDeviceFinishResponse();
         }
         /// <summary>
@@ -39,6 +47,7 @@ namespace Descope.Auth.Models.Onetimev1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "jwt", n => { Jwt = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.JWTResponse>(global::Descope.Auth.Models.Onetimev1.JWTResponse.CreateFromDiscriminatorValue); } },
             };
         }
         /// <summary>
@@ -47,7 +56,8 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.JWTResponse>("jwt", Jwt);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

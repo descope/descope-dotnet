@@ -22,6 +22,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string LoginId { get; set; }
 #endif
+        /// <summary>When mfa is true together with a valid refresh token, finishing the enrollment returns a session token whose amr merges the previously-passed auth factors with the newly-enrolled passkey, in a single ceremony. Otherwise enrollment only registers the credential.</summary>
+        public bool? Mfa { get; set; }
         /// <summary>The origin property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -52,7 +54,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.WebauthnAddDeviceStartRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.WebauthnAddDeviceStartRequest();
         }
         /// <summary>
@@ -64,6 +66,7 @@ namespace Descope.Auth.Models.Onetimev1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "loginId", n => { LoginId = n.GetStringValue(); } },
+                { "mfa", n => { Mfa = n.GetBoolValue(); } },
                 { "origin", n => { Origin = n.GetStringValue(); } },
                 { "passkeyOptions", n => { PasskeyOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.PasskeyOptions>(global::Descope.Auth.Models.Onetimev1.PasskeyOptions.CreateFromDiscriminatorValue); } },
             };
@@ -74,8 +77,9 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("loginId", LoginId);
+            writer.WriteBoolValue("mfa", Mfa);
             writer.WriteStringValue("origin", Origin);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.PasskeyOptions>("passkeyOptions", PasskeyOptions);
             writer.WriteAdditionalData(AdditionalData);

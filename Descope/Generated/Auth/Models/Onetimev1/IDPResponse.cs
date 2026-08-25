@@ -22,6 +22,14 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public List<string> IdpGroups { get; set; }
 #endif
+        /// <summary>The idpOIDCClaims property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Descope.Auth.Models.Onetimev1.IDPResponse_idpOIDCClaims? IdpOIDCClaims { get; set; }
+#nullable restore
+#else
+        public global::Descope.Auth.Models.Onetimev1.IDPResponse_idpOIDCClaims IdpOIDCClaims { get; set; }
+#endif
         /// <summary>The idpSAMLAttributes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -92,7 +100,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.IDPResponse CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.IDPResponse();
         }
         /// <summary>
@@ -104,6 +112,7 @@ namespace Descope.Auth.Models.Onetimev1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "idpGroups", n => { IdpGroups = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "idpOIDCClaims", n => { IdpOIDCClaims = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.IDPResponse_idpOIDCClaims>(global::Descope.Auth.Models.Onetimev1.IDPResponse_idpOIDCClaims.CreateFromDiscriminatorValue); } },
                 { "idpSAMLAttributes", n => { IdpSAMLAttributes = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.IDPResponse_idpSAMLAttributes>(global::Descope.Auth.Models.Onetimev1.IDPResponse_idpSAMLAttributes.CreateFromDiscriminatorValue); } },
                 { "oidcGeneratedRoles", n => { OidcGeneratedRoles = n.GetStringValue(); } },
                 { "oidcGeneratedUser", n => { OidcGeneratedUser = n.GetStringValue(); } },
@@ -119,8 +128,9 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteCollectionOfPrimitiveValues<string>("idpGroups", IdpGroups);
+            writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.IDPResponse_idpOIDCClaims>("idpOIDCClaims", IdpOIDCClaims);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.IDPResponse_idpSAMLAttributes>("idpSAMLAttributes", IdpSAMLAttributes);
             writer.WriteStringValue("oidcGeneratedRoles", OidcGeneratedRoles);
             writer.WriteStringValue("oidcGeneratedUser", OidcGeneratedUser);

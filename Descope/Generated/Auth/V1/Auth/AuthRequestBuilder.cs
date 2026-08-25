@@ -24,6 +24,7 @@ using Descope.Auth.V1.Auth.Tenant;
 using Descope.Auth.V1.Auth.Totp;
 using Descope.Auth.V1.Auth.TryRefresh;
 using Descope.Auth.V1.Auth.Webauthn;
+using Descope.Auth.V1.Auth.Wsfed;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
 using System.Collections.Generic;
@@ -157,6 +158,11 @@ namespace Descope.Auth.V1.Auth
         public global::Descope.Auth.V1.Auth.Webauthn.WebauthnRequestBuilder Webauthn
         {
             get => new global::Descope.Auth.V1.Auth.Webauthn.WebauthnRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The wsfed property</summary>
+        public global::Descope.Auth.V1.Auth.Wsfed.WsfedRequestBuilder Wsfed
+        {
+            get => new global::Descope.Auth.V1.Auth.Wsfed.WsfedRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.V1.Auth.AuthRequestBuilder"/> and sets the default values.

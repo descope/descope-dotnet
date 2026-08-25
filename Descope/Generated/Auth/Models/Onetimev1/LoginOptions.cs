@@ -76,6 +76,14 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public global::Descope.Auth.Models.Onetimev1.LoginOptions_templateOptions TemplateOptions { get; set; }
 #endif
+        /// <summary>The tenantId property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TenantId { get; set; }
+#nullable restore
+#else
+        public string TenantId { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.LoginOptions"/> and sets the default values.
         /// </summary>
@@ -90,7 +98,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.LoginOptions CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.LoginOptions();
         }
         /// <summary>
@@ -111,6 +119,7 @@ namespace Descope.Auth.Models.Onetimev1
                 { "stepup", n => { Stepup = n.GetBoolValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
                 { "templateOptions", n => { TemplateOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.LoginOptions_templateOptions>(global::Descope.Auth.Models.Onetimev1.LoginOptions_templateOptions.CreateFromDiscriminatorValue); } },
+                { "tenantId", n => { TenantId = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -119,7 +128,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.LoginOptions_customClaims>("customClaims", CustomClaims);
             writer.WriteStringValue("locale", Locale);
             writer.WriteBoolValue("mfa", Mfa);
@@ -130,6 +139,7 @@ namespace Descope.Auth.Models.Onetimev1
             writer.WriteBoolValue("stepup", Stepup);
             writer.WriteStringValue("templateId", TemplateId);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.LoginOptions_templateOptions>("templateOptions", TemplateOptions);
+            writer.WriteStringValue("tenantId", TenantId);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

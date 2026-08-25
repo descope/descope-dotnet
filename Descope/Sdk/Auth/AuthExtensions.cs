@@ -156,7 +156,7 @@ public static class AuthExtensions
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The enchanted link response.</returns>
     /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
-    public static async Task<EnchantedLinkResponse?> PostWithJwtAsync(
+    public static async Task<EmailEnchantedLinkResponse?> PostWithJwtAsync(
         this Descope.Auth.V1.Auth.Enchantedlink.Update.Email.EmailRequestBuilder requestBuilder,
         UpdateUserEmailEnchantedLinkRequest request,
         string refreshJwt,

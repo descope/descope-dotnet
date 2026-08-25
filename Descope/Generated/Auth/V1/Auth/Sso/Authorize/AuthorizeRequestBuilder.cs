@@ -22,7 +22,7 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/sso/authorize{?forceAuthn*,initiatedEmail*,loginHint*,prompt*,redirectUrl*,tenant*,test*}", pathParameters)
+        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/sso/authorize{?doNotCreateUser*,forceAuthn*,initiatedEmail*,loginHint*,prompt*,redirectUrl*,tenant*,test*,unsavedOauth%2Eadditional*,unsavedOauth%2EallowMergeUsersWithMultipleTenants*,unsavedOauth%2EallowOverrideRoles*,unsavedOauth%2EblockIfEmailDomainMismatch*,unsavedOauth%2Eenabled*,unsavedOauth%2EgroupPriorityEnabled*,unsavedOauth%2Eid*,unsavedOauth%2ElockedTenantId*,unsavedOauth%2EmandatoryUserAttributes*,unsavedOauth%2EmarkEmailAsUnverified*,unsavedOauth%2EredirectURL*,unsavedOauth%2EssoMergeUsers*,unsavedOauth%2Eversion*,unsavedSSODomains*,unsavedSaml%2EacsUrl*,unsavedSaml%2Eadditional*,unsavedSaml%2EallowDuplicateSSODomainsInOtherTenants*,unsavedSaml%2EallowMergeUsersWithMultipleTenants*,unsavedSaml%2EallowOverrideRoles*,unsavedSaml%2EallowSamlAuthOnly*,unsavedSaml%2EblockIfEmailDomainMismatch*,unsavedSaml%2EconfigAssumedPermissions*,unsavedSaml%2EconfigAssumedRoles*,unsavedSaml%2EconfigExpirationTime*,unsavedSaml%2EconfigExpirationTimeUnit*,unsavedSaml%2EconfigFGAMappableFeatures%2Etypes*,unsavedSaml%2EconfigFGATenantIDResourcePrefix*,unsavedSaml%2EconfigFGATenantIDResourceSuffix*,unsavedSaml%2EconfigProviderId*,unsavedSaml%2EconfigTemplateId*,unsavedSaml%2EdefaultSSORoles*,unsavedSaml%2EdescopeEntityId*,unsavedSaml%2Eenabled*,unsavedSaml%2EentityID*,unsavedSaml%2EforceDomainVerification*,unsavedSaml%2EgroupPriorityEnabled*,unsavedSaml%2Eid*,unsavedSaml%2EidpCert*,unsavedSaml%2EidpCerts*,unsavedSaml%2EidpMetadataURL*,unsavedSaml%2EidpURL*,unsavedSaml%2ElastSuccessTestTime*,unsavedSaml%2ElockedTenantId*,unsavedSaml%2EmandatoryUserAttributes*,unsavedSaml%2EmarkEmailAsUnverified*,unsavedSaml%2EmergeUsers*,unsavedSaml%2EproviderID*,unsavedSaml%2EredirectURL*,unsavedSaml%2Es4DisableUserMappingCreate*,unsavedSaml%2Es4Features%2EfgaMappingDisabled*,unsavedSaml%2Es4Features%2EgroupMappingDisabled*,unsavedSaml%2Es4Features%2EjitGuideDisabled*,unsavedSaml%2Es4Features%2EoidcDisabled*,unsavedSaml%2Es4Features%2EroleMappingDisabled*,unsavedSaml%2Es4Features%2EsamlDisabled*,unsavedSaml%2Es4Features%2EscimDisabled*,unsavedSaml%2Es4Features%2EssoDisabled*,unsavedSaml%2Es4Features%2EssoDomainsDisabled*,unsavedSaml%2Es4Features%2ExaaDisabled*,unsavedSaml%2Es4ShowHelpContact*,unsavedSaml%2Es4StyleId*,unsavedSaml%2Es4SupportEmail*,unsavedSaml%2EsamlMappings%2Eemail*,unsavedSaml%2EsamlMappings%2EfamilyName*,unsavedSaml%2EsamlMappings%2EgivenName*,unsavedSaml%2EsamlMappings%2Egroup*,unsavedSaml%2EsamlMappings%2EmiddleName*,unsavedSaml%2EsamlMappings%2Ename*,unsavedSaml%2EsamlMappings%2EphoneNumber*,unsavedSaml%2EsamlMappings%2Epicture*,unsavedSaml%2EsamlMappings%2Eusername*,unsavedSaml%2EsamlMappings%2EverifiedEmail*,unsavedSaml%2EsamlMappings%2EverifiedPhone*,unsavedSaml%2EscimProviderID*,unsavedSaml%2EsignRequest*,unsavedSaml%2EsignRequestCert*,unsavedSaml%2EsignRequestKey*,unsavedSaml%2EspCert*,unsavedSaml%2EspEncryptionKey*,unsavedSaml%2EsubjectNameIdFormat*,unsavedSaml%2EtenantID*,unsavedSaml%2EuseMetaInfoToggle*,unsavedSaml%2EuseTenantLevelS4Configs*,unsavedSaml%2Eversion*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,7 +30,7 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/sso/authorize{?forceAuthn*,initiatedEmail*,loginHint*,prompt*,redirectUrl*,tenant*,test*}", rawUrl)
+        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/v1/auth/sso/authorize{?doNotCreateUser*,forceAuthn*,initiatedEmail*,loginHint*,prompt*,redirectUrl*,tenant*,test*,unsavedOauth%2Eadditional*,unsavedOauth%2EallowMergeUsersWithMultipleTenants*,unsavedOauth%2EallowOverrideRoles*,unsavedOauth%2EblockIfEmailDomainMismatch*,unsavedOauth%2Eenabled*,unsavedOauth%2EgroupPriorityEnabled*,unsavedOauth%2Eid*,unsavedOauth%2ElockedTenantId*,unsavedOauth%2EmandatoryUserAttributes*,unsavedOauth%2EmarkEmailAsUnverified*,unsavedOauth%2EredirectURL*,unsavedOauth%2EssoMergeUsers*,unsavedOauth%2Eversion*,unsavedSSODomains*,unsavedSaml%2EacsUrl*,unsavedSaml%2Eadditional*,unsavedSaml%2EallowDuplicateSSODomainsInOtherTenants*,unsavedSaml%2EallowMergeUsersWithMultipleTenants*,unsavedSaml%2EallowOverrideRoles*,unsavedSaml%2EallowSamlAuthOnly*,unsavedSaml%2EblockIfEmailDomainMismatch*,unsavedSaml%2EconfigAssumedPermissions*,unsavedSaml%2EconfigAssumedRoles*,unsavedSaml%2EconfigExpirationTime*,unsavedSaml%2EconfigExpirationTimeUnit*,unsavedSaml%2EconfigFGAMappableFeatures%2Etypes*,unsavedSaml%2EconfigFGATenantIDResourcePrefix*,unsavedSaml%2EconfigFGATenantIDResourceSuffix*,unsavedSaml%2EconfigProviderId*,unsavedSaml%2EconfigTemplateId*,unsavedSaml%2EdefaultSSORoles*,unsavedSaml%2EdescopeEntityId*,unsavedSaml%2Eenabled*,unsavedSaml%2EentityID*,unsavedSaml%2EforceDomainVerification*,unsavedSaml%2EgroupPriorityEnabled*,unsavedSaml%2Eid*,unsavedSaml%2EidpCert*,unsavedSaml%2EidpCerts*,unsavedSaml%2EidpMetadataURL*,unsavedSaml%2EidpURL*,unsavedSaml%2ElastSuccessTestTime*,unsavedSaml%2ElockedTenantId*,unsavedSaml%2EmandatoryUserAttributes*,unsavedSaml%2EmarkEmailAsUnverified*,unsavedSaml%2EmergeUsers*,unsavedSaml%2EproviderID*,unsavedSaml%2EredirectURL*,unsavedSaml%2Es4DisableUserMappingCreate*,unsavedSaml%2Es4Features%2EfgaMappingDisabled*,unsavedSaml%2Es4Features%2EgroupMappingDisabled*,unsavedSaml%2Es4Features%2EjitGuideDisabled*,unsavedSaml%2Es4Features%2EoidcDisabled*,unsavedSaml%2Es4Features%2EroleMappingDisabled*,unsavedSaml%2Es4Features%2EsamlDisabled*,unsavedSaml%2Es4Features%2EscimDisabled*,unsavedSaml%2Es4Features%2EssoDisabled*,unsavedSaml%2Es4Features%2EssoDomainsDisabled*,unsavedSaml%2Es4Features%2ExaaDisabled*,unsavedSaml%2Es4ShowHelpContact*,unsavedSaml%2Es4StyleId*,unsavedSaml%2Es4SupportEmail*,unsavedSaml%2EsamlMappings%2Eemail*,unsavedSaml%2EsamlMappings%2EfamilyName*,unsavedSaml%2EsamlMappings%2EgivenName*,unsavedSaml%2EsamlMappings%2Egroup*,unsavedSaml%2EsamlMappings%2EmiddleName*,unsavedSaml%2EsamlMappings%2Ename*,unsavedSaml%2EsamlMappings%2EphoneNumber*,unsavedSaml%2EsamlMappings%2Epicture*,unsavedSaml%2EsamlMappings%2Eusername*,unsavedSaml%2EsamlMappings%2EverifiedEmail*,unsavedSaml%2EsamlMappings%2EverifiedPhone*,unsavedSaml%2EscimProviderID*,unsavedSaml%2EsignRequest*,unsavedSaml%2EsignRequestCert*,unsavedSaml%2EsignRequestKey*,unsavedSaml%2EspCert*,unsavedSaml%2EspEncryptionKey*,unsavedSaml%2EsubjectNameIdFormat*,unsavedSaml%2EtenantID*,unsavedSaml%2EuseMetaInfoToggle*,unsavedSaml%2EuseTenantLevelS4Configs*,unsavedSaml%2Eversion*}", rawUrl)
         {
         }
         /// <summary>
@@ -42,16 +42,14 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        [Obsolete("Use PostWithQueryParamsAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse?> PostAsync(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        [Obsolete("Use PostWithQueryParamsAsync instead")]
         public async Task<global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse> PostAsync(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = ToPostRequestInformation(body, requestConfiguration);
             return await RequestAdapter.SendAsync<global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse>(requestInfo, global::Descope.Auth.Models.Onetimev1.SAMLRedirectResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
@@ -70,7 +68,7 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         public RequestInformation ToPostRequestInformation(global::Descope.Auth.Models.Onetimev1.LoginOptions body, Action<RequestConfiguration<global::Descope.Auth.V1.Auth.Sso.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default)
         {
 #endif
-            _ = body ?? throw new ArgumentNullException(nameof(body));
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
             var requestInfo = new RequestInformation(Method.POST, UrlTemplate, PathParameters);
             requestInfo.Configure(requestConfiguration);
             requestInfo.Headers.TryAdd("Accept", "application/json");
@@ -92,6 +90,9 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class AuthorizeRequestBuilderPostQueryParameters 
         {
+            /// <summary>Authenticate against the IdP without creating, updating, or signing in a Descope user. The exchange returns the IdP attributes/claims but no session JWTs. Internal flow-action option — should not be documented in open api file or exposed in SDKs.</summary>
+            [QueryParameter("doNotCreateUser")]
+            public bool? DoNotCreateUser { get; set; }
             [QueryParameter("forceAuthn")]
             public bool? ForceAuthn { get; set; }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
@@ -141,6 +142,513 @@ namespace Descope.Auth.V1.Auth.Sso.Authorize
 #endif
             [QueryParameter("test")]
             public bool? Test { get; set; }
+            [QueryParameter("unsavedOauth%2Eadditional")]
+            public bool? UnsavedOauthAdditional { get; set; }
+            [QueryParameter("unsavedOauth%2EallowMergeUsersWithMultipleTenants")]
+            public bool? UnsavedOauthAllowMergeUsersWithMultipleTenants { get; set; }
+            [QueryParameter("unsavedOauth%2EallowOverrideRoles")]
+            public bool? UnsavedOauthAllowOverrideRoles { get; set; }
+            [QueryParameter("unsavedOauth%2EblockIfEmailDomainMismatch")]
+            public bool? UnsavedOauthBlockIfEmailDomainMismatch { get; set; }
+            [QueryParameter("unsavedOauth%2Eenabled")]
+            public bool? UnsavedOauthEnabled { get; set; }
+            [QueryParameter("unsavedOauth%2EgroupPriorityEnabled")]
+            public bool? UnsavedOauthGroupPriorityEnabled { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedOauth%2Eid")]
+            public string? UnsavedOauthId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedOauth%2Eid")]
+            public string UnsavedOauthId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedOauth%2ElockedTenantId")]
+            public string? UnsavedOauthLockedTenantId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedOauth%2ElockedTenantId")]
+            public string UnsavedOauthLockedTenantId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedOauth%2EmandatoryUserAttributes")]
+            public string[]? UnsavedOauthMandatoryUserAttributes { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedOauth%2EmandatoryUserAttributes")]
+            public string[] UnsavedOauthMandatoryUserAttributes { get; set; }
+#endif
+            [QueryParameter("unsavedOauth%2EmarkEmailAsUnverified")]
+            public bool? UnsavedOauthMarkEmailAsUnverified { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedOauth%2EredirectURL")]
+            public string? UnsavedOauthRedirectURL { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedOauth%2EredirectURL")]
+            public string UnsavedOauthRedirectURL { get; set; }
+#endif
+            [QueryParameter("unsavedOauth%2EssoMergeUsers")]
+            public bool? UnsavedOauthSsoMergeUsers { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedOauth%2Eversion")]
+            public string? UnsavedOauthVersion { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedOauth%2Eversion")]
+            public string UnsavedOauthVersion { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EacsUrl")]
+            public string? UnsavedSamlAcsUrl { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EacsUrl")]
+            public string UnsavedSamlAcsUrl { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2Eadditional")]
+            public bool? UnsavedSamlAdditional { get; set; }
+            [QueryParameter("unsavedSaml%2EallowDuplicateSSODomainsInOtherTenants")]
+            public bool? UnsavedSamlAllowDuplicateSSODomainsInOtherTenants { get; set; }
+            [QueryParameter("unsavedSaml%2EallowMergeUsersWithMultipleTenants")]
+            public bool? UnsavedSamlAllowMergeUsersWithMultipleTenants { get; set; }
+            [QueryParameter("unsavedSaml%2EallowOverrideRoles")]
+            public bool? UnsavedSamlAllowOverrideRoles { get; set; }
+            [QueryParameter("unsavedSaml%2EallowSamlAuthOnly")]
+            public bool? UnsavedSamlAllowSamlAuthOnly { get; set; }
+            [QueryParameter("unsavedSaml%2EblockIfEmailDomainMismatch")]
+            public bool? UnsavedSamlBlockIfEmailDomainMismatch { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigAssumedPermissions")]
+            public string[]? UnsavedSamlConfigAssumedPermissions { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigAssumedPermissions")]
+            public string[] UnsavedSamlConfigAssumedPermissions { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigAssumedRoles")]
+            public string[]? UnsavedSamlConfigAssumedRoles { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigAssumedRoles")]
+            public string[] UnsavedSamlConfigAssumedRoles { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2EconfigExpirationTime")]
+            public int? UnsavedSamlConfigExpirationTime { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigExpirationTimeUnit")]
+            public string? UnsavedSamlConfigExpirationTimeUnit { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigExpirationTimeUnit")]
+            public string UnsavedSamlConfigExpirationTimeUnit { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigFGAMappableFeatures%2Etypes")]
+            public string[]? UnsavedSamlConfigFGAMappableFeaturesTypes { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigFGAMappableFeatures%2Etypes")]
+            public string[] UnsavedSamlConfigFGAMappableFeaturesTypes { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigFGATenantIDResourcePrefix")]
+            public string? UnsavedSamlConfigFGATenantIDResourcePrefix { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigFGATenantIDResourcePrefix")]
+            public string UnsavedSamlConfigFGATenantIDResourcePrefix { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigFGATenantIDResourceSuffix")]
+            public string? UnsavedSamlConfigFGATenantIDResourceSuffix { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigFGATenantIDResourceSuffix")]
+            public string UnsavedSamlConfigFGATenantIDResourceSuffix { get; set; }
+#endif
+            /// <summary>The following are purely on project level, and meant for generiting link</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigProviderId")]
+            public string? UnsavedSamlConfigProviderId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigProviderId")]
+            public string UnsavedSamlConfigProviderId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EconfigTemplateId")]
+            public string? UnsavedSamlConfigTemplateId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EconfigTemplateId")]
+            public string UnsavedSamlConfigTemplateId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EdefaultSSORoles")]
+            public string[]? UnsavedSamlDefaultSSORoles { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EdefaultSSORoles")]
+            public string[] UnsavedSamlDefaultSSORoles { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EdescopeEntityId")]
+            public string? UnsavedSamlDescopeEntityId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EdescopeEntityId")]
+            public string UnsavedSamlDescopeEntityId { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2Eenabled")]
+            public bool? UnsavedSamlEnabled { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EentityID")]
+            public string? UnsavedSamlEntityID { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EentityID")]
+            public string UnsavedSamlEntityID { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2EforceDomainVerification")]
+            public bool? UnsavedSamlForceDomainVerification { get; set; }
+            [QueryParameter("unsavedSaml%2EgroupPriorityEnabled")]
+            public bool? UnsavedSamlGroupPriorityEnabled { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2Eid")]
+            public string? UnsavedSamlId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2Eid")]
+            public string UnsavedSamlId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EidpCert")]
+            public string? UnsavedSamlIdpCert { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EidpCert")]
+            public string UnsavedSamlIdpCert { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EidpCerts")]
+            public string[]? UnsavedSamlIdpCerts { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EidpCerts")]
+            public string[] UnsavedSamlIdpCerts { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EidpMetadataURL")]
+            public string? UnsavedSamlIdpMetadataURL { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EidpMetadataURL")]
+            public string UnsavedSamlIdpMetadataURL { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EidpURL")]
+            public string? UnsavedSamlIdpURL { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EidpURL")]
+            public string UnsavedSamlIdpURL { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2ElastSuccessTestTime")]
+            public int? UnsavedSamlLastSuccessTestTime { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2ElockedTenantId")]
+            public string? UnsavedSamlLockedTenantId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2ElockedTenantId")]
+            public string UnsavedSamlLockedTenantId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EmandatoryUserAttributes")]
+            public string[]? UnsavedSamlMandatoryUserAttributes { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EmandatoryUserAttributes")]
+            public string[] UnsavedSamlMandatoryUserAttributes { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2EmarkEmailAsUnverified")]
+            public bool? UnsavedSamlMarkEmailAsUnverified { get; set; }
+            [QueryParameter("unsavedSaml%2EmergeUsers")]
+            public bool? UnsavedSamlMergeUsers { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EproviderID")]
+            public string? UnsavedSamlProviderID { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EproviderID")]
+            public string UnsavedSamlProviderID { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EredirectURL")]
+            public string? UnsavedSamlRedirectURL { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EredirectURL")]
+            public string UnsavedSamlRedirectURL { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2Es4DisableUserMappingCreate")]
+            public bool? UnsavedSamlS4DisableUserMappingCreate { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EfgaMappingDisabled")]
+            public bool? UnsavedSamlS4FeaturesFgaMappingDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EgroupMappingDisabled")]
+            public bool? UnsavedSamlS4FeaturesGroupMappingDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EjitGuideDisabled")]
+            public bool? UnsavedSamlS4FeaturesJitGuideDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EoidcDisabled")]
+            public bool? UnsavedSamlS4FeaturesOidcDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EroleMappingDisabled")]
+            public bool? UnsavedSamlS4FeaturesRoleMappingDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EsamlDisabled")]
+            public bool? UnsavedSamlS4FeaturesSamlDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EscimDisabled")]
+            public bool? UnsavedSamlS4FeaturesScimDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EssoDisabled")]
+            public bool? UnsavedSamlS4FeaturesSsoDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2EssoDomainsDisabled")]
+            public bool? UnsavedSamlS4FeaturesSsoDomainsDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4Features%2ExaaDisabled")]
+            public bool? UnsavedSamlS4FeaturesXaaDisabled { get; set; }
+            [QueryParameter("unsavedSaml%2Es4ShowHelpContact")]
+            public bool? UnsavedSamlS4ShowHelpContact { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2Es4StyleId")]
+            public string? UnsavedSamlS4StyleId { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2Es4StyleId")]
+            public string UnsavedSamlS4StyleId { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2Es4SupportEmail")]
+            public string? UnsavedSamlS4SupportEmail { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2Es4SupportEmail")]
+            public string UnsavedSamlS4SupportEmail { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Eemail")]
+            public string? UnsavedSamlSamlMappingsEmail { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Eemail")]
+            public string UnsavedSamlSamlMappingsEmail { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EfamilyName")]
+            public string? UnsavedSamlSamlMappingsFamilyName { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EfamilyName")]
+            public string UnsavedSamlSamlMappingsFamilyName { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EgivenName")]
+            public string? UnsavedSamlSamlMappingsGivenName { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EgivenName")]
+            public string UnsavedSamlSamlMappingsGivenName { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Egroup")]
+            public string? UnsavedSamlSamlMappingsGroup { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Egroup")]
+            public string UnsavedSamlSamlMappingsGroup { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EmiddleName")]
+            public string? UnsavedSamlSamlMappingsMiddleName { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EmiddleName")]
+            public string UnsavedSamlSamlMappingsMiddleName { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Ename")]
+            public string? UnsavedSamlSamlMappingsName { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Ename")]
+            public string UnsavedSamlSamlMappingsName { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EphoneNumber")]
+            public string? UnsavedSamlSamlMappingsPhoneNumber { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EphoneNumber")]
+            public string UnsavedSamlSamlMappingsPhoneNumber { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Epicture")]
+            public string? UnsavedSamlSamlMappingsPicture { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Epicture")]
+            public string UnsavedSamlSamlMappingsPicture { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Eusername")]
+            public string? UnsavedSamlSamlMappingsUsername { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2Eusername")]
+            public string UnsavedSamlSamlMappingsUsername { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EverifiedEmail")]
+            public string? UnsavedSamlSamlMappingsVerifiedEmail { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EverifiedEmail")]
+            public string UnsavedSamlSamlMappingsVerifiedEmail { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EverifiedPhone")]
+            public string? UnsavedSamlSamlMappingsVerifiedPhone { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsamlMappings%2EverifiedPhone")]
+            public string UnsavedSamlSamlMappingsVerifiedPhone { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EscimProviderID")]
+            public string? UnsavedSamlScimProviderID { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EscimProviderID")]
+            public string UnsavedSamlScimProviderID { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2EsignRequest")]
+            public bool? UnsavedSamlSignRequest { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsignRequestCert")]
+            public string? UnsavedSamlSignRequestCert { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsignRequestCert")]
+            public string UnsavedSamlSignRequestCert { get; set; }
+#endif
+            /// <summary>skip 19, was used and removed</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsignRequestKey")]
+            public string? UnsavedSamlSignRequestKey { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsignRequestKey")]
+            public string UnsavedSamlSignRequestKey { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EspCert")]
+            public string? UnsavedSamlSpCert { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EspCert")]
+            public string UnsavedSamlSpCert { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EspEncryptionKey")]
+            public string? UnsavedSamlSpEncryptionKey { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EspEncryptionKey")]
+            public string UnsavedSamlSpEncryptionKey { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EsubjectNameIdFormat")]
+            public string? UnsavedSamlSubjectNameIdFormat { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EsubjectNameIdFormat")]
+            public string UnsavedSamlSubjectNameIdFormat { get; set; }
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2EtenantID")]
+            public string? UnsavedSamlTenantID { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2EtenantID")]
+            public string UnsavedSamlTenantID { get; set; }
+#endif
+            [QueryParameter("unsavedSaml%2EuseMetaInfoToggle")]
+            public bool? UnsavedSamlUseMetaInfoToggle { get; set; }
+            [QueryParameter("unsavedSaml%2EuseTenantLevelS4Configs")]
+            public bool? UnsavedSamlUseTenantLevelS4Configs { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSaml%2Eversion")]
+            public string? UnsavedSamlVersion { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSaml%2Eversion")]
+            public string UnsavedSamlVersion { get; set; }
+#endif
+            /// <summary>Draft SSO domains for test flows: the setup suite verifies domains before they are persisted on the tenant, so the email-domain-mismatch check would otherwise run against an empty persisted list and always fail. Allowed only when test is true.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("unsavedSSODomains")]
+            public string[]? UnsavedSSODomains { get; set; }
+#nullable restore
+#else
+            [QueryParameter("unsavedSSODomains")]
+            public string[] UnsavedSSODomains { get; set; }
+#endif
         }
         /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.

@@ -35,6 +35,14 @@ namespace Descope.Auth.Models.Onetimev1
         public int? CookieExpiration { get; set; }
         /// <summary>The cookieMaxAge property</summary>
         public int? CookieMaxAge { get; set; }
+        /// <summary>The cookieName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? CookieName { get; set; }
+#nullable restore
+#else
+        public string CookieName { get; set; }
+#endif
         /// <summary>The cookiePath property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -51,6 +59,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string ExternalToken { get; set; }
 #endif
+        /// <summary>The nextRefreshSeconds property</summary>
+        public int? NextRefreshSeconds { get; set; }
         /// <summary>The refreshJwt property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -58,6 +68,22 @@ namespace Descope.Auth.Models.Onetimev1
 #nullable restore
 #else
         public string RefreshJwt { get; set; }
+#endif
+        /// <summary>The sessionCookieDomain property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SessionCookieDomain { get; set; }
+#nullable restore
+#else
+        public string SessionCookieDomain { get; set; }
+#endif
+        /// <summary>The sessionCookieName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SessionCookieName { get; set; }
+#nullable restore
+#else
+        public string SessionCookieName { get; set; }
 #endif
         /// <summary>For convenience, we use the same field numbers as in JWTResponse optional userv1.ResponseUser user = 7; optional bool firstSeen = 8; optional IDPResponse idpResponse = 11;</summary>
         public int? SessionExpiration { get; set; }
@@ -77,6 +103,14 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string TenantSSOID { get; set; }
 #endif
+        /// <summary>The trustedDeviceJwt property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TrustedDeviceJwt { get; set; }
+#nullable restore
+#else
+        public string TrustedDeviceJwt { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.OptionalJWTResponse"/> and sets the default values.
         /// </summary>
@@ -91,7 +125,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.OptionalJWTResponse CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.OptionalJWTResponse();
         }
         /// <summary>
@@ -106,12 +140,17 @@ namespace Descope.Auth.Models.Onetimev1
                 { "cookieDomain", n => { CookieDomain = n.GetStringValue(); } },
                 { "cookieExpiration", n => { CookieExpiration = n.GetIntValue(); } },
                 { "cookieMaxAge", n => { CookieMaxAge = n.GetIntValue(); } },
+                { "cookieName", n => { CookieName = n.GetStringValue(); } },
                 { "cookiePath", n => { CookiePath = n.GetStringValue(); } },
                 { "externalToken", n => { ExternalToken = n.GetStringValue(); } },
+                { "nextRefreshSeconds", n => { NextRefreshSeconds = n.GetIntValue(); } },
                 { "refreshJwt", n => { RefreshJwt = n.GetStringValue(); } },
+                { "sessionCookieDomain", n => { SessionCookieDomain = n.GetStringValue(); } },
+                { "sessionCookieName", n => { SessionCookieName = n.GetStringValue(); } },
                 { "sessionExpiration", n => { SessionExpiration = n.GetIntValue(); } },
                 { "sessionJwt", n => { SessionJwt = n.GetStringValue(); } },
                 { "tenantSSOID", n => { TenantSSOID = n.GetStringValue(); } },
+                { "trustedDeviceJwt", n => { TrustedDeviceJwt = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -120,17 +159,22 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.OptionalJWTResponse_claims>("claims", Claims);
             writer.WriteStringValue("cookieDomain", CookieDomain);
             writer.WriteIntValue("cookieExpiration", CookieExpiration);
             writer.WriteIntValue("cookieMaxAge", CookieMaxAge);
+            writer.WriteStringValue("cookieName", CookieName);
             writer.WriteStringValue("cookiePath", CookiePath);
             writer.WriteStringValue("externalToken", ExternalToken);
+            writer.WriteIntValue("nextRefreshSeconds", NextRefreshSeconds);
             writer.WriteStringValue("refreshJwt", RefreshJwt);
+            writer.WriteStringValue("sessionCookieDomain", SessionCookieDomain);
+            writer.WriteStringValue("sessionCookieName", SessionCookieName);
             writer.WriteIntValue("sessionExpiration", SessionExpiration);
             writer.WriteStringValue("sessionJwt", SessionJwt);
             writer.WriteStringValue("tenantSSOID", TenantSSOID);
+            writer.WriteStringValue("trustedDeviceJwt", TrustedDeviceJwt);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

@@ -22,6 +22,14 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string LoginId { get; set; }
 #endif
+        /// <summary>The loginOptions property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Descope.Auth.Models.Onetimev1.SignupLoginOptions? LoginOptions { get; set; }
+#nullable restore
+#else
+        public global::Descope.Auth.Models.Onetimev1.SignupLoginOptions LoginOptions { get; set; }
+#endif
         /// <summary>The origin property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -60,7 +68,7 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
         public static global::Descope.Auth.Models.Onetimev1.WebauthnSignUpStartRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
-            _ = parseNode ?? throw new ArgumentNullException(nameof(parseNode));
+            if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::Descope.Auth.Models.Onetimev1.WebauthnSignUpStartRequest();
         }
         /// <summary>
@@ -72,6 +80,7 @@ namespace Descope.Auth.Models.Onetimev1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "loginId", n => { LoginId = n.GetStringValue(); } },
+                { "loginOptions", n => { LoginOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.SignupLoginOptions>(global::Descope.Auth.Models.Onetimev1.SignupLoginOptions.CreateFromDiscriminatorValue); } },
                 { "origin", n => { Origin = n.GetStringValue(); } },
                 { "passkeyOptions", n => { PasskeyOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.PasskeyOptions>(global::Descope.Auth.Models.Onetimev1.PasskeyOptions.CreateFromDiscriminatorValue); } },
                 { "user", n => { User = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.SignUpUser>(global::Descope.Auth.Models.Onetimev1.SignUpUser.CreateFromDiscriminatorValue); } },
@@ -83,8 +92,9 @@ namespace Descope.Auth.Models.Onetimev1
         /// <param name="writer">Serialization writer to use to serialize this model</param>
         public virtual void Serialize(ISerializationWriter writer)
         {
-            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("loginId", LoginId);
+            writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.SignupLoginOptions>("loginOptions", LoginOptions);
             writer.WriteStringValue("origin", Origin);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.PasskeyOptions>("passkeyOptions", PasskeyOptions);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.SignUpUser>("user", User);
