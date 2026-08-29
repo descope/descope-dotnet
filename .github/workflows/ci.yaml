@@ -35,11 +35,15 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --no-restore --configuration Release
       - name: Test with dotnet
-        timeout-minutes: 10
+        timeout-minutes: 30
         env:
           AppSettings__ProjectId: ${{ secrets.DOT_NET_PROJECT_ID }}
           AppSettings__ManagementKey: ${{ secrets.DOT_NET_MANAGEMENT_KEY_ID }}
-        run: dotnet test --no-build --configuration Release --logger trx --results-directory "TestResults" --blame --blame-hang --blame-hang-timeout 1min --diag "TestResults/vstest_diagnostics.log"
+        # serialized: the integration test throttle is per-process, so parallel frameworks 4x the live API rate
+        run: |
+          for tfm in net6.0 net8.0 net9.0 net10.0; do
+            dotnet test --no-build --configuration Release --framework "$tfm" --logger trx --results-directory "TestResults" --blame --blame-hang --blame-hang-timeout 1min --diag "TestResults/vstest_$tfm.log"
+          done
 
       - name: Upload dotnet test results
         if: always()
