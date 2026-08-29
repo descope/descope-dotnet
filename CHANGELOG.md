@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.8.0...Descope-v1.9.0) (2026-08-29)
+
+
+### Features
+
+* **auth:** add PostWithJwtAsync for LogoutAll ([#242](https://github.com/descope/descope-dotnet/issues/242)) ([7e57b45](https://github.com/descope/descope-dotnet/commit/7e57b450e150d7a36c406b485f4057845635ddbd))
+
+
+### Bug Fixes
+
+* **ci:** run target frameworks one at a time ([#243](https://github.com/descope/descope-dotnet/issues/243)) ([ba14bb3](https://github.com/descope/descope-dotnet/commit/ba14bb30f9c4652ed621e5863ad35de5dd966059))
+
 ## [1.8.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.7.1...Descope-v1.8.0) (2026-07-15)
 
 
