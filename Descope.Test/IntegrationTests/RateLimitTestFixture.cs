@@ -8,7 +8,6 @@ namespace Descope.Test.Integration
     /// </summary>
     public abstract class RateLimitedIntegrationTest : IDisposable
     {
-        // Process-local, so CI must run one target framework at a time (see ci.yaml)
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private static DateTime _lastTestEndTime = DateTime.MinValue;
 
