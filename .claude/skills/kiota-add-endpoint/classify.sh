@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Classify a targeted-addition scratch tree against the generated tree.
-# Prints one tagged line per file so the caller never has to read generated C#.
+# Tags each scratch file so the caller never has to read generated C#.
 # Exits 3 if a shared model lost or retyped a property (needs a human decision).
 set -euo pipefail
 
@@ -52,7 +51,6 @@ done < <(cd "$scratch" && find . -name '*.cs' | sed 's|^\./||' | sort)
 
 if [ "$blocked" -ne 0 ]; then
     echo
-    echo "A BLOCKED model lost or retyped a property. Copying it may break other endpoints"
-    echo "that share it; skipping it may break this one. Ask the user before proceeding."
+    echo "BLOCKED: copying may break other endpoints sharing the model, skipping may break this one. Ask first."
     exit 3
 fi
