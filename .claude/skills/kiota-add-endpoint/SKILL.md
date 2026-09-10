@@ -19,6 +19,6 @@ Kiota cannot generate incrementally, so `make generate` rewrites both clients fr
      boilerplate ignore rules (`Backup*/`), so without it they survive and break the build
 5. `make dotnet-build`, then report what you kept.
 
-A shared model under `Models/` can be left stale and still compile, so a green build is not proof the addition is complete. If reverting one breaks the build, the endpoint needs the new version — keep it and say which properties it gained.
+Take from a changed shared model only what your endpoint needs, not the whole regenerated file — most of its drift belongs to other endpoints. A *new* model it references has to come in whole, or the build fails on a missing type. An existing one that merely drifted should be reverted, unless it **is** your endpoint's own request or response type: there the new properties are your endpoint's surface, and reverting them narrows it silently without breaking the build. Say which properties you kept.
 
-Do not run `make post-process-obsolete` by itself; it is not idempotent and re-annotating already-annotated files fails the build. If the new method needs an extension-method wrapper, add its `Obsolete.csv` row and let the next full regeneration apply it.
+`make generate` already applied `Obsolete.csv`, so do not run `make post-process-obsolete` again afterwards — on files that are already annotated it appends a second `[Obsolete]` and the build fails with CS0579. If the new method needs an extension-method wrapper, add its `Obsolete.csv` row and let the next full regeneration apply it.
