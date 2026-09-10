@@ -489,10 +489,3 @@ $RECYCLE.BIN/
 
 # Ignore local example settings file
 Descope.Example.WebApp/localExampleSettings.json
-
-# Ignore Kiota targeted-addition scratch output
-.kiota-scratch/
-
-# Ignore local Claude Code state (skills under .claude/skills/ are tracked)
-.claude/settings.local.json
-.claude/worktrees/

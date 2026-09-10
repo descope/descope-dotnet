@@ -1,4 +1,4 @@
-.PHONY: build generate generate-mgmt generate-auth clean test examples help add-mgmt add-auth
+.PHONY: build generate generate-mgmt generate-auth clean test examples help
 
 # Default target
 .DEFAULT_GOAL := build
@@ -11,46 +11,7 @@ MGMT_KIOTA_LANG := CSharp
 MGMT_KIOTA_CLASS := DescopeMgmtKiotaClient
 MGMT_KIOTA_NAMESPACE := Descope.Mgmt
 MGMT_KIOTA_OUTPUT := ./Descope/Generated/Mgmt
-MGMT_KIOTA_EXCLUDE_PATHS := \
-	/scim/** \
-	/v1/mgmt/user/history \
-	/v1/mgmt/accesskey/import \
-	/v1/mgmt/accesskey/delete/batch \
-	/v1/mgmt/accesskey/activate/batch \
-	/v1/mgmt/accesskey/deactivate/batch \
-	/v1/mgmt/authz/re/deleteresourcesrelations \
-	/v1/mgmt/connector/useraudit/set \
-	/v1/mgmt/inboundapp/** \
-	/v1/mgmt/infra \
-	/v1/mgmt/localization/** \
-	/v1/mgmt/mcp/** \
-	/v1/mgmt/outbound/app/create/bydcrpreset \
-	/v1/mgmt/outbound/app/create/bytemplate \
-	/v1/mgmt/outbound/app/tenant/token \
-	/v1/mgmt/outbound/app/tenant/token/latest \
-	/v1/mgmt/outbound/app/user/token \
-	/v1/mgmt/outbound/app/user/token/latest \
-	/v1/mgmt/outbound/apps-with-user-token \
-	/v1/mgmt/outbound/token \
-	/v1/mgmt/outbound/user/tokens \
-	/v1/mgmt/project/clone/async \
-	/v1/mgmt/project/clone/async/** \
-	/v1/mgmt/project/export \
-	/v1/mgmt/project/import \
-	/v1/mgmt/project/signkey/** \
-	/v1/mgmt/role/delete/batch \
-	/v1/mgmt/tenant/adminlinks/sso/authenticated \
-	/v1/mgmt/tenant/adminlinks/sso/send \
-	/v1/mgmt/tenant/sso-user-remove \
-	/v1/mgmt/thirdparty/app/delete/batch \
-	/v1/mgmt/token/clientassertion \
-	/v1/mgmt/user/customattribute/** \
-	/v1/mgmt/user/customattributes \
-	/v1/mgmt/user/search \
-	/v2/mgmt/sso/settings/all \
-	/v2/mgmt/tenant/adminlinks/sso/generate \
-	/v2/mgmt/theme/** \
-	/v2/mgmt/user/update/role/add
+# Exclude paths are defined in the command itself, to allow supporting multiple excludes
 
 # Auth API OpenAPI spec file location
 AUTH_OPENAPI_SPEC := $(GODESCOPE)/backend/onetimeservice/pkg/onetimeservice/proto/v1/doc/onetime.openapi.yaml
@@ -62,9 +23,6 @@ AUTH_KIOTA_NAMESPACE := Descope.Auth
 AUTH_KIOTA_OUTPUT := ./Descope/Generated/Auth
 AUTH_KIOTA_INCLUDE_PATHS := /v1/auth/**
 AUTH_KIOTA_EXCLUDE_PATHS := /v1/auth/validate # not intended for direct SDK use, instead the SDK validates session JWTs internally with cached keys
-
-# Targeted endpoint addition scratch directory (see README-maintainer.md)
-override KIOTA_SCRATCH := .kiota-scratch
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -92,7 +50,47 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	fi
 	@echo "Management API OpenAPI spec found: $(MGMT_OPENAPI_SPEC)"
 	@echo "Generating Management API Kiota client files..."
-	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) $(foreach p,$(MGMT_KIOTA_EXCLUDE_PATHS),--exclude-path $(p)) --clean-output
+	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) \
+		--exclude-path /scim/** \
+		--exclude-path /v1/mgmt/user/history \
+		--exclude-path /v1/mgmt/accesskey/import \
+		--exclude-path /v1/mgmt/accesskey/delete/batch \
+		--exclude-path /v1/mgmt/accesskey/activate/batch \
+		--exclude-path /v1/mgmt/accesskey/deactivate/batch \
+		--exclude-path /v1/mgmt/authz/re/deleteresourcesrelations \
+		--exclude-path /v1/mgmt/connector/useraudit/set \
+		--exclude-path /v1/mgmt/inboundapp/** \
+		--exclude-path /v1/mgmt/infra \
+		--exclude-path /v1/mgmt/localization/** \
+		--exclude-path /v1/mgmt/mcp/** \
+		--exclude-path /v1/mgmt/outbound/app/create/bydcrpreset \
+		--exclude-path /v1/mgmt/outbound/app/create/bytemplate \
+		--exclude-path /v1/mgmt/outbound/app/tenant/token \
+		--exclude-path /v1/mgmt/outbound/app/tenant/token/latest \
+		--exclude-path /v1/mgmt/outbound/app/user/token \
+		--exclude-path /v1/mgmt/outbound/app/user/token/latest \
+		--exclude-path /v1/mgmt/outbound/apps-with-user-token \
+		--exclude-path /v1/mgmt/outbound/token \
+		--exclude-path /v1/mgmt/outbound/user/tokens \
+		--exclude-path /v1/mgmt/project/clone/async \
+		--exclude-path /v1/mgmt/project/clone/async/** \
+		--exclude-path /v1/mgmt/project/export \
+		--exclude-path /v1/mgmt/project/import \
+		--exclude-path /v1/mgmt/project/signkey/** \
+		--exclude-path /v1/mgmt/role/delete/batch \
+		--exclude-path /v1/mgmt/tenant/adminlinks/sso/authenticated \
+		--exclude-path /v1/mgmt/tenant/adminlinks/sso/send \
+		--exclude-path /v1/mgmt/tenant/sso-user-remove \
+		--exclude-path /v1/mgmt/thirdparty/app/delete/batch \
+		--exclude-path /v1/mgmt/token/clientassertion \
+		--exclude-path /v1/mgmt/user/customattribute/** \
+		--exclude-path /v1/mgmt/user/customattributes \
+		--exclude-path /v1/mgmt/user/search \
+		--exclude-path /v2/mgmt/sso/settings/all \
+		--exclude-path /v2/mgmt/tenant/adminlinks/sso/generate \
+		--exclude-path /v2/mgmt/theme/** \
+		--exclude-path /v2/mgmt/user/update/role/add \
+		--clean-output
 	@echo "Management API Kiota generation complete."
 
 generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
@@ -105,38 +103,6 @@ generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
 	@echo "Generating Auth API Kiota client files..."
 	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT) --include-path $(AUTH_KIOTA_INCLUDE_PATHS) --exclude-path $(AUTH_KIOTA_EXCLUDE_PATHS) --clean-output
 	@echo "Auth API Kiota generation complete."
-
-add-mgmt: API := MGMT
-add-mgmt: EXAMPLE := /v1/mgmt/user/create
-add-mgmt: ## Generate one Management API endpoint into the scratch dir (ENDPOINT=/v1/mgmt/foo)
-add-auth: API := AUTH
-add-auth: EXAMPLE := /v1/auth/otp/signin/email
-add-auth: ## Generate one Auth API endpoint into the scratch dir (ENDPOINT=/v1/auth/foo)
-
-add-mgmt add-auth: SCRATCH = $(KIOTA_SCRATCH)/$(@:add-%=%)
-add-mgmt add-auth: check-kiota
-	@if [ -z "$(ENDPOINT)" ]; then \
-		echo "ERROR: ENDPOINT is required, e.g. make $@ ENDPOINT=$(EXAMPLE)"; \
-		exit 1; \
-	fi
-	@if [ ! -f "$($(API)_OPENAPI_SPEC)" ]; then \
-		echo "ERROR: OpenAPI spec file not found at: $($(API)_OPENAPI_SPEC)"; \
-		exit 1; \
-	fi
-	@for pattern in $($(API)_KIOTA_EXCLUDE_PATHS); do \
-		case "$(ENDPOINT)" in $$pattern) \
-			echo "ERROR: $(ENDPOINT) is excluded from the SDK by $$pattern in $(API)_KIOTA_EXCLUDE_PATHS."; \
-			echo "       Remove that entry first, or the next 'make generate' will delete the addition."; \
-			exit 1;; \
-		esac; \
-	done
-	@echo "Generating $(ENDPOINT) into $(SCRATCH)..."
-	kiota generate -l $($(API)_KIOTA_LANG) -c $($(API)_KIOTA_CLASS) -n $($(API)_KIOTA_NAMESPACE) -d $($(API)_OPENAPI_SPEC) -o $(SCRATCH) --include-path "$(ENDPOINT)" --clean-output
-	@if [ -z "$$(find $(SCRATCH) -mindepth 2 -name '*.cs')" ]; then \
-		echo "ERROR: ENDPOINT $(ENDPOINT) matched no path in the OpenAPI spec"; \
-		exit 1; \
-	fi
-	@echo "Scratch generation complete. Merge with the kiota-add-endpoint skill, or by hand."
 
 dotnet-build: ## Build the C# project
 	@echo "Building C# project..."
@@ -220,5 +186,4 @@ post-process-obsolete: ## Apply post-processing obsolete annotations to Kiota ge
 clean: ## Clean build artifacts
 	@echo "Cleaning build artifacts..."
 	cd Descope && dotnet clean
-	@rm -rf $(KIOTA_SCRATCH)
 	@echo "Clean complete."

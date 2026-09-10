@@ -47,8 +47,6 @@ The project uses a Makefile to automate common tasks. Here are the available tar
 
 - **`make generate-mgmt`**: Regenerates Management API Kiota client files only
 - **`make generate-auth`**: Regenerates Auth API Kiota client files only
-- **`make add-mgmt ENDPOINT=/v1/mgmt/foo`**: Generates a single Management API endpoint into the scratch directory for merging
-- **`make add-auth ENDPOINT=/v1/auth/foo`**: Generates a single Auth API endpoint into the scratch directory for merging
 - **`make check-kiota`**: Checks if Kiota is installed, installs if missing
 
 ### Utility Targets
@@ -62,6 +60,8 @@ The project uses a Makefile to automate common tasks. Here are the available tar
 
 The SDK uses [Microsoft Kiota](https://learn.microsoft.com/en-us/openapi/kiota/overview) to auto-generate API client code from OpenAPI specifications.
 
+To add a single endpoint without also shipping unrelated spec drift, use the `kiota-add-endpoint` Claude Code skill in `.claude/skills/kiota-add-endpoint/`.
+
 ### Generated Code Structure
 
 Generated code is placed in:
@@ -71,30 +71,6 @@ Generated code is placed in:
 ### Excluded Endpoints
 
 Not all endpoints from the OpenAPI specs are included in the SDK. Endpoints are excluded in the Makefile using the `--exclude-path` option for Kiota.
-
-### Targeted Endpoint Additions
-
-Kiota has no incremental mode, and `make generate` passes `--clean-output`. A full regeneration therefore imports every unrelated spec change accumulated since the last one, which makes a one-endpoint diff unreviewable. To add a single endpoint instead:
-
-```bash
-make add-mgmt ENDPOINT=/v1/mgmt/accesskey/rotate
-```
-
-This generates only that endpoint into `.kiota-scratch/mgmt/` and leaves `Descope/Generated/` untouched. `--include-path` prunes at the spec level, so no other endpoint is generated — but the scratch tree still contains the endpoint's full parent chain with every sibling pruned out, which is why it cannot simply be copied over.
-
-The target refuses two requests: a path that matches nothing in the spec, and a path on the exclude list above. The second matters — the exclude list is the project's statement about what belongs in the SDK, and merging an excluded endpoint would be silently undone by the next `make generate`.
-
-Merging is then driven by the `kiota-add-endpoint` Claude Code skill, which runs `.claude/skills/kiota-add-endpoint/classify.sh <mgmt|auth>`. That script is the authoritative description of the merge and is worth reading if you are doing this by hand: it tags every file `NEW` (copy), `SAME` (skip), `PRUNED` (differs only by pruned siblings, leave alone), `MERGE` (the one chain file needing the new navigation property), `ADDITIVE` (shared model gained properties, safe to copy) or `BLOCKED` (shared model lost or retyped a property), exiting non-zero on the last.
-
-**Important:** A stale model does **not** fail the build. A targeted add compiles cleanly with a shared request model missing properties the spec defines, so the endpoint ships unable to express half its request. A green build does not mean the addition is complete — the model reconciliation is the only safety net.
-
-**Important:** Do **not** run `make post-process-obsolete` after a targeted addition. It is not idempotent, and re-running it over already-annotated files emits duplicate `[Obsolete]` attributes, which fails the build with CS0579. Add the `Obsolete.csv` row so the next full regeneration applies it, and hand-write the attribute if you need it now.
-
-The navigation-property merge is transitional **provided the endpoint is not on the exclude list**: the next full `make generate` regenerates the chain file from a spec that by then contains the endpoint, reproducing the same property.
-
-If an endpoint introduces a brand-new top-level segment (for example a `/v3/...` prefix), its parent chain does not exist yet — several chain files need merges and `Descope/Sdk/DescopeClient.cs` needs a new version property. Use a full `make generate` for that case.
-
-The underlying cause this works around is that the OpenAPI specs are read live from `$GODESCOPE` at whatever revision happens to be checked out, rather than pinned. Pinning the specs would let a full regeneration produce a one-endpoint diff on its own and make this whole mechanism unnecessary.
 
 ### Post-Processing
 
