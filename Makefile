@@ -1,4 +1,4 @@
-.PHONY: build generate generate-mgmt generate-auth clean test examples help
+.PHONY: build generate generate-mgmt generate-auth clean test examples help add-mgmt add-auth
 
 # Default target
 .DEFAULT_GOAL := build
@@ -23,6 +23,9 @@ AUTH_KIOTA_NAMESPACE := Descope.Auth
 AUTH_KIOTA_OUTPUT := ./Descope/Generated/Auth
 AUTH_KIOTA_INCLUDE_PATHS := /v1/auth/**
 AUTH_KIOTA_EXCLUDE_PATHS := /v1/auth/validate # not intended for direct SDK use, instead the SDK validates session JWTs internally with cached keys
+
+# Targeted endpoint addition scratch directory (see README-maintainer.md)
+KIOTA_SCRATCH := .kiota-scratch
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -103,6 +106,40 @@ generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
 	@echo "Generating Auth API Kiota client files..."
 	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT) --include-path $(AUTH_KIOTA_INCLUDE_PATHS) --exclude-path $(AUTH_KIOTA_EXCLUDE_PATHS) --clean-output
 	@echo "Auth API Kiota generation complete."
+
+add-mgmt: check-kiota ## Generate one Management API endpoint into the scratch dir (ENDPOINT=/v1/mgmt/foo)
+	@if [ -z "$(ENDPOINT)" ]; then \
+		echo "ERROR: ENDPOINT is required, e.g. make add-mgmt ENDPOINT=/v1/mgmt/foo"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(MGMT_OPENAPI_SPEC)" ]; then \
+		echo "ERROR: Management API OpenAPI spec file not found at: $(MGMT_OPENAPI_SPEC)"; \
+		exit 1; \
+	fi
+	@echo "Generating $(ENDPOINT) into $(KIOTA_SCRATCH)/mgmt..."
+	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(KIOTA_SCRATCH)/mgmt --include-path "$(ENDPOINT)" --clean-output
+	@if [ "$$(find $(KIOTA_SCRATCH)/mgmt -name '*.cs' | wc -l)" -le 1 ]; then \
+		echo "ERROR: ENDPOINT $(ENDPOINT) matched no path in the OpenAPI spec"; \
+		exit 1; \
+	fi
+	@echo "Scratch generation complete. Merge with the kiota-add-endpoint skill, or by hand."
+
+add-auth: check-kiota ## Generate one Auth API endpoint into the scratch dir (ENDPOINT=/v1/auth/foo)
+	@if [ -z "$(ENDPOINT)" ]; then \
+		echo "ERROR: ENDPOINT is required, e.g. make add-auth ENDPOINT=/v1/auth/foo"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(AUTH_OPENAPI_SPEC)" ]; then \
+		echo "ERROR: Auth API OpenAPI spec file not found at: $(AUTH_OPENAPI_SPEC)"; \
+		exit 1; \
+	fi
+	@echo "Generating $(ENDPOINT) into $(KIOTA_SCRATCH)/auth..."
+	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(KIOTA_SCRATCH)/auth --include-path "$(ENDPOINT)" --clean-output
+	@if [ "$$(find $(KIOTA_SCRATCH)/auth -name '*.cs' | wc -l)" -le 1 ]; then \
+		echo "ERROR: ENDPOINT $(ENDPOINT) matched no path in the OpenAPI spec"; \
+		exit 1; \
+	fi
+	@echo "Scratch generation complete. Merge with the kiota-add-endpoint skill, or by hand."
 
 dotnet-build: ## Build the C# project
 	@echo "Building C# project..."
@@ -186,4 +223,5 @@ post-process-obsolete: ## Apply post-processing obsolete annotations to Kiota ge
 clean: ## Clean build artifacts
 	@echo "Cleaning build artifacts..."
 	cd Descope && dotnet clean
+	@rm -rf $(KIOTA_SCRATCH)
 	@echo "Clean complete."

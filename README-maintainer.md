@@ -47,6 +47,8 @@ The project uses a Makefile to automate common tasks. Here are the available tar
 
 - **`make generate-mgmt`**: Regenerates Management API Kiota client files only
 - **`make generate-auth`**: Regenerates Auth API Kiota client files only
+- **`make add-mgmt ENDPOINT=/v1/mgmt/foo`**: Generates a single Management API endpoint into the scratch directory for merging
+- **`make add-auth ENDPOINT=/v1/auth/foo`**: Generates a single Auth API endpoint into the scratch directory for merging
 - **`make check-kiota`**: Checks if Kiota is installed, installs if missing
 
 ### Utility Targets
@@ -69,6 +71,37 @@ Generated code is placed in:
 ### Excluded Endpoints
 
 Not all endpoints from the OpenAPI specs are included in the SDK. Endpoints are excluded in the Makefile using the `--exclude-path` option for Kiota.
+
+### Targeted Endpoint Additions
+
+Kiota has no incremental mode, and `make generate` passes `--clean-output`. A full regeneration therefore imports every unrelated spec change accumulated since the last one, which makes a one-endpoint diff unreviewable. To add a single endpoint instead:
+
+```bash
+make add-mgmt ENDPOINT=/v1/mgmt/user/search
+```
+
+This generates only that endpoint into `.kiota-scratch/mgmt/` and leaves `Descope/Generated/` untouched. `--include-path` prunes at the spec level, so no other endpoint is generated — but the scratch tree still contains the endpoint's full parent chain with every sibling pruned out, which is why the tree cannot simply be copied over.
+
+If `ENDPOINT` matches no path in the spec, the target fails rather than emitting an empty client.
+
+The merge is then driven by the `kiota-add-endpoint` Claude Code skill (`.claude/skills/kiota-add-endpoint/`), which classifies each scratch file against the real tree:
+
+- **Absent** from the real tree: copy it (new leaf request builders, new models)
+- **Byte-identical**: skip
+- **Different, and a chain `*RequestBuilder.cs`**: merge the one `using` and the 4-line navigation property into the deepest already-existing ancestor, in alphabetical position. Chain files above it differ only because siblings were pruned — leave them alone
+- **Different, and under `Models/`**: reconcile, see below
+
+Maintainers not using Claude Code can run the `make` target and perform the same classification by hand.
+
+**Important:** A differing file under `Models/` means a shared model's spec shape changed. If the change is purely additive (properties added, none removed or retyped), copy the new version — existing callers keep compiling and gain optional properties. If anything was removed or retyped, decide deliberately, since copying can break other endpoints that share the model.
+
+**Important:** A stale additive model does **not** fail the build. Adding `/v1/mgmt/user/search` while leaving `SearchUsersRequest` at its old revision compiles with zero errors even though the model is missing 13 properties the spec defines. Reconciling models is the only safety net; a green build does not mean the addition is complete.
+
+**Important:** Do **not** run `make post-process-obsolete` after a targeted addition — it is not idempotent (see [Post-Processing](#post-processing) below). Add any `[Obsolete]` attribute by hand and still add the `Obsolete.csv` row so the next full regeneration reproduces it.
+
+The navigation-property merge is transitional: the next full `make generate` regenerates the chain file from a spec that by then contains the endpoint, reproducing the same property.
+
+If an endpoint introduces a brand-new top-level segment (for example a `/v3/...` prefix), its parent chain does not exist yet — several chain files need merges and `Descope/Sdk/DescopeClient.cs` needs a new version property. Use a full `make generate` for that case.
 
 ### Post-Processing
 
