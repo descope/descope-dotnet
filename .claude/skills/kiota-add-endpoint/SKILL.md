@@ -9,5 +9,5 @@ Follow the "Adding a Single Endpoint" section of `README-maintainer.md` exactly.
 
 Two points specific to doing this as an agent:
 
-- Do not work around step 1. An endpoint on the exclude list is a deliberate decision — stop and ask rather than removing the entry yourself.
+- Do not work around step 1. An endpoint on the exclude list is a deliberate decision. Stop and ask rather than removing the entry yourself.
 - Finish by reporting which files you kept and which shared-model properties you took, so the diff can be reviewed without re-running the generation.

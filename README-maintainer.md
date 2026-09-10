@@ -52,6 +52,7 @@ The project uses a Makefile to automate common tasks. Here are the available tar
 ### Utility Targets
 
 - **`make cover`**: Runs tests with coverage report (requires ReportGenerator)
+- **`make dotnet-build`**: Builds the C# project without regenerating Kiota files
 - **`make clean`**: Cleans build artifacts
 - **`make post-process-obsolete`**: Applies `[Obsolete]` annotations from `Obsolete.csv` (called during `make generate`)
 - **`make help`**: Shows all available targets with descriptions
@@ -76,19 +77,27 @@ After Kiota generation, the `post-process-obsolete` target applies `[Obsolete]` 
 
 ### Adding a Single Endpoint
 
-Kiota has no incremental mode, so `make generate` rewrites both clients from the live specs and its diff carries every spec change since anyone last ran it — currently 403 new and 146 modified files. To end up with a diff containing only the endpoint you wanted, regenerate everything and then throw the rest away with git.
+Kiota cannot generate one endpoint on its own. `make generate` rewrites both clients from the current specs, so its diff includes every spec change since the last time anyone ran it, which is usually several hundred files. To get a diff containing only the endpoint you want, regenerate everything and then discard the rest with git.
 
-1. Check the endpoint is not on the exclude list (see [Excluded Endpoints](#excluded-endpoints) above). If it is, the omission is deliberate and any regeneration will drop the endpoint again.
-2. `make generate`
-3. `git status --porcelain Descope/Generated` to see everything it touched.
-4. Keep only what the endpoint needs:
-   - the new directory holding its own `*RequestBuilder.cs`
-   - the one navigation property, and its `using`, added to the immediate parent `*RequestBuilder.cs`. If that file has other changes, `git restore` it and re-add just those two pieces, in the file's existing alphabetical order
-   - any new file under `Models/` that it references — these have to come in whole, or the build fails on a missing type
-5. Revert everything else: `git add` the paths you are keeping, then `git restore --worktree -- Descope/Generated` followed by `git clean -fdx Descope/Generated`. The `-x` is required, because a few generated directories match boilerplate ignore rules (`Backup*/`) and would otherwise survive while the models they reference are removed, failing the build with CS0234.
-6. `make dotnet-build`.
+1. Confirm the endpoint is not excluded (see [Excluded Endpoints](#excluded-endpoints) above). Exclusions are deliberate, and a regeneration will drop the endpoint again, so removing one is a separate decision.
+2. Run `make generate`, then `git status --porcelain Descope/Generated` to see what it touched.
+3. Keep only what the endpoint needs:
+   - the new directory containing its own `*RequestBuilder.cs`
+   - the navigation property and its `using`, added to the parent `*RequestBuilder.cs`. If that file has other changes, restore it and re-add just those two lines, in the existing alphabetical order
+   - any new file under `Models/` that it references. These are needed in full, otherwise the build fails on a missing type
+4. Discard everything else:
 
-Take from a *changed* shared model only what your endpoint needs, not the whole regenerated file — most of its drift belongs to other endpoints. Revert one that merely drifted, unless it is your endpoint's own request or response type: there the new properties are the endpoint's surface, and reverting them narrows the endpoint silently without breaking the build.
+   ```bash
+   git add <paths you are keeping>
+   git restore --worktree -- Descope/Generated
+   git clean -fdx Descope/Generated
+   ```
+
+5. Run `make dotnet-build` to confirm the result compiles.
+
+**Important:** `git clean` needs the `-x` flag here. A few generated directories match ignore rules inherited from the Visual Studio template, such as `Backup*/`. Without `-x` they survive after the models they reference are removed, and the build fails with `CS0234`.
+
+**Important:** From a shared model under `Models/` that already existed, take only what your endpoint needs. Most of its changes belong to other endpoints. The exception is a model that is the endpoint's own request or response type, where the added properties are part of the endpoint itself. Dropping those still compiles, so the build will not catch it.
 
 ## Extension Methods
 
