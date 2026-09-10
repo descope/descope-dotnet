@@ -60,8 +60,6 @@ The project uses a Makefile to automate common tasks. Here are the available tar
 
 The SDK uses [Microsoft Kiota](https://learn.microsoft.com/en-us/openapi/kiota/overview) to auto-generate API client code from OpenAPI specifications.
 
-To add a single endpoint without also shipping unrelated spec drift, use the `kiota-add-endpoint` Claude Code skill in `.claude/skills/kiota-add-endpoint/`.
-
 ### Generated Code Structure
 
 Generated code is placed in:
@@ -75,6 +73,22 @@ Not all endpoints from the OpenAPI specs are included in the SDK. Endpoints are 
 ### Post-Processing
 
 After Kiota generation, the `post-process-obsolete` target applies `[Obsolete]` attributes to methods that have better alternatives (see [Extension Methods](#extension-methods) below).
+
+### Adding a Single Endpoint
+
+Kiota has no incremental mode, so `make generate` rewrites both clients from the live specs and its diff carries every spec change since anyone last ran it — currently 403 new and 146 modified files. To end up with a diff containing only the endpoint you wanted, regenerate everything and then throw the rest away with git.
+
+1. Check the endpoint is not on the exclude list (see [Excluded Endpoints](#excluded-endpoints) above). If it is, the omission is deliberate and any regeneration will drop the endpoint again.
+2. `make generate`
+3. `git status --porcelain Descope/Generated` to see everything it touched.
+4. Keep only what the endpoint needs:
+   - the new directory holding its own `*RequestBuilder.cs`
+   - the one navigation property, and its `using`, added to the immediate parent `*RequestBuilder.cs`. If that file has other changes, `git restore` it and re-add just those two pieces, in the file's existing alphabetical order
+   - any new file under `Models/` that it references — these have to come in whole, or the build fails on a missing type
+5. Revert everything else: `git add` the paths you are keeping, then `git restore --worktree -- Descope/Generated` followed by `git clean -fdx Descope/Generated`. The `-x` is required, because a few generated directories match boilerplate ignore rules (`Backup*/`) and would otherwise survive while the models they reference are removed, failing the build with CS0234.
+6. `make dotnet-build`.
+
+Take from a *changed* shared model only what your endpoint needs, not the whole regenerated file — most of its drift belongs to other endpoints. Revert one that merely drifted, unless it is your endpoint's own request or response type: there the new properties are the endpoint's surface, and reverting them narrows the endpoint silently without breaking the build.
 
 ## Extension Methods
 
