@@ -12,6 +12,7 @@ Descope/Generated/Auth/V1/Auth/Magiclink/Update/Email/EmailRequestBuilder.cs,Pos
 Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Whatsapp/WhatsappRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Enchantedlink/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Enchantedlink/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Voice/VoiceRequestBuilder.cs,PostAsync,PostWithJwtAsync
