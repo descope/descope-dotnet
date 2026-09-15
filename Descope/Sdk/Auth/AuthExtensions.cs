@@ -173,6 +173,32 @@ public static class AuthExtensions
             cancellationToken);
     }
 
+    /// <summary>
+    /// Updates user phone using enchanted link SMS with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The SMS request builder.</param>
+    /// <param name="request">The update phone request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The phone enchanted link response.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    public static async Task<PhoneEnchantedLinkResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Enchantedlink.Update.Phone.Sms.SmsRequestBuilder requestBuilder,
+        UpdateUserPhoneEnchantedLinkRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for updating user phone");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
     #endregion
 
     #region OTP Update Extensions

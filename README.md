@@ -68,6 +68,44 @@ var response = await client.Auth.V1.Magiclink.Verify.PostAsync(
     new VerifyMagicLinkRequest { Token = "magic-link-token" });
 ```
 
+### Enchanted Link
+
+Enchanted link is available over email and over SMS. The channel is part of the route, and each
+channel has its own response type: the email routes return `EnchantedLinkResponse` with
+`MaskedEmail`, the SMS routes return `PhoneEnchantedLinkResponse` with `MaskedPhone`. The `LoginId`
+of an SMS route is a phone number, and only the correct link is sent in the text message, so unlike
+the email message there is nothing for the user to choose.
+
+```csharp
+// Sign in over SMS
+var signIn = await client.Auth.V1.Enchantedlink.Signin.Sms.PostAsync(
+    new EnchantedLinkSignInRequest
+    {
+        LoginId = "+11234567890",
+        RedirectUrl = "https://myapp.com/verify"
+    });
+
+// Poll for the session once the user has clicked the link
+var session = await client.Auth.V1.Enchantedlink.PendingSession.PostAsync(
+    new GetEnchantedLinkSessionRequest { PendingRef = signIn!.PendingRef });
+```
+
+`Signup.Sms` and `SignupIn.Sms` follow the same shape, taking
+`EnchantedLinkSignUpPhoneRequest` and `EnchantedLinkSignInRequest` respectively.
+
+Updating a user's phone number requires a refresh JWT, so it goes through `PostWithJwtAsync`:
+
+```csharp
+var response = await client.Auth.V1.Enchantedlink.Update.Phone.Sms.PostWithJwtAsync(
+    new UpdateUserPhoneEnchantedLinkRequest
+    {
+        LoginId = "user@example.com",
+        Phone = "+11234567890",
+        RedirectUrl = "https://myapp.com/verify"
+    },
+    refreshJwt);
+```
+
 ### Management API V1 Call
 
 ```csharp
