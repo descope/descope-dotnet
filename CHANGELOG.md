@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.9.0...Descope-v1.10.0) (2026-09-15)
+
+
+### Features
+
+* **auth:** support Enchanted Link over SMS ([#245](https://github.com/descope/descope-dotnet/issues/245)) ([4c872b3](https://github.com/descope/descope-dotnet/commit/4c872b3a1463395180c32b5a163a3b04f95811d8))
+
+
+### Documentation
+
+* **build:** document adding a single Kiota endpoint ([#246](https://github.com/descope/descope-dotnet/issues/246)) ([e86eb7a](https://github.com/descope/descope-dotnet/commit/e86eb7a000df774d107821830dbb1f7667a15270))
+
 ## [1.9.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.8.0...Descope-v1.9.0) (2026-08-29)
 
 
