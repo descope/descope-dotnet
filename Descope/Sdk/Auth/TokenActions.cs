@@ -110,4 +110,10 @@ internal class TokenActions : ITokenActions
         return await _jwtValidator.ValidateToken(response.SessionJwt);
 
     }
+
+    /// <inheritdoc/>
+    public void ValidateDPoP(string sessionToken, string dpopProof, string method, string requestUrl)
+    {
+        DPoPValidator.ValidateDPoPProof(dpopProof, method, requestUrl, sessionToken);
+    }
 }
