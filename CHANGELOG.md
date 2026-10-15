@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.10.0...Descope-v1.10.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **auth:** add PostWithJwtAsync for RecoveryCodes ([#248](https://github.com/descope/descope-dotnet/issues/248)) ([40a5bad](https://github.com/descope/descope-dotnet/commit/40a5bad78db608e163c10372f0dfed847317c749))
+
 ## [1.10.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.9.0...Descope-v1.10.0) (2026-09-15)
 
 
