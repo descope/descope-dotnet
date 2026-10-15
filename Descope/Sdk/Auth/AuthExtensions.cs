@@ -370,6 +370,44 @@ public static class AuthExtensions
 
     #endregion
 
+    #region Recovery Codes Extensions
+
+    /// <summary>
+    /// Generates new recovery codes for the user with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The RecoveryCodes request builder.</param>
+    /// <param name="request">The generate recovery codes request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The response containing the generated recovery codes.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var response = await client.Auth.V1.RecoveryCodes.PostWithJwtAsync(
+    ///     new GenerateUserRecoveryCodesRequest(),
+    ///     refreshToken
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task<GenerateUserRecoveryCodesResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.RecoveryCodes.RecoveryCodesRequestBuilder requestBuilder,
+        GenerateUserRecoveryCodesRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for generating recovery codes");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
     #region WebAuthn Update Extensions
 
     /// <summary>
