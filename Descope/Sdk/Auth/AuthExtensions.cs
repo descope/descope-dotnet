@@ -370,6 +370,144 @@ public static class AuthExtensions
 
     #endregion
 
+    #region Recovery Codes Extensions
+
+    /// <summary>
+    /// Generates new recovery codes for the user with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The RecoveryCodes request builder.</param>
+    /// <param name="request">The generate recovery codes request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The response containing the generated recovery codes.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var response = await client.Auth.V1.RecoveryCodes.PostWithJwtAsync(
+    ///     new GenerateUserRecoveryCodesRequest(),
+    ///     refreshToken
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task<GenerateUserRecoveryCodesResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.RecoveryCodes.RecoveryCodesRequestBuilder requestBuilder,
+        GenerateUserRecoveryCodesRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for generating recovery codes");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
+    #region Security Questions Extensions
+
+    /// <summary>
+    /// Sets up security questions for the user with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Setup request builder.</param>
+    /// <param name="request">The setup security questions request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The setup security questions response.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var response = await client.Auth.V1.SecurityQuestions.Setup.PostWithJwtAsync(
+    ///     new SetupUserSecurityQuestionsRequest { ... },
+    ///     refreshToken
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task<SetupUserSecurityQuestionsResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.SecurityQuestions.Setup.SetupRequestBuilder requestBuilder,
+        SetupUserSecurityQuestionsRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for setting up security questions");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the security questions the user must answer with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Verify request builder.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The response containing the questions to verify.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var questions = await client.Auth.V1.SecurityQuestions.Verify.GetWithJwtAsync(refreshToken);
+    /// </code>
+    /// </example>
+    public static async Task<GetUserSecurityVerifyQuestionsResponse?> GetWithJwtAsync(
+        this Descope.Auth.V1.Auth.SecurityQuestions.Verify.VerifyRequestBuilder requestBuilder,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for getting security questions");
+        }
+
+        return await requestBuilder.GetAsync(
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies the user's security question answers with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Verify request builder.</param>
+    /// <param name="request">The verify security questions request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The JWT response.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var response = await client.Auth.V1.SecurityQuestions.Verify.PostWithJwtAsync(
+    ///     new VerifyUserSecurityQuestionsRequest { ... },
+    ///     refreshToken
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task<JWTResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.SecurityQuestions.Verify.VerifyRequestBuilder requestBuilder,
+        VerifyUserSecurityQuestionsRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for verifying security questions");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    #endregion
+
     #region WebAuthn Update Extensions
 
     /// <summary>
@@ -482,6 +620,37 @@ public static class AuthExtensions
         }
 
         return await requestBuilder.GetAsync(
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the tenants of the user for the current refresh token with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The Tenants request builder.</param>
+    /// <param name="request">The me tenants request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The user's tenants.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    /// <example>
+    /// <code>
+    /// var tenants = await client.Auth.V1.Me.Tenants.PostWithJwtAsync(new MeTenantsRequest(), refreshToken);
+    /// </code>
+    /// </example>
+    public static async Task<MeTenantsResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Me.Tenants.TenantsRequestBuilder requestBuilder,
+        MeTenantsRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for getting user tenants");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
             WithJwt(refreshJwt),
             cancellationToken);
     }
