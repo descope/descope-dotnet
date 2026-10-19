@@ -34,7 +34,7 @@ namespace Descope.Mgmt.V1.Mgmt.List.Text.Check
         {
         }
         /// <summary>
-        /// Check if a specific text exists in a list
+        /// Check if a text exists in a list. Send `texts` to check several texts in one request: `exists` is true if any of them is in the list, or only if all of them are when `matchAll` is true.
         /// </summary>
         /// <returns>A <see cref="global::Descope.Mgmt.Models.Managementv1.CheckTextInListResponse"/></returns>
         /// <param name="body">The request body</param>
@@ -54,7 +54,7 @@ namespace Descope.Mgmt.V1.Mgmt.List.Text.Check
             return await RequestAdapter.SendAsync<global::Descope.Mgmt.Models.Managementv1.CheckTextInListResponse>(requestInfo, global::Descope.Mgmt.Models.Managementv1.CheckTextInListResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Check if a specific text exists in a list
+        /// Check if a text exists in a list. Send `texts` to check several texts in one request: `exists` is true if any of them is in the list, or only if all of them are when `matchAll` is true.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>

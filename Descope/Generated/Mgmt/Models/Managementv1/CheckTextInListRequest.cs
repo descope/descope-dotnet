@@ -22,6 +22,8 @@ namespace Descope.Mgmt.Models.Managementv1
 #else
         public string Id { get; set; }
 #endif
+        /// <summary>When true, exists is true only if every text is in the list, otherwise if any is</summary>
+        public bool? MatchAll { get; set; }
         /// <summary>The text property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -29,6 +31,14 @@ namespace Descope.Mgmt.Models.Managementv1
 #nullable restore
 #else
         public string Text { get; set; }
+#endif
+        /// <summary>The texts property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? Texts { get; set; }
+#nullable restore
+#else
+        public List<string> Texts { get; set; }
 #endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Mgmt.Models.Managementv1.CheckTextInListRequest"/> and sets the default values.
@@ -56,7 +66,9 @@ namespace Descope.Mgmt.Models.Managementv1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "id", n => { Id = n.GetStringValue(); } },
+                { "matchAll", n => { MatchAll = n.GetBoolValue(); } },
                 { "text", n => { Text = n.GetStringValue(); } },
+                { "texts", n => { Texts = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
             };
         }
         /// <summary>
@@ -67,7 +79,9 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("id", Id);
+            writer.WriteBoolValue("matchAll", MatchAll);
             writer.WriteStringValue("text", Text);
+            writer.WriteCollectionOfPrimitiveValues<string>("texts", Texts);
             writer.WriteAdditionalData(AdditionalData);
         }
     }
