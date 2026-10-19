@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.10.1...Descope-v1.11.0) (2026-10-19)
+
+
+### Features
+
+* **mgmt:** support checking multiple texts in a list ([#250](https://github.com/descope/descope-dotnet/issues/250)) ([90ef362](https://github.com/descope/descope-dotnet/commit/90ef362e9e609b15f1f220c9cfb9a6390f401778))
+
 ## [1.10.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.10.0...Descope-v1.10.1) (2026-10-15)
 
 
