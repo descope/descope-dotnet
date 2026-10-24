@@ -52,7 +52,7 @@ jobs:
           name: dotnet-results
           path: TestResults
       - name: Post test results to GitHub
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        uses: dorny/test-reporter@4437347701811d642a08d10f45b095d422d6956c # v3.1.0
         if: always()
         with:
           name: .NET Tests
