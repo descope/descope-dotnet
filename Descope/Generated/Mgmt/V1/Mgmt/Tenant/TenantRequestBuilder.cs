@@ -5,6 +5,7 @@ using Descope.Mgmt.V1.Mgmt.Tenant.Adminlinks;
 using Descope.Mgmt.V1.Mgmt.Tenant.All;
 using Descope.Mgmt.V1.Mgmt.Tenant.Create;
 using Descope.Mgmt.V1.Mgmt.Tenant.Delete;
+using Descope.Mgmt.V1.Mgmt.Tenant.Patch;
 using Descope.Mgmt.V1.Mgmt.Tenant.Search;
 using Descope.Mgmt.V1.Mgmt.Tenant.Settings;
 using Descope.Mgmt.V1.Mgmt.Tenant.Update;
@@ -44,6 +45,11 @@ namespace Descope.Mgmt.V1.Mgmt.Tenant
         public global::Descope.Mgmt.V1.Mgmt.Tenant.Delete.DeleteRequestBuilder DeletePath
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Tenant.Delete.DeleteRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The patchPath property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.Tenant.Patch.PatchRequestBuilder PatchPath
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.Tenant.Patch.PatchRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The search property</summary>
         public global::Descope.Mgmt.V1.Mgmt.Tenant.Search.SearchRequestBuilder Search

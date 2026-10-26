@@ -287,6 +287,188 @@ public static class MgmtExtensions
     }
 
     /// <summary>
+    /// Patches a tenant by ID. Only the fields that are set in the request are updated,
+    /// any other field keeps its current value.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant patch request builder</param>
+    /// <param name="id">The ID of the tenant to patch</param>
+    /// <param name="request">The fields to update, the request's ID is set to <paramref name="id"/></param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Stream containing the response</returns>
+    /// <example>
+    /// <code>
+    /// await client.Mgmt.V1.Tenant.PatchPath.PatchWithIdAsync("tenant-id", new PatchTenantRequest
+    /// {
+    ///     Name = "New Name",
+    ///     SelfProvisioningDomains = new UntypedArray(new List&lt;UntypedNode&gt; { new UntypedString("example.com") }),
+    /// });
+    /// </code>
+    /// </example>
+    public static async Task<Stream?> PatchWithIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.Patch.PatchRequestBuilder requestBuilder,
+        string id,
+        PatchTenantRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new DescopeException("ID is required for patching a tenant");
+        }
+        if (request == null)
+        {
+            throw new DescopeException("Request is required for patching a tenant");
+        }
+        if (request.Name != null && request.Name.Length == 0)
+        {
+            throw new DescopeException("Name cannot be empty when patching a tenant");
+        }
+        ValidateTenantListItems(UntypedStrings(request.SelfProvisioningDomains), "Self provisioning domains", "patching a tenant");
+        ValidateTenantListItems(UntypedStrings(request.EnforceSSOExclusions), "Enforce SSO exclusions", "patching a tenant");
+        ValidateTenantListItems(UntypedStrings(request.FederatedAppIds), "Federated app IDs", "patching a tenant");
+
+        request.Id = id;
+        return await requestBuilder.PatchAsync(request, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates multiple tenants in a single batch. Each tenant is created independently,
+    /// per-tenant failures are returned in the response.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant create batch request builder</param>
+    /// <param name="tenants">The tenants to create, each must have a name</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>CreateTenantsBatchResponse with the created tenants and the failures</returns>
+    /// <example>
+    /// <code>
+    /// var response = await client.Mgmt.V1.Tenant.Create.Batch.PostWithTenantsAsync(new List&lt;CreateTenantRequest&gt;
+    /// {
+    ///     new CreateTenantRequest { Name = "Tenant 1" },
+    ///     new CreateTenantRequest { Id = "tenant-2", Name = "Tenant 2" },
+    /// });
+    /// </code>
+    /// </example>
+    public static async Task<CreateTenantsBatchResponse?> PostWithTenantsAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.Create.Batch.BatchRequestBuilder requestBuilder,
+        List<CreateTenantRequest> tenants,
+        CancellationToken cancellationToken = default)
+    {
+        const string operation = "creating tenants";
+        if (tenants == null || tenants.Count == 0)
+        {
+            throw new DescopeException("At least one tenant is required for creating tenants");
+        }
+        foreach (var tenant in tenants)
+        {
+            if (tenant == null)
+            {
+                throw new DescopeException("Tenants cannot contain null items when creating tenants");
+            }
+            if (string.IsNullOrEmpty(tenant.Name))
+            {
+                throw new DescopeException("Name is required for each tenant when creating tenants");
+            }
+            ValidateTenantListItems(tenant.SelfProvisioningDomains, "Self provisioning domains", operation);
+            ValidateTenantListItems(tenant.EnforceSSOExclusions, "Enforce SSO exclusions", operation);
+            ValidateTenantListItems(tenant.FederatedAppIds, "Federated app IDs", operation);
+        }
+
+        return await requestBuilder.PostAsync(new CreateTenantsBatchRequest { Tenants = tenants }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates multiple tenants in a single batch. Each tenant is updated independently,
+    /// per-tenant failures are returned in the response.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant update batch request builder</param>
+    /// <param name="tenants">The tenants to update, each must have an ID and a name</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>UpdateTenantsBatchResponse with the updated tenant IDs and the failures</returns>
+    /// <example>
+    /// <code>
+    /// var response = await client.Mgmt.V1.Tenant.Update.Batch.PostWithTenantsAsync(new List&lt;UpdateTenantRequest&gt;
+    /// {
+    ///     new UpdateTenantRequest { Id = "tenant-1", Name = "Tenant 1" },
+    /// });
+    /// </code>
+    /// </example>
+    public static async Task<UpdateTenantsBatchResponse?> PostWithTenantsAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.Update.Batch.BatchRequestBuilder requestBuilder,
+        List<UpdateTenantRequest> tenants,
+        CancellationToken cancellationToken = default)
+    {
+        const string operation = "updating tenants";
+        if (tenants == null || tenants.Count == 0)
+        {
+            throw new DescopeException("At least one tenant is required for updating tenants");
+        }
+        foreach (var tenant in tenants)
+        {
+            if (tenant == null)
+            {
+                throw new DescopeException("Tenants cannot contain null items when updating tenants");
+            }
+            if (string.IsNullOrEmpty(tenant.Id))
+            {
+                throw new DescopeException("ID is required for each tenant when updating tenants");
+            }
+            if (string.IsNullOrEmpty(tenant.Name))
+            {
+                throw new DescopeException("Name is required for each tenant when updating tenants");
+            }
+            ValidateTenantListItems(tenant.SelfProvisioningDomains, "Self provisioning domains", operation);
+            ValidateTenantListItems(tenant.EnforceSSOExclusions, "Enforce SSO exclusions", operation);
+            ValidateTenantListItems(tenant.FederatedAppIds, "Federated app IDs", operation);
+        }
+
+        return await requestBuilder.PostAsync(new UpdateTenantsBatchRequest { Tenants = tenants }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes multiple tenants in a single batch. Each tenant is deleted independently,
+    /// per-tenant failures are returned in the response.
+    /// </summary>
+    /// <param name="requestBuilder">The tenant delete batch request builder</param>
+    /// <param name="ids">The IDs of the tenants to delete</param>
+    /// <param name="cascade">Whether to also delete the tenants' related data</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>DeleteTenantsBatchResponse with the deleted tenant IDs and the failures</returns>
+    /// <example>
+    /// <code>
+    /// var response = await client.Mgmt.V1.Tenant.DeletePath.Batch.PostWithIdsAsync(new List&lt;string&gt; { "tenant-1", "tenant-2" });
+    /// </code>
+    /// </example>
+    public static async Task<DeleteTenantsBatchResponse?> PostWithIdsAsync(
+        this Descope.Mgmt.V1.Mgmt.Tenant.Delete.Batch.BatchRequestBuilder requestBuilder,
+        List<string> ids,
+        bool cascade = false,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null || ids.Count == 0)
+        {
+            throw new DescopeException("At least one ID is required for deleting tenants");
+        }
+        if (ids.Any(string.IsNullOrEmpty))
+        {
+            throw new DescopeException("IDs cannot contain empty items when deleting tenants");
+        }
+
+        return await requestBuilder.PostAsync(new DeleteTenantsBatchRequest { Ids = ids, Cascade = cascade }, cancellationToken: cancellationToken);
+    }
+
+    private static void ValidateTenantListItems(IEnumerable<string?>? items, string field, string operation)
+    {
+        if (items != null && items.Any(string.IsNullOrEmpty))
+        {
+            throw new DescopeException($"{field} must contain only non-empty strings when {operation}");
+        }
+    }
+
+    private static IEnumerable<string?>? UntypedStrings(UntypedNode? node)
+    {
+        return (node as UntypedArray)?.GetValue().Select(item => (item as UntypedString)?.GetValue());
+    }
+
+    /// <summary>
     /// Runs a management flow with JSON output deserialization.
     /// This extension method wraps the generated PostAsync method and provides convenient access
     /// to flow output data as a JsonDocument, avoiding the need to manually work with UntypedObject types.

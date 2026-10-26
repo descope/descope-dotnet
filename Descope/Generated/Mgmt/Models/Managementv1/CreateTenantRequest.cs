@@ -74,6 +74,14 @@ namespace Descope.Mgmt.Models.Managementv1
 #else
         public string Parent { get; set; }
 #endif
+        /// <summary>The roleInheritance property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RoleInheritance { get; set; }
+#nullable restore
+#else
+        public string RoleInheritance { get; set; }
+#endif
         /// <summary>The selfProvisioningDomains property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -116,6 +124,7 @@ namespace Descope.Mgmt.Models.Managementv1
                 { "id", n => { Id = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "parent", n => { Parent = n.GetStringValue(); } },
+                { "roleInheritance", n => { RoleInheritance = n.GetStringValue(); } },
                 { "selfProvisioningDomains", n => { SelfProvisioningDomains = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
             };
         }
@@ -135,6 +144,7 @@ namespace Descope.Mgmt.Models.Managementv1
             writer.WriteStringValue("id", Id);
             writer.WriteStringValue("name", Name);
             writer.WriteStringValue("parent", Parent);
+            writer.WriteStringValue("roleInheritance", RoleInheritance);
             writer.WriteCollectionOfPrimitiveValues<string>("selfProvisioningDomains", SelfProvisioningDomains);
             writer.WriteAdditionalData(AdditionalData);
         }

@@ -30,3 +30,7 @@ Descope/Generated/Auth/V1/Auth/Me/History/HistoryRequestBuilder.cs,GetAsync,GetW
 Descope/Generated/Auth/V1/Auth/RecoveryCodes/RecoveryCodesRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Sso/Authorize/AuthorizeRequestBuilder.cs,PostAsync,PostWithQueryParamsAsync
 Descope/Generated/Mgmt/V1/Mgmt/Flow/Run/RunRequestBuilder.cs,PostAsync,PostWithJsonOutputAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/Patch/PatchRequestBuilder.cs,PatchAsync,PatchWithIdAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/Create/Batch/BatchRequestBuilder.cs,PostAsync,PostWithTenantsAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/Update/Batch/BatchRequestBuilder.cs,PostAsync,PostWithTenantsAsync
+Descope/Generated/Mgmt/V1/Mgmt/Tenant/Delete/Batch/BatchRequestBuilder.cs,PostAsync,PostWithIdsAsync
