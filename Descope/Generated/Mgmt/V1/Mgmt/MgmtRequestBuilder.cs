@@ -11,6 +11,7 @@ using Descope.Mgmt.V1.Mgmt.Flow;
 using Descope.Mgmt.V1.Mgmt.Group;
 using Descope.Mgmt.V1.Mgmt.Impersonate;
 using Descope.Mgmt.V1.Mgmt.Jwt;
+using Descope.Mgmt.V1.Mgmt.License;
 using Descope.Mgmt.V1.Mgmt.List;
 using Descope.Mgmt.V1.Mgmt.Managementkey;
 using Descope.Mgmt.V1.Mgmt.Outbound;
@@ -95,6 +96,11 @@ namespace Descope.Mgmt.V1.Mgmt
         public global::Descope.Mgmt.V1.Mgmt.Jwt.JwtRequestBuilder Jwt
         {
             get => new global::Descope.Mgmt.V1.Mgmt.Jwt.JwtRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The license property</summary>
+        public global::Descope.Mgmt.V1.Mgmt.License.LicenseRequestBuilder License
+        {
+            get => new global::Descope.Mgmt.V1.Mgmt.License.LicenseRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The list property</summary>
         public global::Descope.Mgmt.V1.Mgmt.List.ListRequestBuilder List
