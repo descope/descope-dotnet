@@ -127,6 +127,19 @@ var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
     new SearchUsersRequest { Limit = 10 });
 ```
 
+### Agentic Identities
+
+```csharp
+// Search agentic identities (consents granted to agentic apps) of a user
+var identities = await client.Mgmt.V1.Agentic.Identities.Search.PostAsync(
+    new SearchAgenticIdentitiesRequest { UserId = "user-id", Limit = 10 });
+
+// Revoke agentic identities and their consents for a client
+var revokeResponse = await client.Mgmt.V1.Agentic.Identities.Revoke.PostAsync(
+    new RevokeAgenticIdentitiesRequest { ClientId = "client-id" });
+var revokedCount = revokeResponse?.Revoked;
+```
+
 ### Management Flows
 
 Management flows allow you to run server-side flows with custom input and receive dynamic output. The SDK provides a convenient extension method that deserializes the output as JSON for easy access.
