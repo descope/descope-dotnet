@@ -127,6 +127,21 @@ var searchResponse = await client.Mgmt.V2.User.Search.PostAsync(
     new SearchUsersRequest { Limit = 10 });
 ```
 
+### Agentic Identities
+
+Agentic identities are the consents users granted to agentic apps. Search them, or revoke them by user ID, client ID, resource ID and/or consent ID. A revoke request must set at least one of these.
+
+```csharp
+// Search a user's agentic identities
+var identities = await client.Mgmt.V1.Agentic.Identities.Search.PostAsync(
+    new SearchAgenticIdentitiesRequest { UserId = "user-id", Limit = 10 });
+
+// Revoke all of a user's agentic identities
+var revokeResponse = await client.Mgmt.V1.Agentic.Identities.Revoke.PostAsync(
+    new RevokeAgenticIdentitiesRequest { UserId = "user-id" });
+var revokedCount = revokeResponse?.Revoked;
+```
+
 ### Management Flows
 
 Management flows allow you to run server-side flows with custom input and receive dynamic output. The SDK provides a convenient extension method that deserializes the output as JSON for easy access.
