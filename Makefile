@@ -52,6 +52,72 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 	@echo "Generating Management API Kiota client files..."
 	kiota generate -l $(MGMT_KIOTA_LANG) -c $(MGMT_KIOTA_CLASS) -n $(MGMT_KIOTA_NAMESPACE) -d $(MGMT_OPENAPI_SPEC) -o $(MGMT_KIOTA_OUTPUT) \
 		--exclude-path /scim/** \
+		--exclude-path /v1/mgmt/accesskey/attribute \
+		--exclude-path /v1/mgmt/adminportal/settings \
+		--exclude-path /v1/mgmt/agentic/governance/requests/create \
+		--exclude-path /v1/mgmt/agentic/governance/requests/get \
+		--exclude-path /v1/mgmt/agentic/governance/requests/resolve \
+		--exclude-path /v1/mgmt/agentic/governance/requests/search \
+		--exclude-path /v1/mgmt/agentic/governance/settings \
+		--exclude-path /v1/mgmt/authaccess/rule \
+		--exclude-path /v1/mgmt/authaccess/rule/all \
+		--exclude-path /v1/mgmt/authaccess/rule/all/tenant/{tenantId} \
+		--exclude-path /v1/mgmt/authaccess/rule/reorder \
+		--exclude-path /v1/mgmt/authaccess/rule/reorder/tenant/{tenantId} \
+		--exclude-path /v1/mgmt/authaccess/rule/tenant/{tenantId} \
+		--exclude-path /v1/mgmt/authaccess/settings \
+		--exclude-path /v1/mgmt/authaccess/settings/tenant/{tenantId} \
+		--exclude-path /v1/mgmt/connector \
+		--exclude-path /v1/mgmt/embeddedlink/settings \
+		--exclude-path /v1/mgmt/enchantedlink/settings \
+		--exclude-path /v1/mgmt/fga/authzen/access/v1/evaluation \
+		--exclude-path /v1/mgmt/fga/authzen/access/v1/evaluations \
+		--exclude-path /v1/mgmt/fga/authzen/access/v1/search/action \
+		--exclude-path /v1/mgmt/fga/authzen/access/v1/search/resource \
+		--exclude-path /v1/mgmt/fga/authzen/access/v1/search/subject \
+		--exclude-path /v1/mgmt/fga/backup \
+		--exclude-path /v1/mgmt/fga/backups \
+		--exclude-path /v1/mgmt/flow \
+		--exclude-path /v1/mgmt/flow/externalauth/complete \
+		--exclude-path /v1/mgmt/flow/template/list \
+		--exclude-path /v1/mgmt/magiclink/settings \
+		--exclude-path /v1/mgmt/oauth/provider \
+		--exclude-path /v1/mgmt/oauth/settings \
+		--exclude-path /v1/mgmt/otp/settings \
+		--exclude-path /v1/mgmt/otp/settings/tenant/{tenantId} \
+		--exclude-path /v1/mgmt/outbound/app/connect \
+		--exclude-path /v1/mgmt/passkey/settings \
+		--exclude-path /v1/mgmt/policies/rule/create \
+		--exclude-path /v1/mgmt/policies/rule/delete \
+		--exclude-path /v1/mgmt/policies/rule/load \
+		--exclude-path /v1/mgmt/policies/rule/reorder \
+		--exclude-path /v1/mgmt/policies/rule/search \
+		--exclude-path /v1/mgmt/policies/rule/update \
+		--exclude-path /v1/mgmt/policies/settings/load \
+		--exclude-path /v1/mgmt/policies/settings/update \
+		--exclude-path /v1/mgmt/project#GET,POST,PUT \
+		--exclude-path /v1/mgmt/project/settings \
+		--exclude-path /v1/mgmt/resource/create \
+		--exclude-path /v1/mgmt/resource/delete \
+		--exclude-path /v1/mgmt/resource/delete/batch \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-template/create \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-template/delete \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-template/load \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-template/update \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-templates/delete \
+		--exclude-path /v1/mgmt/resource/dynamic-registration-templates/load \
+		--exclude-path /v1/mgmt/resource/load \
+		--exclude-path /v1/mgmt/resource/load/uri \
+		--exclude-path /v1/mgmt/resource/update \
+		--exclude-path /v1/mgmt/resources/load \
+		--exclude-path /v1/mgmt/sso/idp/app/permission \
+		--exclude-path /v1/mgmt/sso/idp/app/role \
+		--exclude-path /v1/mgmt/sso/provider-ids \
+		--exclude-path /v1/mgmt/template \
+		--exclude-path /v1/mgmt/tenant/adminlinks/sso/authenticated/batch \
+		--exclude-path /v1/mgmt/tenant/attribute \
+		--exclude-path /v1/mgmt/totp/settings \
+		--exclude-path /v1/mgmt/user/attribute \
 		--exclude-path /v1/mgmt/user/history \
 		--exclude-path /v1/mgmt/accesskey/import \
 		--exclude-path /v1/mgmt/accesskey/delete/batch \
@@ -85,11 +151,19 @@ generate-mgmt: ## Regenerate Management API Kiota client files from OpenAPI spec
 		--exclude-path /v1/mgmt/token/clientassertion \
 		--exclude-path /v1/mgmt/user/customattribute/** \
 		--exclude-path /v1/mgmt/user/customattributes \
+		--exclude-path /v1/mgmt/user/passkeys/import \
 		--exclude-path /v1/mgmt/user/search \
+		--exclude-path /v1/mgmt/user/update/impersonationConsent \
+		--exclude-path /v1/mgmt/wellknown/settings \
+		--exclude-path /v1/mgmt/widget \
+		--exclude-path /v1/mgmt/widget/list \
+		--exclude-path /v2/mgmt/password/settings \
 		--exclude-path /v2/mgmt/sso/settings/all \
 		--exclude-path /v2/mgmt/tenant/adminlinks/sso/generate \
 		--exclude-path /v2/mgmt/theme/** \
+		--exclude-path /v2/mgmt/user/history \
 		--exclude-path /v2/mgmt/user/update/role/add \
+		--exclude-path /v3/mgmt/sso/settings \
 		--clean-output
 	@echo "Management API Kiota generation complete."
 
@@ -101,7 +175,13 @@ generate-auth: ## Regenerate Auth API Kiota client files from OpenAPI spec
 	fi
 	@echo "Auth API OpenAPI spec found: $(AUTH_OPENAPI_SPEC)"
 	@echo "Generating Auth API Kiota client files..."
-	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT) --include-path $(AUTH_KIOTA_INCLUDE_PATHS) --exclude-path $(AUTH_KIOTA_EXCLUDE_PATHS) --clean-output
+	kiota generate -l $(AUTH_KIOTA_LANG) -c $(AUTH_KIOTA_CLASS) -n $(AUTH_KIOTA_NAMESPACE) -d $(AUTH_OPENAPI_SPEC) -o $(AUTH_KIOTA_OUTPUT) --include-path $(AUTH_KIOTA_INCLUDE_PATHS) \
+		--exclude-path $(AUTH_KIOTA_EXCLUDE_PATHS) \
+		--exclude-path /v1/auth/wsfed/idp/initiate \
+		--exclude-path /v1/auth/wsfed/idp/metadata \
+		--exclude-path /v1/auth/wsfed/idp/sso \
+		--exclude-path /v1/auth/wsfed/idp/sso-finish \
+		--clean-output
 	@echo "Auth API Kiota generation complete."
 
 dotnet-build: ## Build the C# project
