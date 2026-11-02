@@ -161,6 +161,42 @@ var count = root.GetProperty("obj").GetProperty("count").GetInt32();
 var enabled = root.GetProperty("obj").GetProperty("enabled").GetBoolean();
 ```
 
+### Agentic Identities and Governance
+
+Search and revoke agentic identities (consents granted to agentic apps), and manage the project's Agentic Governance Suite settings and access requests. Access request operations require the Agentic Governance Suite in the company license. The access request models live in `Descope.Mgmt.Models.Projectv1`.
+
+```csharp
+// Search a user's agentic identities
+var identities = await client.Mgmt.V1.Agentic.Identities.Search.PostAsync(
+    new SearchAgenticIdentitiesRequest { UserId = "user-id", Limit = 10 });
+
+// Revoke all of a user's agentic identities
+var revoked = await client.Mgmt.V1.Agentic.Identities.Revoke.PostAsync(
+    new RevokeAgenticIdentitiesRequest { UserId = "user-id" });
+
+// Load and update governance settings (only the fields you set are changed)
+var settings = await client.Mgmt.V1.Agentic.Governance.Settings.GetAsync();
+await client.Mgmt.V1.Agentic.Governance.Settings.PostAsync(
+    new AgenticGovernanceSettings { AutoApproval = true });
+
+// Create an access request on behalf of a console user
+var accessRequest = await client.Mgmt.V1.Agentic.Governance.Requests.Create.PostWithValidationAsync(
+    new CreateGovernanceAccessRequestRequest
+    {
+        RequestorUserId = "user-id",
+        ClientName = "My Agent",
+        GrantTypes = new List<string> { "clientCredentials" },
+        Justification = "Needed for the reporting agent",
+    });
+
+// Search, load and resolve access requests
+var pending = await client.Mgmt.V1.Agentic.Governance.Requests.Search.PostWithValidationAsync(
+    new SearchGovernanceAccessRequestsRequest { Text = "My Agent", Limit = 10 });
+var loaded = await client.Mgmt.V1.Agentic.Governance.Requests.GetPath.PostWithIdAsync(accessRequest!.Id!);
+var approved = await client.Mgmt.V1.Agentic.Governance.Requests.Resolve.PostWithValidationAsync(
+    new ResolveGovernanceAccessRequestRequest { Id = accessRequest.Id, Action = "approve" });
+```
+
 ## Token Validation
 
 The SDK provides three methods for working with session tokens:
