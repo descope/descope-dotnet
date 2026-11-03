@@ -1,6 +1,7 @@
 using Descope.Mgmt.Models;
 using Descope.Mgmt.Models.Managementv1;
 using Descope.Mgmt.Models.Orchestrationv1;
+using Descope.Mgmt.Models.Projectv1;
 using Microsoft.Kiota.Abstractions.Serialization;
 using System.Text.Json;
 
@@ -374,6 +375,155 @@ public static class MgmtExtensions
         // Parse as JsonDocument, clone the root element, then dispose the document
         using var document = JsonDocument.Parse(serializedValue);
         return document.RootElement.Clone();
+    }
+
+    /// <summary>
+    /// Creates an Agentic Governance Suite access request to provision an agent client on behalf of a developer.
+    /// The requestor must be an existing, active console user in your company. When auto-approval is on and the
+    /// current policies already permit the request, it is approved and the client provisioned immediately.
+    /// </summary>
+    /// <param name="requestBuilder">The governance access request create request builder</param>
+    /// <param name="requestorUserId">The console user the request is raised for. Overrides <c>request.RequestorUserId</c>.</param>
+    /// <param name="request">The access request details</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The created access request</returns>
+    /// <example>
+    /// <code>
+    /// var created = await client.Mgmt.V1.Agentic.Governance.Requests.Create.PostWithRequestorUserIdAsync(
+    ///     "requestor-user-id",
+    ///     new CreateGovernanceAccessRequestRequest
+    ///     {
+    ///         ClientName = "My agent",
+    ///         GrantTypes = new List&lt;string&gt; { "clientCredentials" },
+    ///         Targets = new List&lt;GovernanceAccessRequestTarget&gt;
+    ///         {
+    ///             new GovernanceAccessRequestTarget { Name = "my-mcp-server", Kind = "resource", AllScopes = true }
+    ///         },
+    ///         Justification = "Needed for the nightly sync",
+    ///     });
+    /// </code>
+    /// </example>
+    public static async Task<GovernanceAccessRequest?> PostWithRequestorUserIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Agentic.Governance.Requests.Create.CreateRequestBuilder requestBuilder,
+        string requestorUserId,
+        CreateGovernanceAccessRequestRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(requestorUserId))
+        {
+            throw new DescopeException("Requestor user ID is required for creating a governance access request");
+        }
+        if (request == null)
+        {
+            throw new DescopeException("Request is required for creating a governance access request");
+        }
+        if (request.GrantTypes != null && request.GrantTypes.Any(string.IsNullOrEmpty))
+        {
+            throw new DescopeException("Grant types must not contain empty values when creating a governance access request");
+        }
+
+        request.RequestorUserId = requestorUserId;
+        return await requestBuilder.PostAsync(request, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Loads a single Agentic Governance Suite access request by ID.
+    /// </summary>
+    /// <param name="requestBuilder">The governance access request get request builder</param>
+    /// <param name="id">The access request ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The access request</returns>
+    /// <example>
+    /// <code>
+    /// var accessRequest = await client.Mgmt.V1.Agentic.Governance.Requests.GetPath.PostWithIdAsync("request-id");
+    /// </code>
+    /// </example>
+    public static async Task<GovernanceAccessRequest?> PostWithIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Agentic.Governance.Requests.Get.GetRequestBuilder requestBuilder,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new DescopeException("ID is required for loading a governance access request");
+        }
+
+        return await requestBuilder.PostAsync(new GetGovernanceAccessRequestRequest { Id = id }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Approves or denies a pending Agentic Governance Suite access request. Approving provisions the requested
+    /// agent client. The resolution is attributed to the Management API.
+    /// </summary>
+    /// <param name="requestBuilder">The governance access request resolve request builder</param>
+    /// <param name="id">The access request ID</param>
+    /// <param name="action">"approve" or "deny"</param>
+    /// <param name="resolutionNote">Optional note recorded with the resolution</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The resolved access request</returns>
+    /// <example>
+    /// <code>
+    /// var resolved = await client.Mgmt.V1.Agentic.Governance.Requests.Resolve.PostWithIdAsync("request-id", "approve", "Approved for the pilot");
+    /// </code>
+    /// </example>
+    public static async Task<GovernanceAccessRequest?> PostWithIdAsync(
+        this Descope.Mgmt.V1.Mgmt.Agentic.Governance.Requests.Resolve.ResolveRequestBuilder requestBuilder,
+        string id,
+        string action,
+        string? resolutionNote = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new DescopeException("ID is required for resolving a governance access request");
+        }
+        if (string.IsNullOrEmpty(action))
+        {
+            throw new DescopeException("Action is required for resolving a governance access request");
+        }
+
+        var request = new ResolveGovernanceAccessRequestRequest
+        {
+            Id = id,
+            Action = action,
+            ResolutionNote = resolutionNote,
+        };
+        return await requestBuilder.PostAsync(request, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Searches the project's Agentic Governance Suite access requests, with filtering, sorting and paging.
+    /// Validates the request before sending it.
+    /// </summary>
+    /// <param name="requestBuilder">The governance access requests search request builder</param>
+    /// <param name="request">The search request. Every sort entry must name a field.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The matching access requests and their total count</returns>
+    /// <example>
+    /// <code>
+    /// var result = await client.Mgmt.V1.Agentic.Governance.Requests.Search.PostWithValidationAsync(
+    ///     new SearchGovernanceAccessRequestsRequest
+    ///     {
+    ///         Limit = 10,
+    ///         Sort = new List&lt;Descope.Mgmt.Models.Projectv1.SortField&gt; { new Descope.Mgmt.Models.Projectv1.SortField { Field = "createdTime", Desc = true } },
+    ///     });
+    /// </code>
+    /// </example>
+    public static async Task<SearchGovernanceAccessRequestsResponse?> PostWithValidationAsync(
+        this Descope.Mgmt.V1.Mgmt.Agentic.Governance.Requests.Search.SearchRequestBuilder requestBuilder,
+        SearchGovernanceAccessRequestsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+        {
+            throw new DescopeException("Request is required for searching governance access requests");
+        }
+        if (request.Sort != null && request.Sort.Any(s => s == null || string.IsNullOrEmpty(s.Field)))
+        {
+            throw new DescopeException("Every sort entry must have a field when searching governance access requests");
+        }
+
+        return await requestBuilder.PostAsync(request, cancellationToken: cancellationToken);
     }
 #pragma warning restore CS0618
 }
