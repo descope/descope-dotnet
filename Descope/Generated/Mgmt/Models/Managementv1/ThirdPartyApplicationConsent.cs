@@ -22,6 +22,14 @@ namespace Descope.Mgmt.Models.Managementv1
 #else
         public string AppId { get; set; }
 #endif
+        /// <summary>Empty for an explicit consent, &quot;idJag&quot; for an identity recorded by a Cross-App Access exchange, which cannot be revoked</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? AuthMethod { get; set; }
+#nullable restore
+#else
+        public string AuthMethod { get; set; }
+#endif
         /// <summary>The createdTime property</summary>
         public int? CreatedTime { get; set; }
         /// <summary>The ExpireTime property</summary>
@@ -94,6 +102,7 @@ namespace Descope.Mgmt.Models.Managementv1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "appId", n => { AppId = n.GetStringValue(); } },
+                { "authMethod", n => { AuthMethod = n.GetStringValue(); } },
                 { "createdTime", n => { CreatedTime = n.GetIntValue(); } },
                 { "ExpireTime", n => { ExpireTime = n.GetIntValue(); } },
                 { "grantedBy", n => { GrantedBy = n.GetStringValue(); } },
@@ -112,6 +121,7 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("appId", AppId);
+            writer.WriteStringValue("authMethod", AuthMethod);
             writer.WriteIntValue("createdTime", CreatedTime);
             writer.WriteIntValue("ExpireTime", ExpireTime);
             writer.WriteStringValue("grantedBy", GrantedBy);

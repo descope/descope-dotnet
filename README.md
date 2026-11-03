@@ -161,6 +161,38 @@ var count = root.GetProperty("obj").GetProperty("count").GetInt32();
 var enabled = root.GetProperty("obj").GetProperty("enabled").GetBoolean();
 ```
 
+### Agentic Identities and Governance
+
+Agentic identities are the consents users granted to agentic apps. Agentic Governance Suite access requests let developers ask for an agent client, which an admin approves or denies. Use the extension methods for the access request calls; they check the required arguments before sending the request.
+
+```csharp
+// Search and revoke agentic identities
+var identities = await client.Mgmt.V1.Agentic.Identities.Search.PostAsync(
+    new SearchAgenticIdentitiesRequest { UserId = "user-id", Limit = 10 });
+var revoked = await client.Mgmt.V1.Agentic.Identities.Revoke.PostAsync(
+    new RevokeAgenticIdentitiesRequest { ClientId = "client-id" });
+
+// Load and update governance settings (only the fields you set are changed)
+var settings = await client.Mgmt.V1.Agentic.Governance.Settings.GetAsync();
+await client.Mgmt.V1.Agentic.Governance.Settings.PostAsync(
+    new AgenticGovernanceSettings { AutoApproval = true });
+
+// Create, search, load and resolve access requests
+var created = await client.Mgmt.V1.Agentic.Governance.Requests.Create.PostWithRequestorUserIdAsync(
+    "requestor-user-id",
+    new CreateGovernanceAccessRequestRequest
+    {
+        ClientName = "My agent",
+        GrantTypes = new List<string> { "clientCredentials" },
+        Justification = "Needed for the nightly sync",
+    });
+var pending = await client.Mgmt.V1.Agentic.Governance.Requests.Search.PostWithValidationAsync(
+    new SearchGovernanceAccessRequestsRequest { Limit = 10 });
+var accessRequest = await client.Mgmt.V1.Agentic.Governance.Requests.GetPath.PostWithIdAsync(created!.Id!);
+var resolved = await client.Mgmt.V1.Agentic.Governance.Requests.Resolve.PostWithIdAsync(
+    created.Id!, "approve", "Approved for the pilot");
+```
+
 ## Token Validation
 
 The SDK provides three methods for working with session tokens:
