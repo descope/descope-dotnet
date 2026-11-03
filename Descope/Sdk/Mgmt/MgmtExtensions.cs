@@ -505,7 +505,7 @@ public static class MgmtExtensions
     ///     new SearchGovernanceAccessRequestsRequest
     ///     {
     ///         Limit = 10,
-    ///         Sort = new List&lt;SortField&gt; { new SortField { Field = "createdTime", Desc = true } },
+    ///         Sort = new List&lt;Descope.Mgmt.Models.Projectv1.SortField&gt; { new Descope.Mgmt.Models.Projectv1.SortField { Field = "createdTime", Desc = true } },
     ///     });
     /// </code>
     /// </example>
