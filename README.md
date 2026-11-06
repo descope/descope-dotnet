@@ -186,7 +186,7 @@ var options = new DescopeClientOptions
 };
 ```
 
-Raising this value is safe even during key rotation: if a token is signed with a key ID that is not already cached, the SDK performs an immediate key re-fetch (bypassing the cache duration) and retries validation once, so tokens from newly rotated keys are accepted right away. `JwksCacheDuration` must be greater than zero.
+Raising this value is safe even during key rotation: if a token is signed with a key ID that is not already cached, the SDK re-fetches the keys (bypassing the cache duration) and retries validation once, so tokens from newly rotated keys are accepted quickly. Such re-fetches happen at most once every 30 seconds after a successful fetch; in between, tokens with an unknown key ID are rejected without a network call. Each refresh replaces the cached key set, and a failed refresh keeps the last good keys. `JwksCacheDuration` must be greater than zero.
 
 > **Note:** For the cache to persist across requests, reuse a single `IDescopeClient` instance. The DI registration (`AddDescopeClient`) registers it as a singleton for you.
 

@@ -1,7 +1,10 @@
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Descope.Test.Helpers;
 using Moq;
 using Moq.Protected;
 using System.Net;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace Descope.Test.UnitTests.Authentication;
@@ -378,49 +381,205 @@ public class JwtValidatorCachingTests
         Assert.NotNull(exception);
     }
 
-    [Fact]
-    public async Task ValidateSession_KeyRotation_ShouldImmediatelyRefetchOnCacheMiss()
+    private sealed class TestSigner
     {
-        // This test verifies cache-miss immediate re-fetch behavior:
-        // When a token is signed with a kid that's not in the cache,
-        // the validator should immediately re-fetch keys (bypassing TTL) and retry validation.
-        // This ensures tokens signed with newly rotated keys are accepted without waiting.
+        private readonly RSA _rsa = RSA.Create(2048);
 
-        // Arrange
-        var requestCount = 0;
-        var currentKeyId = "key-v1";
+        public TestSigner(string kid) => Kid = kid;
 
-        var mockHandler = CreateMockHttpHandler((request, count) =>
+        public string Kid { get; }
+
+        public string JwksJson()
         {
-            requestCount = count;
-            // Return keys based on current rotation state
-            return CreateJwksResponse(currentKeyId);
+            var p = _rsa.ExportParameters(false);
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                keys = new[]
+                {
+                    new { alg = "RS256", e = Base64UrlEncoder.Encode(p.Exponent), kid = Kid, kty = "RSA", n = Base64UrlEncoder.Encode(p.Modulus), use = "sig" }
+                }
+            });
+        }
+
+        public string Sign() => new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(new RsaSecurityKey(_rsa) { KeyId = Kid }, SecurityAlgorithms.RsaSha256)
         });
+    }
 
-        var httpClient = new HttpClient(mockHandler.Object);
-        var client = TestDescopeClientFactory.CreateWithHttpClient(httpClient);
+    /// <summary>A validator wired to a stubbed keys endpoint and a controllable clock.</summary>
+    private sealed class Harness
+    {
+        public DateTimeOffset Now = DateTimeOffset.UtcNow;
+        public int Fetches;
+        public HttpStatusCode Status = HttpStatusCode.OK;
+        public string Body = "";
+        public JwtValidator Validator { get; }
 
-        // Act & Assert
-        // Step 1: First validation with key-v1 (fetches and caches key-v1)
-        var jwt1 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig1";
-        try { await client.Auth.ValidateSessionAsync(jwt1); } catch (DescopeException) { }
-        Assert.Equal(1, requestCount); // Initial fetch
+        public Harness(TestSigner served)
+        {
+            Body = served.JwksJson();
+            var handler = CreateMockHttpHandler((_, _) =>
+            {
+                Interlocked.Increment(ref Fetches);
+                return new HttpResponseMessage(Status) { Content = new StringContent(Body) };
+            });
+            Validator = new JwtValidator("test_project_id", "https://api.descope.com", new HttpClient(handler.Object), timeProvider: () => Now);
+        }
+    }
 
-        // Step 2: Rotate keys to key-v2
-        currentKeyId = "key-v2";
+    [Fact]
+    public async Task ValidateToken_UnknownKid_FetchesAtMostOncePerCooldown()
+    {
+        var known = new TestSigner("known");
+        var unknown = new TestSigner("unknown").Sign();
+        var h = new Harness(known);
 
-        // Step 3: Validate token with key-v2 kid (not in cache)
-        // This should trigger immediate re-fetch (bypassing TTL) because kid is missing
-        var jwt2 = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS12MiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiZXhwIjoyMTQ3NDgzNjQ3fQ.sig2";
-        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
+        await h.Validator.ValidateToken(known.Sign());
+        Assert.Equal(1, h.Fetches);
 
-        // Should have triggered immediate re-fetch (requestCount = 2)
-        // WITHOUT waiting for TTL to expire
-        Assert.Equal(2, requestCount);
+        // Within the cooldown of the initial fetch: rejected without a network call
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown));
+        Assert.Equal(1, h.Fetches);
 
-        // Step 4: Validate another token with key-v2 (now in cache)
-        // Should NOT trigger another fetch (still within TTL)
-        try { await client.Auth.ValidateSessionAsync(jwt2); } catch (DescopeException) { }
-        Assert.Equal(2, requestCount); // No additional fetch
+        h.Now = h.Now.AddSeconds(31);
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown));
+        Assert.Equal(2, h.Fetches);
+
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown));
+        Assert.Equal(2, h.Fetches);
+
+        h.Now = h.Now.AddSeconds(31);
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown));
+        Assert.Equal(3, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_KeyRotation_AcceptsNewKeyAfterCooldown()
+    {
+        var v1 = new TestSigner("key-v1");
+        var v2 = new TestSigner("key-v2");
+        var h = new Harness(v1);
+
+        await h.Validator.ValidateToken(v1.Sign());
+        h.Body = v2.JwksJson();
+        h.Now = h.Now.AddSeconds(31);
+
+        // Unknown kid triggers a re-fetch inside the TTL, and validation is retried
+        await h.Validator.ValidateToken(v2.Sign());
+        Assert.Equal(2, h.Fetches);
+
+        await h.Validator.ValidateToken(v2.Sign());
+        Assert.Equal(2, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_TtlExpired_ReplacesCachedKeys()
+    {
+        var removed = new TestSigner("removed");
+        var current = new TestSigner("current");
+        var h = new Harness(removed);
+
+        await h.Validator.ValidateToken(removed.Sign());
+        h.Body = current.JwksJson();
+
+        // Within the TTL the cached key is still trusted
+        h.Now = h.Now.AddMinutes(1);
+        await h.Validator.ValidateToken(removed.Sign());
+        Assert.Equal(1, h.Fetches);
+
+        // After the TTL the set is replaced, not merged
+        h.Now = h.Now.AddMinutes(5);
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(removed.Sign()));
+        await h.Validator.ValidateToken(current.Sign());
+        Assert.Equal(2, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_FailedRefresh_KeepsCachedKeysAndLimitsRetries()
+    {
+        var signer = new TestSigner("key");
+        var h = new Harness(signer);
+
+        await h.Validator.ValidateToken(signer.Sign());
+        h.Status = HttpStatusCode.ServiceUnavailable;
+        h.Now = h.Now.AddMinutes(6);
+
+        // Refresh fails, the last good keys keep working
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Equal(2, h.Fetches);
+
+        // Retry is limited by the cooldown even though the keys are still past the TTL
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Equal(2, h.Fetches);
+
+        h.Now = h.Now.AddSeconds(31);
+        h.Status = HttpStatusCode.OK;
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Equal(3, h.Fetches);
+
+        // Success restores the TTL window
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Equal(3, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_FailedFetch_DoesNotDelayUnknownKid()
+    {
+        var v1 = new TestSigner("key-v1");
+        var v2 = new TestSigner("key-v2");
+        var h = new Harness(v1) { Status = HttpStatusCode.ServiceUnavailable };
+
+        // First fetch fails; the next lookup retries right away and succeeds
+        await Assert.ThrowsAsync<HttpRequestException>(() => h.Validator.ValidateToken(v1.Sign()));
+        h.Status = HttpStatusCode.OK;
+        await h.Validator.ValidateToken(v1.Sign());
+        Assert.Equal(2, h.Fetches);
+
+        // Refresh past the TTL fails; a newly rotated kid is still fetched without waiting
+        h.Now = h.Now.AddMinutes(6);
+        h.Status = HttpStatusCode.ServiceUnavailable;
+        await h.Validator.ValidateToken(v1.Sign());
+        Assert.Equal(3, h.Fetches);
+        h.Status = HttpStatusCode.OK;
+        h.Body = v2.JwksJson();
+        await h.Validator.ValidateToken(v2.Sign());
+        Assert.Equal(4, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_EmptyKeysResponse_ReplacesCachedKeys()
+    {
+        var signer = new TestSigner("key");
+        var h = new Harness(signer);
+
+        await h.Validator.ValidateToken(signer.Sign());
+        h.Body = "{\"keys\":[]}";
+        h.Now = h.Now.AddMinutes(6);
+
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(signer.Sign()));
+        Assert.Equal(2, h.Fetches);
+
+        // The empty set counts as a successful fetch: no refetch inside the TTL or cooldown
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(signer.Sign()));
+        Assert.Equal(2, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_ConcurrentUnknownKids_ShareOneFetch()
+    {
+        var known = new TestSigner("known");
+        var unknown = new TestSigner("unknown").Sign();
+        var h = new Harness(known);
+
+        await h.Validator.ValidateToken(known.Sign());
+        h.Now = h.Now.AddSeconds(31);
+
+        var tasks = Enumerable.Range(0, 20).Select(_ =>
+            Task.Run(() => Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown))));
+        await Task.WhenAll(tasks);
+
+        Assert.Equal(2, h.Fetches);
     }
 }
