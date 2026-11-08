@@ -663,11 +663,27 @@ public class JwtValidatorCachingTests
         h.Now = h.Now.AddSeconds(31);
         h.Status = HttpStatusCode.ServiceUnavailable;
         h.Gate = new ManualResetEventSlim(false);
+        const int callers = 5;
+        using var started = new CountdownEvent(callers);
 
-        var tasks = Enumerable.Range(0, 5).Select(_ =>
-            Task.Run(() => Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown)))).ToArray();
-        await Task.Delay(500);
-        h.Gate.Set();
+        var tasks = Enumerable.Range(0, callers).Select(_ =>
+            Task.Factory.StartNew(
+                () =>
+                {
+                    started.Signal();
+                    return Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown));
+                },
+                TaskCreationOptions.LongRunning).Unwrap()).ToArray();
+        try
+        {
+            // Every caller has started; give them time to queue behind the in-flight fetch
+            Assert.True(started.Wait(TimeSpan.FromSeconds(30)));
+            await Task.Delay(300);
+        }
+        finally
+        {
+            h.Gate.Set();
+        }
         await Task.WhenAll(tasks);
 
         // Callers that waited on the failed fetch use its outcome instead of fetching again
