@@ -525,6 +525,54 @@ public class JwtValidatorCachingTests
     }
 
     [Fact]
+    public async Task ValidateToken_EndpointDown_StopsUsingCachedKeysAfterOneHour()
+    {
+        var signer = new TestSigner("key");
+        var h = new Harness(signer);
+
+        await h.Validator.ValidateToken(signer.Sign());
+        var lastSuccess = h.Now;
+        h.Status = HttpStatusCode.ServiceUnavailable;
+
+        // Cached key keeps validating while refreshes fail, up to the 1 hour bound
+        h.Now = lastSuccess.AddMinutes(59).AddSeconds(59);
+        await h.Validator.ValidateToken(signer.Sign());
+
+        // Past the bound the cached set is not used: rejected while the failed-refresh
+        // throttle skips the fetch, and the fetch error surfaces once it retries
+        h.Now = lastSuccess.AddHours(1);
+        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(signer.Sign()));
+        Assert.Equal(2, h.Fetches);
+        h.Now = h.Now.AddSeconds(31);
+        await Assert.ThrowsAsync<HttpRequestException>(() => h.Validator.ValidateToken(signer.Sign()));
+        Assert.Equal(3, h.Fetches);
+
+        // Recovery restores validation
+        h.Status = HttpStatusCode.OK;
+        h.Now = h.Now.AddSeconds(31);
+        await h.Validator.ValidateToken(signer.Sign());
+    }
+
+    [Fact]
+    public async Task ValidateToken_CacheDurationAboveOneHour_RefreshesAfterOneHour()
+    {
+        var signer = new TestSigner("key");
+        var fetches = 0;
+        var now = DateTimeOffset.UtcNow;
+        var handler = CreateMockHttpHandler((_, _) =>
+        {
+            Interlocked.Increment(ref fetches);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(signer.JwksJson()) };
+        });
+        var validator = new JwtValidator("test_project_id", "https://api.descope.com", new HttpClient(handler.Object), TimeSpan.FromHours(2), () => now);
+
+        await validator.ValidateToken(signer.Sign());
+        now = now.AddHours(1);
+        await validator.ValidateToken(signer.Sign());
+        Assert.Equal(2, fetches);
+    }
+
+    [Fact]
     public async Task ValidateToken_FailedFetch_DoesNotDelayUnknownKid()
     {
         var v1 = new TestSigner("key-v1");

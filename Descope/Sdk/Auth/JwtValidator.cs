@@ -24,6 +24,7 @@ internal class JwtValidator
     private long _lastKeyFetchAttemptTicks = 0;
     private bool _lastKeyFetchFailed = false;
     private static readonly TimeSpan KeyRefetchCooldown = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan MaxKeyAge = TimeSpan.FromHours(1);
     private readonly Func<DateTimeOffset> _timeProvider;
 
     public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null)
@@ -88,7 +89,7 @@ internal class JwtValidator
         ValidateAudience = false,
         IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
         {
-            if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
+            if (kid != null && KeysWithinMaxAge() && _securityKeys.TryGetValue(kid, out var keys))
             {
                 return keys;
             }
@@ -100,8 +101,13 @@ internal class JwtValidator
         ClockSkew = TimeSpan.FromSeconds(5),
     };
 
-    private bool KeysAreFresh() =>
-        TimeSpan.FromTicks(_timeProvider().Ticks - Interlocked.Read(ref _lastKeyFetchTicks)) < _keyRefreshInterval;
+    private TimeSpan KeyAge() =>
+        TimeSpan.FromTicks(_timeProvider().Ticks - Interlocked.Read(ref _lastKeyFetchTicks));
+
+    private bool KeysAreFresh() => KeyAge() < _keyRefreshInterval && KeysWithinMaxAge();
+
+    // Cached keys are not used once the last successful fetch is older than MaxKeyAge
+    private bool KeysWithinMaxAge() => KeyAge() < MaxKeyAge;
 
     private async Task FetchKeyIfNeeded()
     {
@@ -170,11 +176,11 @@ internal class JwtValidator
             Interlocked.Exchange(ref _lastKeyFetchTicks, _timeProvider().Ticks);
             _lastKeyFetchFailed = false;
         }
-        catch when (Interlocked.Read(ref _lastKeyFetchTicks) != 0)
+        catch when (Interlocked.Read(ref _lastKeyFetchTicks) != 0 && KeysWithinMaxAge())
         {
             // Failed refresh: keep the last good key set and its fetch time. The attempt time
             // was recorded above, so refreshes of stale cached keys are limited by the cooldown.
-            // With no key set ever fetched there is nothing to fall back to, so the error propagates.
+            // With no usable key set (none fetched yet, or older than MaxKeyAge) the error propagates.
         }
         finally
         {
