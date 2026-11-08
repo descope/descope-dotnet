@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
@@ -23,17 +24,20 @@ internal class JwtValidator
     private long _lastKeyFetchTicks = 0;
     private long _lastKeyFetchAttemptTicks = 0;
     private bool _lastKeyFetchFailed = false;
+    private int _completedFetches = 0;
     private static readonly TimeSpan KeyRefetchCooldown = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaxKeyAge = TimeSpan.FromHours(1);
     private readonly Func<DateTimeOffset> _timeProvider;
+    private readonly ILogger? _logger;
 
-    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null)
+    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null, ILogger? logger = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _keyRefreshInterval = keyRefreshInterval ?? TimeSpan.FromMinutes(5);
         _timeProvider = timeProvider ?? (() => DateTimeOffset.UtcNow);
+        _logger = logger;
     }
 
     /// <summary>
@@ -122,9 +126,17 @@ internal class JwtValidator
     private async Task FetchKeys(bool force)
     {
         // Use semaphore to ensure only one thread fetches at a time
+        var completedBeforeWait = Volatile.Read(ref _completedFetches);
         await _fetchSemaphore.WaitAsync();
+        var attempted = false;
         try
         {
+            // A fetch completed while waiting: use its outcome instead of fetching again
+            if (Volatile.Read(ref _completedFetches) != completedBeforeWait)
+            {
+                return;
+            }
+
             // Double-check after acquiring lock - another thread might have fetched.
             // Unknown kid (force): fetch at most once per cooldown since the last successful fetch;
             // a failed fetch does not delay the next unknown kid lookup.
@@ -139,6 +151,7 @@ internal class JwtValidator
                 return;
             }
 
+            attempted = true;
             _lastKeyFetchAttemptTicks = now;
             _lastKeyFetchFailed = true;
 
@@ -149,7 +162,10 @@ internal class JwtValidator
             var content = await response.Content.ReadAsStringAsync();
             var keyResponse = JsonSerializer.Deserialize<JwtKeyResponse>(content);
 
-            if (keyResponse?.Keys == null) return;
+            if (keyResponse?.Keys == null || keyResponse.Keys.Count == 0)
+            {
+                throw new DescopeException("Key response contains no keys");
+            }
 
             // Build new key map atomically to avoid racing with in-flight validations
             var newKeys = new ConcurrentDictionary<string, List<SecurityKey>>();
@@ -176,14 +192,24 @@ internal class JwtValidator
             Interlocked.Exchange(ref _lastKeyFetchTicks, _timeProvider().Ticks);
             _lastKeyFetchFailed = false;
         }
-        catch when (Interlocked.Read(ref _lastKeyFetchTicks) != 0 && KeysWithinMaxAge())
+        catch (Exception ex)
         {
-            // Failed refresh: keep the last good key set and its fetch time. The attempt time
+            _logger?.LogWarning(ex, "Failed to fetch public keys");
+
+            // Failed fetch: keep the last good key set and its fetch time. The attempt time
             // was recorded above, so refreshes of stale cached keys are limited by the cooldown.
             // With no usable key set (none fetched yet, or older than MaxKeyAge) the error propagates.
+            if (Interlocked.Read(ref _lastKeyFetchTicks) == 0 || !KeysWithinMaxAge())
+            {
+                throw;
+            }
         }
         finally
         {
+            if (attempted)
+            {
+                Interlocked.Increment(ref _completedFetches);
+            }
             _fetchSemaphore.Release();
         }
     }

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Descope.Test.Helpers;
@@ -408,6 +410,15 @@ public class JwtValidatorCachingTests
         });
     }
 
+    private sealed class CapturingLogger : ILogger
+    {
+        public ConcurrentQueue<(LogLevel Level, Exception? Error)> Entries { get; } = new();
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Enqueue((logLevel, exception));
+    }
+
     /// <summary>A validator wired to a stubbed keys endpoint and a controllable clock.</summary>
     private sealed class Harness
     {
@@ -415,17 +426,19 @@ public class JwtValidatorCachingTests
         public int Fetches;
         public HttpStatusCode Status = HttpStatusCode.OK;
         public string Body = "";
+        public ManualResetEventSlim? Gate;
         public JwtValidator Validator { get; }
 
-        public Harness(TestSigner served)
+        public Harness(TestSigner served, ILogger? logger = null)
         {
             Body = served.JwksJson();
             var handler = CreateMockHttpHandler((_, _) =>
             {
                 Interlocked.Increment(ref Fetches);
+                Gate?.Wait();
                 return new HttpResponseMessage(Status) { Content = new StringContent(Body) };
             });
-            Validator = new JwtValidator("test_project_id", "https://api.descope.com", new HttpClient(handler.Object), timeProvider: () => Now);
+            Validator = new JwtValidator("test_project_id", "https://api.descope.com", new HttpClient(handler.Object), timeProvider: () => Now, logger: logger);
         }
     }
 
@@ -596,22 +609,30 @@ public class JwtValidatorCachingTests
         Assert.Equal(4, h.Fetches);
     }
 
-    [Fact]
-    public async Task ValidateToken_EmptyKeysResponse_ReplacesCachedKeys()
+    [Theory]
+    [InlineData("{\"keys\":[]}")]
+    [InlineData("{}")]
+    public async Task ValidateToken_RefreshWithoutKeys_KeepsCachedKeysAndLimitsRetries(string body)
     {
         var signer = new TestSigner("key");
         var h = new Harness(signer);
 
         await h.Validator.ValidateToken(signer.Sign());
-        h.Body = "{\"keys\":[]}";
+        h.Body = body;
         h.Now = h.Now.AddMinutes(6);
 
-        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(signer.Sign()));
+        // A response without keys is a failed fetch: the last good set keeps validating
+        await h.Validator.ValidateToken(signer.Sign());
         Assert.Equal(2, h.Fetches);
 
-        // The empty set counts as a successful fetch: no refetch inside the TTL or cooldown
-        await Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(signer.Sign()));
+        // and it is throttled like any other failed refresh
+        await h.Validator.ValidateToken(signer.Sign());
         Assert.Equal(2, h.Fetches);
+
+        h.Now = h.Now.AddSeconds(31);
+        h.Body = signer.JwksJson();
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Equal(3, h.Fetches);
     }
 
     [Fact]
@@ -629,5 +650,49 @@ public class JwtValidatorCachingTests
         await Task.WhenAll(tasks);
 
         Assert.Equal(2, h.Fetches);
+    }
+
+    [Fact]
+    public async Task ValidateToken_ConcurrentUnknownKids_ShareFailedFetch()
+    {
+        var known = new TestSigner("known");
+        var unknown = new TestSigner("unknown").Sign();
+        var h = new Harness(known);
+
+        await h.Validator.ValidateToken(known.Sign());
+        h.Now = h.Now.AddSeconds(31);
+        h.Status = HttpStatusCode.ServiceUnavailable;
+        h.Gate = new ManualResetEventSlim(false);
+
+        var tasks = Enumerable.Range(0, 5).Select(_ =>
+            Task.Run(() => Assert.ThrowsAsync<DescopeException>(() => h.Validator.ValidateToken(unknown)))).ToArray();
+        await Task.Delay(500);
+        h.Gate.Set();
+        await Task.WhenAll(tasks);
+
+        // Callers that waited on the failed fetch use its outcome instead of fetching again
+        Assert.Equal(2, h.Fetches);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "")]
+    [InlineData(HttpStatusCode.OK, "{}")]
+    public async Task ValidateToken_FailedFetch_LogsWarning(HttpStatusCode status, string body)
+    {
+        var signer = new TestSigner("key");
+        var logger = new CapturingLogger();
+        var h = new Harness(signer, logger);
+
+        await h.Validator.ValidateToken(signer.Sign());
+        Assert.Empty(logger.Entries);
+
+        h.Status = status;
+        h.Body = body;
+        h.Now = h.Now.AddMinutes(6);
+        await h.Validator.ValidateToken(signer.Sign());
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.NotNull(entry.Error);
     }
 }
