@@ -230,6 +230,32 @@ public static class AuthExtensions
     }
 
     /// <summary>
+    /// Updates user phone using OTP IM with mandatory JWT authentication.
+    /// </summary>
+    /// <param name="requestBuilder">The IM request builder.</param>
+    /// <param name="request">The update phone request.</param>
+    /// <param name="refreshJwt">The refresh JWT token (required for this operation).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The phone operation response.</returns>
+    /// <exception cref="DescopeException">Thrown when refreshJwt is null or empty.</exception>
+    public static async Task<PhoneOperationResponse?> PostWithJwtAsync(
+        this Descope.Auth.V1.Auth.Otp.Update.Phone.Im.ImRequestBuilder requestBuilder,
+        UpdateUserPhoneOTPRequest request,
+        string refreshJwt,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(refreshJwt))
+        {
+            throw new DescopeException("Refresh JWT is required for updating user phone");
+        }
+
+        return await requestBuilder.PostAsync(
+            request,
+            WithJwt(refreshJwt),
+            cancellationToken);
+    }
+
+    /// <summary>
     /// Updates user phone using OTP SMS with mandatory JWT authentication.
     /// </summary>
     /// <param name="requestBuilder">The SMS request builder.</param>

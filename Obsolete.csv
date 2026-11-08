@@ -14,6 +14,7 @@ Descope/Generated/Auth/V1/Auth/Magiclink/Update/Phone/Whatsapp/WhatsappRequestBu
 Descope/Generated/Auth/V1/Auth/Enchantedlink/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Enchantedlink/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Email/EmailRequestBuilder.cs,PostAsync,PostWithJwtAsync
+Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Im/ImRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Sms/SmsRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Voice/VoiceRequestBuilder.cs,PostAsync,PostWithJwtAsync
 Descope/Generated/Auth/V1/Auth/Otp/Update/Phone/Whatsapp/WhatsappRequestBuilder.cs,PostAsync,PostWithJwtAsync

@@ -22,6 +22,14 @@ namespace Descope.Auth.Models.Userv1
 #else
         public List<string> Permissions { get; set; }
 #endif
+        /// <summary>roleIds holds the IDs of this entry&apos;s roles. Order is NOT guaranteed to match roleNames — do not pair them by index. Use roleIds or roleNames independently.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? RoleIds { get; set; }
+#nullable restore
+#else
+        public List<string> RoleIds { get; set; }
+#endif
         /// <summary>The roleNames property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -72,6 +80,7 @@ namespace Descope.Auth.Models.Userv1
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "permissions", n => { Permissions = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "roleIds", n => { RoleIds = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "roleNames", n => { RoleNames = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "tenantId", n => { TenantId = n.GetStringValue(); } },
                 { "tenantName", n => { TenantName = n.GetStringValue(); } },
@@ -85,6 +94,7 @@ namespace Descope.Auth.Models.Userv1
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
             writer.WriteCollectionOfPrimitiveValues<string>("permissions", Permissions);
+            writer.WriteCollectionOfPrimitiveValues<string>("roleIds", RoleIds);
             writer.WriteCollectionOfPrimitiveValues<string>("roleNames", RoleNames);
             writer.WriteStringValue("tenantId", TenantId);
             writer.WriteStringValue("tenantName", TenantName);

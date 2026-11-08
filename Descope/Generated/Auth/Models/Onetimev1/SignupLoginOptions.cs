@@ -54,6 +54,14 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public global::Descope.Auth.Models.Onetimev1.SignupLoginOptions_templateOptions TemplateOptions { get; set; }
 #endif
+        /// <summary>The tenantId property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TenantId { get; set; }
+#nullable restore
+#else
+        public string TenantId { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.SignupLoginOptions"/> and sets the default values.
         /// </summary>
@@ -84,6 +92,7 @@ namespace Descope.Auth.Models.Onetimev1
                 { "pkceChallenge", n => { PkceChallenge = n.GetStringValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
                 { "templateOptions", n => { TemplateOptions = n.GetObjectValue<global::Descope.Auth.Models.Onetimev1.SignupLoginOptions_templateOptions>(global::Descope.Auth.Models.Onetimev1.SignupLoginOptions_templateOptions.CreateFromDiscriminatorValue); } },
+                { "tenantId", n => { TenantId = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -98,6 +107,7 @@ namespace Descope.Auth.Models.Onetimev1
             writer.WriteStringValue("pkceChallenge", PkceChallenge);
             writer.WriteStringValue("templateId", TemplateId);
             writer.WriteObjectValue<global::Descope.Auth.Models.Onetimev1.SignupLoginOptions_templateOptions>("templateOptions", TemplateOptions);
+            writer.WriteStringValue("tenantId", TenantId);
             writer.WriteAdditionalData(AdditionalData);
         }
     }
