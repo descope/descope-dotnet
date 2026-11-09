@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.11.0...Descope-v1.11.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **auth:** rate limit unknown kid key refetch and keep cached keys on failed refresh ([#263](https://github.com/descope/descope-dotnet/issues/263)) ([eb9e580](https://github.com/descope/descope-dotnet/commit/eb9e580f4d80de7deaf9f7e75d4af86ff7a93ce7))
+
 ## [1.11.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.10.1...Descope-v1.11.0) (2026-10-19)
 
 
