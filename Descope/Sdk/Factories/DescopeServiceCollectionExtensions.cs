@@ -1,6 +1,7 @@
 using Descope.Mgmt;
 using Descope.Auth;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 
@@ -104,7 +105,8 @@ public static class DescopeServiceCollectionExtensions
             var authClient = new DescopeAuthKiotaClient(authAdapter);
 
             // Create the wrapper client with internal Kiota clients
-            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient, options.JwksCacheDuration);
+            var logger = sp.GetService<ILoggerFactory>()?.CreateLogger("Descope");
+            return new DescopeClient(mgmtClient, authClient, options.ProjectId, options.BaseUrl!, fetchKeysHttpClient, options.JwksCacheDuration, logger);
         });
 
         return services;

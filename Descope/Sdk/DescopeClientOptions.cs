@@ -58,10 +58,11 @@ public class DescopeClientOptions
     /// Default: 5 minutes.
     /// </summary>
     /// <remarks>
-    /// Raising this value is safe even during key rotation: session validation performs an
-    /// immediate key re-fetch (bypassing this TTL) whenever a token is signed with a key ID
-    /// that is not already cached, so tokens from newly rotated keys are still accepted right away.
-    /// Must be greater than zero.
+    /// Raising this value is safe even during key rotation: session validation re-fetches the keys
+    /// (bypassing this TTL) whenever a token is signed with a key ID that is not already cached,
+    /// at most once every 30 seconds, so tokens from newly rotated keys are still accepted quickly.
+    /// Cached keys are never used more than 1 hour after the last successful fetch, so values
+    /// above 1 hour behave like 1 hour. Must be greater than zero.
     /// </remarks>
     public TimeSpan JwksCacheDuration { get; set; } = TimeSpan.FromMinutes(5);
 

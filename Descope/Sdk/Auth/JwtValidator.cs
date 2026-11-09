@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
@@ -21,23 +22,31 @@ internal class JwtValidator
     private readonly SemaphoreSlim _fetchSemaphore = new(1, 1);
     private readonly TimeSpan _keyRefreshInterval;
     private long _lastKeyFetchTicks = 0;
+    private long _lastKeyFetchAttemptTicks = 0;
+    private bool _lastKeyFetchFailed = false;
+    private int _completedFetches = 0;
+    private static readonly TimeSpan KeyRefetchCooldown = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan MaxKeyAge = TimeSpan.FromHours(1);
     private readonly Func<DateTimeOffset> _timeProvider;
+    private readonly ILogger? _logger;
 
-    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null)
+    public JwtValidator(string projectId, string baseUrl, HttpClient httpClient, TimeSpan? keyRefreshInterval = null, Func<DateTimeOffset>? timeProvider = null, ILogger? logger = null)
     {
         _projectId = projectId ?? throw new ArgumentNullException(nameof(projectId));
         _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _keyRefreshInterval = keyRefreshInterval ?? TimeSpan.FromMinutes(5);
         _timeProvider = timeProvider ?? (() => DateTimeOffset.UtcNow);
+        _logger = logger;
     }
 
     /// <summary>
     /// Validates a JWT token locally using cached public keys.
-    /// Implements cache-miss immediate re-fetch: if validation fails because the key ID (kid)
-    /// from the token is not in the cache, forces a key re-fetch and retries validation once.
-    /// This ensures tokens signed with newly rotated keys are accepted immediately instead of
-    /// being rejected for up to 5 minutes until the next TTL-triggered refresh.
+    /// Implements cache-miss re-fetch: if validation fails because the key ID (kid)
+    /// from the token is not in the cache, re-fetches the keys and retries validation once.
+    /// Such re-fetches happen at most once per 30 seconds (measured from the last successful fetch),
+    /// so tokens signed with newly rotated keys are accepted quickly while unknown key IDs
+    /// cannot trigger a fetch on every request.
     /// </summary>
     /// <param name="jwt">The JWT token to validate.</param>
     /// <returns>A validated Token object or null if validation fails.</returns>
@@ -57,8 +66,8 @@ internal class JwtValidator
 
             var result = await _jsonWebTokenHandler.ValidateTokenAsync(jwt, BuildValidationParameters());
 
-            // Cache-miss immediate re-fetch: if validation failed and the kid is NOT in the cache,
-            // force a key re-fetch (bypassing TTL) and retry validation once.
+            // Cache-miss re-fetch: if validation failed and the kid is NOT in the cache,
+            // re-fetch keys (bypassing TTL, limited by the cooldown) and retry validation once.
             // This handles key rotation scenarios where a token is signed with a newly rotated key.
             if (!result.IsValid && kid != null && !_securityKeys.ContainsKey(kid))
             {
@@ -84,7 +93,7 @@ internal class JwtValidator
         ValidateAudience = false,
         IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
         {
-            if (kid != null && _securityKeys.TryGetValue(kid, out var keys))
+            if (kid != null && KeysWithinMaxAge() && _securityKeys.TryGetValue(kid, out var keys))
             {
                 return keys;
             }
@@ -96,9 +105,13 @@ internal class JwtValidator
         ClockSkew = TimeSpan.FromSeconds(5),
     };
 
-    private bool KeysAreFresh() =>
-        !_securityKeys.IsEmpty &&
-        TimeSpan.FromTicks(_timeProvider().Ticks - Interlocked.Read(ref _lastKeyFetchTicks)) < _keyRefreshInterval;
+    private TimeSpan KeyAge() =>
+        TimeSpan.FromTicks(_timeProvider().Ticks - Interlocked.Read(ref _lastKeyFetchTicks));
+
+    private bool KeysAreFresh() => KeyAge() < _keyRefreshInterval && KeysWithinMaxAge();
+
+    // Cached keys are not used once the last successful fetch is older than MaxKeyAge
+    private bool KeysWithinMaxAge() => KeyAge() < MaxKeyAge;
 
     private async Task FetchKeyIfNeeded()
     {
@@ -113,15 +126,34 @@ internal class JwtValidator
     private async Task FetchKeys(bool force)
     {
         // Use semaphore to ensure only one thread fetches at a time
+        var completedBeforeWait = Volatile.Read(ref _completedFetches);
         await _fetchSemaphore.WaitAsync();
+        var attempted = false;
         try
         {
-            // Double-check after acquiring lock - another thread might have fetched
-            // Skip this check if force is true (cache-miss immediate re-fetch)
-            if (!force && KeysAreFresh())
+            // A fetch completed while waiting: use its outcome instead of fetching again
+            if (Volatile.Read(ref _completedFetches) != completedBeforeWait)
             {
                 return;
             }
+
+            // Double-check after acquiring lock - another thread might have fetched.
+            // Unknown kid (force): fetch at most once per cooldown since the last successful fetch;
+            // a failed fetch does not delay the next unknown kid lookup.
+            // Stale keys: refresh, unless a refresh attempt failed within the cooldown, so cached
+            // keys keep validating without waiting on a failing endpoint.
+            var now = _timeProvider().Ticks;
+            var skip = force
+                ? TimeSpan.FromTicks(now - Interlocked.Read(ref _lastKeyFetchTicks)) < KeyRefetchCooldown
+                : KeysAreFresh() || (_lastKeyFetchFailed && TimeSpan.FromTicks(now - _lastKeyFetchAttemptTicks) < KeyRefetchCooldown);
+            if (skip)
+            {
+                return;
+            }
+
+            attempted = true;
+            _lastKeyFetchAttemptTicks = now;
+            _lastKeyFetchFailed = true;
 
             var url = $"{_baseUrl.TrimEnd('/')}/v2/keys/{_projectId}";
             var response = await _httpClient.GetAsync(url);
@@ -130,7 +162,10 @@ internal class JwtValidator
             var content = await response.Content.ReadAsStringAsync();
             var keyResponse = JsonSerializer.Deserialize<JwtKeyResponse>(content);
 
-            if (keyResponse?.Keys == null) return;
+            if (keyResponse?.Keys == null || keyResponse.Keys.Count == 0)
+            {
+                throw new DescopeException("Key response contains no keys");
+            }
 
             // Build new key map atomically to avoid racing with in-flight validations
             var newKeys = new ConcurrentDictionary<string, List<SecurityKey>>();
@@ -155,9 +190,26 @@ internal class JwtValidator
 
             // Update last fetch time AFTER successful fetch
             Interlocked.Exchange(ref _lastKeyFetchTicks, _timeProvider().Ticks);
+            _lastKeyFetchFailed = false;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to fetch public keys");
+
+            // Failed fetch: keep the last good key set and its fetch time. The attempt time
+            // was recorded above, so refreshes of stale cached keys are limited by the cooldown.
+            // With no usable key set (none fetched yet, or older than MaxKeyAge) the error propagates.
+            if (Interlocked.Read(ref _lastKeyFetchTicks) == 0 || !KeysWithinMaxAge())
+            {
+                throw;
+            }
         }
         finally
         {
+            if (attempted)
+            {
+                Interlocked.Increment(ref _completedFetches);
+            }
             _fetchSemaphore.Release();
         }
     }

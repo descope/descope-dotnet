@@ -1,5 +1,6 @@
 using Descope.Mgmt;
 using Descope.Auth;
+using Microsoft.Extensions.Logging;
 
 namespace Descope;
 
@@ -27,10 +28,11 @@ public class DescopeClient : IDescopeClient
         string projectId,
         string baseUrl,
         HttpClient fetchKeysHttpClient,
-        TimeSpan? jwksCacheDuration = null)
+        TimeSpan? jwksCacheDuration = null,
+        ILogger? logger = null)
     {
         _mgmtClient = new DescopeMgmtClient(mgmtKiotaClient);
-        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration);
+        _authClient = new DescopeAuthClient(authKiotaClient, projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration, logger);
     }
 
     public class DescopeMgmtClient
@@ -57,10 +59,11 @@ public class DescopeClient : IDescopeClient
             string projectId,
             string baseUrl,
             HttpClient fetchKeysHttpClient,
-            TimeSpan? jwksCacheDuration = null)
+            TimeSpan? jwksCacheDuration = null,
+            ILogger? logger = null)
         {
             _authKiotaClient = authKiotaClient;
-            var jwtValidator = new JwtValidator(projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration);
+            var jwtValidator = new JwtValidator(projectId, baseUrl, fetchKeysHttpClient, jwksCacheDuration, logger: logger);
             _tokenActions = new TokenActions(jwtValidator, authKiotaClient.V1.Auth);
         }
 
