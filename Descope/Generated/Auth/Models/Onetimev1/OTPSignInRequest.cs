@@ -54,6 +54,8 @@ namespace Descope.Auth.Models.Onetimev1
 #else
         public string TemplateId { get; set; }
 #endif
+        /// <summary>The useRecovery property</summary>
+        public bool? UseRecovery { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::Descope.Auth.Models.Onetimev1.OTPSignInRequest"/> and sets the default values.
         /// </summary>
@@ -84,6 +86,7 @@ namespace Descope.Auth.Models.Onetimev1
                 { "providerId", n => { ProviderId = n.GetStringValue(); } },
                 { "ssoAppId", n => { SsoAppId = n.GetStringValue(); } },
                 { "templateId", n => { TemplateId = n.GetStringValue(); } },
+                { "useRecovery", n => { UseRecovery = n.GetBoolValue(); } },
             };
         }
         /// <summary>
@@ -98,6 +101,7 @@ namespace Descope.Auth.Models.Onetimev1
             writer.WriteStringValue("providerId", ProviderId);
             writer.WriteStringValue("ssoAppId", SsoAppId);
             writer.WriteStringValue("templateId", TemplateId);
+            writer.WriteBoolValue("useRecovery", UseRecovery);
             writer.WriteAdditionalData(AdditionalData);
         }
     }
