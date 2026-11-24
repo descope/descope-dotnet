@@ -12,6 +12,14 @@ namespace Descope.Mgmt.Models.Managementv1
     public partial class SSOSAMLByMetadataSettings : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>Audience values a SAML assertion from this IdP may carry in place of the SP entity ID, for an IdP whose audience cannot be changed: one set up for a previous provider, or one that sends an empty or placeholder audience. Each value must match the assertion&apos;s audience exactly (surrounding whitespace is ignored); an empty string accepts an empty audience. Up to 20 values. An empty list keeps the stored values; set replaceAcceptedAudiences to replace or clear them.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? AcceptedAudiences { get; set; }
+#nullable restore
+#else
+        public List<string> AcceptedAudiences { get; set; }
+#endif
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>The attributeMapping property</summary>
@@ -62,6 +70,8 @@ namespace Descope.Mgmt.Models.Managementv1
 #else
         public string IdpMetadataUrl { get; set; }
 #endif
+        /// <summary>When true, acceptedAudiences replaces the stored accepted audiences even when it is empty, which is how a caller clears them. When false, an empty acceptedAudiences keeps what is stored.</summary>
+        public bool? ReplaceAcceptedAudiences { get; set; }
         /// <summary>The roleMappings property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -135,12 +145,14 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "acceptedAudiences", n => { AcceptedAudiences = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "attributeMapping", n => { AttributeMapping = n.GetObjectValue<global::Descope.Mgmt.Models.Managementv1.AttributeMapping>(global::Descope.Mgmt.Models.Managementv1.AttributeMapping.CreateFromDiscriminatorValue); } },
                 { "configFGATenantIDResourcePrefix", n => { ConfigFGATenantIDResourcePrefix = n.GetStringValue(); } },
                 { "configFGATenantIDResourceSuffix", n => { ConfigFGATenantIDResourceSuffix = n.GetStringValue(); } },
                 { "defaultSSORoles", n => { DefaultSSORoles = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "fgaMappings", n => { FgaMappings = n.GetObjectValue<global::Descope.Mgmt.Models.Managementv1.SSOSAMLByMetadataSettings_fgaMappings>(global::Descope.Mgmt.Models.Managementv1.SSOSAMLByMetadataSettings_fgaMappings.CreateFromDiscriminatorValue); } },
                 { "idpMetadataUrl", n => { IdpMetadataUrl = n.GetStringValue(); } },
+                { "replaceAcceptedAudiences", n => { ReplaceAcceptedAudiences = n.GetBoolValue(); } },
                 { "roleMappings", n => { RoleMappings = n.GetCollectionOfObjectValues<global::Descope.Mgmt.Models.Managementv1.RoleMapping>(global::Descope.Mgmt.Models.Managementv1.RoleMapping.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "spACSUrl", n => { SpACSUrl = n.GetStringValue(); } },
                 { "spEncryptionKey", n => { SpEncryptionKey = n.GetStringValue(); } },
@@ -156,12 +168,14 @@ namespace Descope.Mgmt.Models.Managementv1
         public virtual void Serialize(ISerializationWriter writer)
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            writer.WriteCollectionOfPrimitiveValues<string>("acceptedAudiences", AcceptedAudiences);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Managementv1.AttributeMapping>("attributeMapping", AttributeMapping);
             writer.WriteStringValue("configFGATenantIDResourcePrefix", ConfigFGATenantIDResourcePrefix);
             writer.WriteStringValue("configFGATenantIDResourceSuffix", ConfigFGATenantIDResourceSuffix);
             writer.WriteCollectionOfPrimitiveValues<string>("defaultSSORoles", DefaultSSORoles);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Managementv1.SSOSAMLByMetadataSettings_fgaMappings>("fgaMappings", FgaMappings);
             writer.WriteStringValue("idpMetadataUrl", IdpMetadataUrl);
+            writer.WriteBoolValue("replaceAcceptedAudiences", ReplaceAcceptedAudiences);
             writer.WriteCollectionOfObjectValues<global::Descope.Mgmt.Models.Managementv1.RoleMapping>("roleMappings", RoleMappings);
             writer.WriteStringValue("spACSUrl", SpACSUrl);
             writer.WriteStringValue("spEncryptionKey", SpEncryptionKey);

@@ -12,6 +12,14 @@ namespace Descope.Mgmt.Models.Managementv1
     public partial class SamlSettingsResponse : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>Audience values a SAML assertion from this IdP may carry in place of the SP entity ID. Empty when none are set.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<string>? AcceptedAudiences { get; set; }
+#nullable restore
+#else
+        public List<string> AcceptedAudiences { get; set; }
+#endif
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>The attributeMapping property</summary>
@@ -191,6 +199,7 @@ namespace Descope.Mgmt.Models.Managementv1
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "acceptedAudiences", n => { AcceptedAudiences = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "attributeMapping", n => { AttributeMapping = n.GetObjectValue<global::Descope.Mgmt.Models.Managementv1.UserMapping>(global::Descope.Mgmt.Models.Managementv1.UserMapping.CreateFromDiscriminatorValue); } },
                 { "configFGATenantIDResourcePrefix", n => { ConfigFGATenantIDResourcePrefix = n.GetStringValue(); } },
                 { "configFGATenantIDResourceSuffix", n => { ConfigFGATenantIDResourceSuffix = n.GetStringValue(); } },
@@ -219,6 +228,7 @@ namespace Descope.Mgmt.Models.Managementv1
         public virtual void Serialize(ISerializationWriter writer)
         {
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
+            writer.WriteCollectionOfPrimitiveValues<string>("acceptedAudiences", AcceptedAudiences);
             writer.WriteObjectValue<global::Descope.Mgmt.Models.Managementv1.UserMapping>("attributeMapping", AttributeMapping);
             writer.WriteStringValue("configFGATenantIDResourcePrefix", ConfigFGATenantIDResourcePrefix);
             writer.WriteStringValue("configFGATenantIDResourceSuffix", ConfigFGATenantIDResourceSuffix);
