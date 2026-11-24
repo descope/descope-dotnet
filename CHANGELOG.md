@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/descope/descope-dotnet/compare/Descope-v1.11.1...Descope-v1.12.0) (2026-11-24)
+
+
+### Features
+
+* **mgmt:** support SAML accepted audiences in SSO settings ([#270](https://github.com/descope/descope-dotnet/issues/270)) ([311685e](https://github.com/descope/descope-dotnet/commit/311685e6176cd8d82cda2b694e82e72923593a84))
+
 ## [1.11.1](https://github.com/descope/descope-dotnet/compare/Descope-v1.11.0...Descope-v1.11.1) (2026-11-09)
 
 
